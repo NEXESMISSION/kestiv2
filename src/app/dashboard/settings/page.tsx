@@ -79,6 +79,9 @@ export default function SettingsPage() {
           is_active: true,
           is_paused: false,
           pause_reason: null,
+          subscription_status: 'active',
+          subscription_end_date: null,
+          subscription_days: null,
           created_at: user.created_at || new Date().toISOString(),
           updated_at: new Date().toISOString()
         }
