@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import DashboardClient from './DashboardClient'
+import { Profile } from '@/types/database'
 
 // Auth checks handled by middleware
 export default async function DashboardPage() {
@@ -13,7 +14,7 @@ export default async function DashboardPage() {
     .from('profiles')
     .select('*')
     .eq('id', user.id)
-    .single()
+    .single<Profile>()
 
   // Redirect retail users to retail dashboard
   if (profile?.business_mode === 'retail') {
