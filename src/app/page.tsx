@@ -1,6 +1,13 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
+type ProfileData = {
+  role: string | null
+  is_paused: boolean
+  subscription_status: string | null
+  subscription_end_date: string | null
+}
+
 export default async function Home() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -14,7 +21,7 @@ export default async function Home() {
     .from('profiles')
     .select('role, is_paused, subscription_status, subscription_end_date')
     .eq('id', user.id)
-    .single()
+    .single<ProfileData>()
 
   // Check if user is paused - redirect to paused page
   if (profile?.is_paused) {

@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 
+type ProfileData = { business_mode: string | null }
+
 // POS Page - Redirects based on business type
 // Auth checks handled by middleware
 export default async function POSPage() {
@@ -13,7 +15,7 @@ export default async function POSPage() {
     .from('profiles')
     .select('business_mode')
     .eq('id', user.id)
-    .single()
+    .single<ProfileData>()
   
   // Redirect based on business type
   if (profile?.business_mode === 'retail') {
