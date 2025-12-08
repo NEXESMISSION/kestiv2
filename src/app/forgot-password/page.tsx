@@ -46,16 +46,10 @@ export default function ForgotPasswordPage() {
 
     try {
       const supabase = createClient()
-      
-      // First check if email exists in profiles (using auth admin would be better but this works)
-      // We check profiles table to see if user exists
-      const { data: existingUser, error: checkError } = await supabase
-        .from('profiles')
-        .select('id')
-        .ilike('id', `%`) // We need to check auth.users but can't directly, so we try reset
+      const email = data.email.toLowerCase().trim()
       
       // Try to send reset email
-      const { error } = await supabase.auth.resetPasswordForEmail(data.email.toLowerCase().trim(), {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`
       })
 
@@ -65,9 +59,9 @@ export default function ForgotPasswordPage() {
           showNotification('error', 'محاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.')
         } else if (error.message.includes('User not found') || error.message.includes('not found')) {
           showNotification('error', 'هذا البريد الإلكتروني غير مسجل. تأكد من البريد أو أنشئ حساب جديد.')
-        } else if (error.status === 500) {
-          // 500 error often means SMTP not configured or email doesn't exist
-          showNotification('error', 'هذا البريد الإلكتروني غير مسجل أو حدث خطأ في الخادم. تأكد من البريد.')
+        } else if (error.status === 500 || error.message.includes('sending recovery email')) {
+          // 500 error means SMTP not configured in Supabase
+          showNotification('error', 'خدمة البريد غير متاحة حالياً. يرجى التواصل مع الدعم الفني أو المحاولة لاحقاً.')
         } else {
           showNotification('error', 'حدث خطأ. تأكد من البريد الإلكتروني وحاول مرة أخرى.')
         }
