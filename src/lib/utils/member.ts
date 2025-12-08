@@ -39,18 +39,15 @@ export function isSingleSessionUsed(member: Member): boolean {
 }
 
 // Utility function to get member status
-// IMPORTANT: Single sessions are NEVER "expired" - they are either "available" or "used"
+// Single sessions are auto-used on purchase
 export function getMemberStatus(member: Member): MemberStatus {
   if (member.is_frozen) return 'frozen'
   
   const planType = getMemberPlanType(member)
   
-  // SINGLE SESSION: Never show as expired - only "active" (available) or special status
+  // SINGLE SESSION: Auto-used on purchase, always show as 'active'
   if (planType === 'single') {
-    const used = isSingleSessionUsed(member)
-    // If used, we return 'expired' but the UI will handle this differently for singles
-    // The card will show "تم استخدامها" not "منتهي"
-    return used ? 'expired' : 'active'
+    return 'active'
   }
   
   // PACKAGE: Check sessions remaining
@@ -85,13 +82,9 @@ export function getStatusDisplay(member: Member): { text: string; color: string;
   const planType = getMemberPlanType(member)
   const status = getMemberStatus(member)
   
-  // SINGLE SESSION - Special display
+  // SINGLE SESSION - Auto-used on purchase
   if (planType === 'single') {
-    const used = isSingleSessionUsed(member)
-    if (used) {
-      return { text: 'تم استخدامها', color: 'text-gray-500', icon: 'used' }
-    }
-    return { text: 'حصة متاحة', color: 'text-orange-600', icon: 'available' }
+    return { text: 'حصة واحدة', color: 'text-orange-600', icon: 'single' }
   }
   
   // PACKAGE

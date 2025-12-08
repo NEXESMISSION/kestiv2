@@ -121,7 +121,7 @@ export default function MemberModal({
               <div>
                 <div className="font-medium text-gray-900">{member.plan_name}</div>
                 <div className="text-sm text-gray-500">
-                  {planType === 'single' && (isSingleSessionUsed(member) ? 'مستخدمة' : 'متاحة')}
+                  {planType === 'single' && 'حصة واحدة'}
                   {planType === 'package' && `${getSessionsRemaining(member)} حصة متبقية`}
                   {planType === 'subscription' && member.expires_at && `ينتهي: ${formatDate(member.expires_at)}`}
                 </div>
@@ -207,7 +207,7 @@ export default function MemberModal({
 
               {/* Change Plan - Grouped by Type */}
               <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-                <h3 className="font-bold text-gray-800 mb-3">تغيير الخطة / شراء جديد</h3>
+                <h3 className="font-bold text-gray-800 mb-3">شراء خطة جديدة</h3>
                 
                 {(() => {
                   const activePlans = plans.filter(p => p.is_active)

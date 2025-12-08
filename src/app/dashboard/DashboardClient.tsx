@@ -34,7 +34,8 @@ function getMemberStatus(m: Member) {
   if (!m.plan_id) return 'no_plan'
   if (m.is_frozen) return 'frozen'
   const pt = getPlanType(m)
-  if (pt === 'single') return m.sessions_used >= 1 ? 'single_used' : 'single_available'
+  // Single sessions are auto-used on purchase, so they're always 'single_used'
+  if (pt === 'single') return 'single_used'
   if (pt === 'package') return (m.sessions_total - m.sessions_used) <= 0 ? 'expired' : 'active'
   // For subscription type - if no expires_at, it's unlimited/active
   if (!m.expires_at) return 'active'
@@ -44,20 +45,19 @@ function getMemberStatus(m: Member) {
   return 'active'
 }
 
-// Add "unlimited" to status labels
+// Status labels - single sessions are auto-used
 const statusLabelsExtended: Record<string, { label: string; color: string }> = {
   active: { label: 'نشط', color: 'bg-green-100 text-green-700' },
   expiring_soon: { label: 'ينتهي قريباً', color: 'bg-yellow-100 text-yellow-700' },
   expired: { label: 'منتهي', color: 'bg-red-100 text-red-700' },
   frozen: { label: '❄️ مجمد', color: 'bg-blue-100 text-blue-700' },
-  single_available: { label: '⚡ متاحة', color: 'bg-orange-100 text-orange-700' },
-  single_used: { label: '⚡ مستخدمة', color: 'bg-gray-100 text-gray-500' },
+  single_used: { label: '⚡ حصة واحدة', color: 'bg-orange-100 text-orange-700' },
   no_plan: { label: 'بدون خطة', color: 'bg-gray-100 text-gray-500' }
 }
 
 const statusLabels: Record<string, string> = {
   active: 'نشط', expiring_soon: 'ينتهي قريباً', expired: 'منتهي', frozen: '❄️ مجمد',
-  single_available: '⚡ متاحة', single_used: '⚡ مستخدمة', no_plan: 'بدون خطة'
+  single_used: '⚡ حصة واحدة', no_plan: 'بدون خطة'
 }
 
 export default function DashboardClient({ user, profile }: Props) {
@@ -257,7 +257,7 @@ export default function DashboardClient({ user, profile }: Props) {
                           {cfg ? <span className={`px-2 py-1 rounded-full text-xs font-medium ${cfg.bg} ${cfg.color}`}>{m.plan_name}</span> : <span className="text-gray-400">-</span>}
                         </td>
                         <td className="px-4 py-3">
-                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${st === 'active' ? 'bg-green-100 text-green-700' : st === 'expiring_soon' ? 'bg-yellow-100 text-yellow-700' : st === 'expired' || st === 'single_used' ? 'bg-red-100 text-red-700' : st === 'frozen' ? 'bg-blue-100 text-blue-700' : st === 'single_available' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${st === 'active' ? 'bg-green-100 text-green-700' : st === 'expiring_soon' ? 'bg-yellow-100 text-yellow-700' : st === 'expired' ? 'bg-red-100 text-red-700' : st === 'frozen' ? 'bg-blue-100 text-blue-700' : st === 'single_used' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
                             {statusLabels[st]}
                           </span>
                         </td>
@@ -487,7 +487,8 @@ export default function DashboardClient({ user, profile }: Props) {
               plan_start_at: new Date().toISOString(), 
               expires_at: expiresMs ? new Date(Date.now() + expiresMs).toISOString() : null, 
               sessions_total: plan.duration_days > 0 ? 0 : plan.sessions, 
-              sessions_used: 0, 
+              // Auto-use single sessions on purchase
+              sessions_used: pt === 'single' ? 1 : 0, 
               debt: data.paymentMethod === 'debt' ? plan.price : 0 
             }
           }

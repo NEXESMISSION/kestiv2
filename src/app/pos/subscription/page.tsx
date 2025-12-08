@@ -46,7 +46,8 @@ function getMemberStatus(member: Member) {
   if (!member.plan_id) return 'no_plan'
   if (member.is_frozen) return 'frozen'
   const planType = getPlanType(member)
-  if (planType === 'single') return member.sessions_used >= 1 ? 'single_used' : 'single_available'
+  // Single sessions are auto-used on purchase
+  if (planType === 'single') return 'single_used'
   if (planType === 'package') return (member.sessions_total - member.sessions_used) <= 0 ? 'expired' : 'active'
   if (!member.expires_at) return 'active'
   const daysLeft = Math.ceil((new Date(member.expires_at).getTime() - Date.now()) / 86400000)
@@ -106,9 +107,9 @@ export default function SubscriptionPOSPage() {
     if (!match) return false
     const status = getMemberStatus(member)
     const planType = getPlanType(member)
-    if (filter === 'active') return status === 'active' || status === 'single_available'
+    if (filter === 'active') return status === 'active'
     if (filter === 'expiring') return status === 'expiring_soon'
-    if (filter === 'expired') return status === 'expired' || status === 'single_used'
+    if (filter === 'expired') return status === 'expired'
     if (filter === 'frozen') return status === 'frozen'
     if (filter === 'single') return planType === 'single'
     if (filter === 'package') return planType === 'package'
@@ -255,7 +256,7 @@ export default function SubscriptionPOSPage() {
               const pt = plan.plan_type || (plan.duration_days === 0 ? (plan.sessions === 1 ? 'single' : 'package') : 'subscription')
               // If duration_days < 1, treat as fraction of a day (e.g., 0.0007 = ~1 minute)
               const expiresMs = plan.duration_days > 0 ? plan.duration_days * 86400000 : null
-              memberData = { ...memberData, plan_id: plan.id, plan_name: plan.name, plan_type: pt, plan_start_at: new Date().toISOString(), expires_at: expiresMs ? new Date(Date.now() + expiresMs).toISOString() : null, sessions_total: plan.duration_days > 0 ? 0 : plan.sessions, sessions_used: 0, debt: data.paymentMethod === 'debt' ? plan.price : 0 }
+              memberData = { ...memberData, plan_id: plan.id, plan_name: plan.name, plan_type: pt, plan_start_at: new Date().toISOString(), expires_at: expiresMs ? new Date(Date.now() + expiresMs).toISOString() : null, sessions_total: plan.duration_days > 0 ? 0 : plan.sessions, sessions_used: pt === 'single' ? 1 : 0, debt: data.paymentMethod === 'debt' ? plan.price : 0 }
             }
             const { data: newMember } = await supabase.from('members').insert(memberData).select().single()
             

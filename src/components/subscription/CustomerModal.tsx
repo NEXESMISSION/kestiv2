@@ -23,7 +23,8 @@ function getMemberStatus(member: Member) {
   if (!member.plan_id) return 'no_plan'
   if (member.is_frozen) return 'frozen'
   const pt = getPlanType(member)
-  if (pt === 'single') return member.sessions_used >= 1 ? 'single_used' : 'single_available'
+  // Single sessions are auto-used on purchase
+  if (pt === 'single') return 'single_used'
   if (pt === 'package') return (member.sessions_total - member.sessions_used) <= 0 ? 'expired' : 'active'
   if (!member.expires_at) return 'active'
   const days = Math.ceil((new Date(member.expires_at).getTime() - Date.now()) / 86400000)
@@ -124,7 +125,9 @@ export default function CustomerModal({ member, plans, services, onClose, onUpda
 
     await supabase.from('members').update({
       plan_id: plan.id, plan_name: plan.name, plan_type: pt, plan_start_at: new Date().toISOString(),
-      expires_at: expiresAt, sessions_total: sessionsTotal, sessions_used: 0,
+      expires_at: expiresAt, sessions_total: sessionsTotal, 
+      // Auto-use single sessions on purchase
+      sessions_used: pt === 'single' ? 1 : 0,
       debt: paymentMethod === 'debt' ? (currentMember.debt || 0) + plan.price : currentMember.debt
     }).eq('id', currentMember.id)
 
@@ -195,7 +198,8 @@ export default function CustomerModal({ member, plans, services, onClose, onUpda
   }
 
   const needsRenew = status === 'expired' || status === 'single_used'
-  const canUseSession = (planType === 'single' && status === 'single_available') || (planType === 'package' && (currentMember.sessions_total - currentMember.sessions_used) > 0)
+  // Only packages can use sessions manually - single sessions are auto-used
+  const canUseSession = planType === 'package' && (currentMember.sessions_total - currentMember.sessions_used) > 0
 
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
@@ -215,8 +219,8 @@ export default function CustomerModal({ member, plans, services, onClose, onUpda
         </div>
 
         {/* Status */}
-        <div className={`px-4 py-2 text-center font-medium ${status === 'active' ? 'bg-green-100 text-green-700' : status === 'expiring_soon' ? 'bg-yellow-100 text-yellow-700' : status === 'expired' ? 'bg-red-100 text-red-700' : status === 'frozen' ? 'bg-blue-100 text-blue-700' : status === 'single_available' ? 'bg-orange-100 text-orange-700' : status === 'single_used' ? 'bg-gray-100 text-gray-600' : 'bg-gray-100 text-gray-500'}`}>
-          {status === 'active' ? 'نشط' : status === 'expiring_soon' ? 'ينتهي قريباً' : status === 'expired' ? 'منتهي' : status === 'frozen' ? '❄️ مجمد' : status === 'single_available' ? '⚡ حصة واحدة - متاحة' : status === 'single_used' ? '⚡ تم استخدامها' : 'بدون خطة'}
+        <div className={`px-4 py-2 text-center font-medium ${status === 'active' ? 'bg-green-100 text-green-700' : status === 'expiring_soon' ? 'bg-yellow-100 text-yellow-700' : status === 'expired' ? 'bg-red-100 text-red-700' : status === 'frozen' ? 'bg-blue-100 text-blue-700' : status === 'single_used' ? 'bg-orange-100 text-orange-700' : 'bg-gray-100 text-gray-500'}`}>
+          {status === 'active' ? 'نشط' : status === 'expiring_soon' ? 'ينتهي قريباً' : status === 'expired' ? 'منتهي' : status === 'frozen' ? '❄️ مجمد' : status === 'single_used' ? '⚡ حصة واحدة' : 'بدون خطة'}
         </div>
 
         {/* Tabs */}
@@ -255,7 +259,7 @@ export default function CustomerModal({ member, plans, services, onClose, onUpda
                   )
                 )}
                 {planType === 'package' && <div className="p-3 bg-purple-50 rounded-xl col-span-2"><div className="text-xs text-purple-600">الحصص المتبقية</div><div className="text-2xl font-bold text-purple-600">{currentMember.sessions_total - currentMember.sessions_used} / {currentMember.sessions_total}</div></div>}
-                {planType === 'single' && <div className={`p-3 rounded-xl col-span-2 ${currentMember.sessions_used >= 1 ? 'bg-gray-100' : 'bg-orange-50'}`}><div className={`text-xs ${currentMember.sessions_used >= 1 ? 'text-gray-500' : 'text-orange-600'}`}>حالة الحصة</div><div className={`text-xl font-bold ${currentMember.sessions_used >= 1 ? 'text-gray-600' : 'text-orange-600'}`}>{currentMember.sessions_used >= 1 ? '⚡ تم استخدامها' : '⚡ متاحة'}</div></div>}
+                {planType === 'single' && <div className="p-3 rounded-xl col-span-2 bg-orange-50"><div className="text-xs text-orange-600">نوع الخطة</div><div className="text-xl font-bold text-orange-600">⚡ حصة واحدة</div></div>}
               </div>
               {currentMember.debt > 0 && <div className="p-3 bg-red-50 border border-red-200 rounded-xl flex justify-between"><span className="text-red-700">الدين</span><span className="font-bold text-red-600">{currentMember.debt.toFixed(3)} DT</span></div>}
             </div>
@@ -264,9 +268,9 @@ export default function CustomerModal({ member, plans, services, onClose, onUpda
           {activeTab === 'actions' && (
             <div className="space-y-3">
               {canUseSession && <button onClick={useSession} disabled={processing} className="w-full py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"><CheckCircle className="w-5 h-5" />استخدام حصة</button>}
-              {(planType === 'single' || planType === 'package') && <button onClick={() => addSession(1)} disabled={processing} className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"><Plus className="w-5 h-5" />إضافة حصة واحدة</button>}
+              {planType === 'package' && <button onClick={() => addSession(1)} disabled={processing} className="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"><Plus className="w-5 h-5" />إضافة حصة</button>}
               {needsRenew && <button onClick={() => setShowChangePlan(true)} className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold flex items-center justify-center gap-2"><RefreshCw className="w-5 h-5" />تجديد الاشتراك</button>}
-              <button onClick={() => setShowChangePlan(true)} className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"><ArrowLeftRight className="w-5 h-5" />تغيير الخطة</button>
+              <button onClick={() => setShowChangePlan(true)} className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"><ArrowLeftRight className="w-5 h-5" />شراء خطة جديدة</button>
               <button onClick={() => setShowAddService(true)} className="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"><Sparkles className="w-5 h-5" />إضافة خدمة</button>
               {planType === 'subscription' && (currentMember.is_frozen ? <button onClick={unfreeze} disabled={processing} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold flex items-center justify-center gap-2"><Play className="w-5 h-5" />إلغاء التجميد</button> : <button onClick={() => setShowFreeze(true)} className="w-full py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-xl font-bold flex items-center justify-center gap-2"><Snowflake className="w-5 h-5" />تجميد الاشتراك</button>)}
               {planType && status !== 'expired' && status !== 'single_used' && <button onClick={cancelSubscription} disabled={processing} className="w-full py-3 bg-red-100 hover:bg-red-200 text-red-700 rounded-xl font-bold flex items-center justify-center gap-2"><XCircle className="w-5 h-5" />إلغاء الاشتراك</button>}
@@ -349,7 +353,7 @@ export default function CustomerModal({ member, plans, services, onClose, onUpda
       {showChangePlan && (
         <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col">
-            <div className="p-4 border-b flex justify-between"><h3 className="text-lg font-bold">تغيير الخطة</h3><button onClick={() => setShowChangePlan(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button></div>
+            <div className="p-4 border-b flex justify-between"><h3 className="text-lg font-bold">شراء خطة جديدة</h3><button onClick={() => setShowChangePlan(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button></div>
             <div className="flex-1 overflow-auto p-4 space-y-4">
               {['single', 'package', 'subscription'].map(type => {
                 const tPlans = plans.filter(p => (p.plan_type || (p.duration_days === 0 ? (p.sessions === 1 ? 'single' : 'package') : 'subscription')) === type)
