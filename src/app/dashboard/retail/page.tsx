@@ -776,6 +776,30 @@ function ProductModal({ product, categories, onClose, onSave, userId }: {
   const [uploading, setUploading] = useState(false)
   const supabaseClient = createClient()
 
+  // Compress image before upload
+  const compressImage = async (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const img = document.createElement('img')
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      
+      img.onload = () => {
+        let { width, height } = img
+        const maxWidth = 800
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width
+          width = maxWidth
+        }
+        canvas.width = width
+        canvas.height = height
+        ctx?.drawImage(img, 0, 0, width, height)
+        canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error('Compression failed')), 'image/jpeg', 0.7)
+      }
+      img.onerror = () => reject(new Error('Failed to load image'))
+      img.src = URL.createObjectURL(file)
+    })
+  }
+
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
@@ -785,30 +809,44 @@ function ProductModal({ product, categories, onClose, onSave, userId }: {
       return
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      alert('حجم الصورة يجب أن يكون أقل من 2MB')
+    if (file.size > 5 * 1024 * 1024) {
+      alert('حجم الصورة يجب أن يكون أقل من 5MB')
       return
     }
 
     setUploading(true)
     try {
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${userId}/products/${Date.now()}.${fileExt}`
+      // Compress image if larger than 200KB
+      let fileToUpload: Blob | File = file
+      if (file.size > 200 * 1024) {
+        try {
+          fileToUpload = await compressImage(file)
+          console.log(`Compressed: ${(file.size / 1024).toFixed(0)}KB → ${(fileToUpload.size / 1024).toFixed(0)}KB`)
+        } catch {
+          fileToUpload = file
+        }
+      }
+
+      const fileName = `${userId}/products/${Date.now()}.jpg`
 
       // Delete old image if exists
       if (imageUrl) {
-        const oldPath = imageUrl.split('/images/')[1]
-        if (oldPath) await supabaseClient.storage.from('images').remove([oldPath])
+        const oldPath = imageUrl.split('/products/')[1]
+        if (oldPath) await supabaseClient.storage.from('products').remove([oldPath])
       }
 
-      const { error } = await supabaseClient.storage.from('images').upload(fileName, file, { cacheControl: '3600', upsert: true })
+      const { error } = await supabaseClient.storage.from('products').upload(fileName, fileToUpload, { 
+        cacheControl: '31536000', 
+        contentType: 'image/jpeg',
+        upsert: true 
+      })
       if (error) throw error
 
-      const { data: { publicUrl } } = supabaseClient.storage.from('images').getPublicUrl(fileName)
+      const { data: { publicUrl } } = supabaseClient.storage.from('products').getPublicUrl(fileName)
       setImageUrl(publicUrl)
     } catch (err) {
       console.error('Upload error:', err)
-      alert('فشل رفع الصورة')
+      alert('فشل رفع الصورة. تأكد من إعداد Storage في Supabase')
     } finally {
       setUploading(false)
     }
