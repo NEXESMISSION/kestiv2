@@ -203,16 +203,6 @@ export default function SubscriptionPOSPage() {
     return true
   })
 
-  // Fast loading spinner
-  if (loading) return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center" dir="rtl">
-      <div className="text-center">
-        <div className="w-8 h-8 mx-auto border-3 border-gray-200 border-t-primary-600 rounded-full animate-spin" />
-        <p className="mt-2 text-gray-500 text-sm">جاري التحميل...</p>
-      </div>
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-100" dir="rtl">
       {/* Header */}
@@ -259,8 +249,27 @@ export default function SubscriptionPOSPage() {
 
       {/* Members Grid */}
       <main className="max-w-7xl mx-auto p-4">
-        <div className="mb-4 text-sm text-gray-500">{filteredMembers.length} عميل</div>
-        {filteredMembers.length === 0 ? (
+        <div className="mb-4 text-sm text-gray-500">{loading ? '' : `${filteredMembers.length} عميل`}</div>
+        {loading ? (
+          /* Skeleton loader while fetching */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="bg-white rounded-2xl border-2 border-gray-100 p-4">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-full" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-gray-100 rounded w-2/3 mb-1.5" />
+                    <div className="h-3 bg-gray-100 rounded w-1/2" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-3 bg-gray-100 rounded w-full" />
+                  <div className="h-3 bg-gray-100 rounded w-3/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : filteredMembers.length === 0 ? (
           <div className="bg-white rounded-2xl p-12 text-center">
             <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-bold text-gray-700">لا يوجد عملاء</h3>

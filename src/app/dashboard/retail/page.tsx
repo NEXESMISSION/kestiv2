@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -115,7 +115,7 @@ export default function RetailDashboardPage() {
   const weekSales = transactions.filter(t => new Date(t.created_at) >= weekAgo).reduce((sum, t) => sum + t.amount, 0)
   const monthSales = transactions.filter(t => new Date(t.created_at) >= monthAgo).reduce((sum, t) => sum + t.amount, 0)
   
-  const lowStockProducts = products.filter(p => p.track_stock && p.stock <= p.reorder_level)
+  const lowStockProducts = products.filter(p => p.track_stock && (p.stock ?? 0) <= p.reorder_level)
 
   // Filter transactions by date
   const filteredTransactions = transactions.filter(t => {
@@ -132,15 +132,6 @@ export default function RetailDashboardPage() {
   )
 
   // Fast loading spinner
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
-      <div className="text-center">
-        <div className="w-8 h-8 mx-auto border-3 border-gray-200 border-t-primary-600 rounded-full animate-spin" />
-        <p className="mt-2 text-gray-500 text-sm">جاري التحميل...</p>
-      </div>
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       {/* Header */}
@@ -153,12 +144,12 @@ export default function RetailDashboardPage() {
                 className="flex items-center gap-2 px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg font-medium"
               >
                 <ArrowLeft className="w-4 h-4" />
-                <span>العودة للبيع</span>
+                <span>Ø§Ù„Ø¹ÙˆØ¯Ø© Ù„Ù„Ø¨ÙŠØ¹</span>
               </Link>
-              <h1 className="text-xl font-bold">لوحة التحكم - تجزئة</h1>
+              <h1 className="text-xl font-bold">Ù„ÙˆØ­Ø© Ø§Ù„ØªØ­ÙƒÙ… - ØªØ¬Ø²Ø¦Ø©</h1>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 rounded-lg" title="الإعدادات">
+              <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 rounded-lg" title="Ø§Ù„Ø¥Ø¹Ø¯Ø§Ø¯Ø§Øª">
                 <Settings className="w-5 h-5" />
               </Link>
             </div>
@@ -170,9 +161,9 @@ export default function RetailDashboardPage() {
       <div className="max-w-6xl mx-auto px-4 pt-4">
         <div className="flex gap-2 border-b bg-white rounded-t-xl px-2 overflow-x-auto">
           {[
-            { k: 'overview', l: 'نظرة عامة', i: TrendingUp },
-            { k: 'products', l: 'المنتجات والأصناف', i: Package },
-            { k: 'history', l: 'المبيعات', i: History }
+            { k: 'overview', l: 'Ù†Ø¸Ø±Ø© Ø¹Ø§Ù…Ø©', i: TrendingUp },
+            { k: 'products', l: 'Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª ÙˆØ§Ù„Ø£ØµÙ†Ø§Ù', i: Package },
+            { k: 'history', l: 'Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª', i: History }
           ].map(t => (
             <button 
               key={t.k} 
@@ -194,31 +185,31 @@ export default function RetailDashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-3 sm:p-4 text-white">
                 <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <DollarSign className="w-4 h-4" />مبيعات اليوم
+                  <DollarSign className="w-4 h-4" />Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„ÙŠÙˆÙ…
                 </div>
                 <div className="text-xl sm:text-2xl font-bold">{todaySales.toFixed(3)}</div>
-                <div className="text-xs opacity-80">دينار</div>
+                <div className="text-xs opacity-80">Ø¯ÙŠÙ†Ø§Ø±</div>
               </div>
               <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 sm:p-4 text-white">
                 <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <TrendingUp className="w-4 h-4" />مبيعات الأسبوع
+                  <TrendingUp className="w-4 h-4" />Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹
                 </div>
                 <div className="text-xl sm:text-2xl font-bold">{weekSales.toFixed(3)}</div>
-                <div className="text-xs opacity-80">دينار</div>
+                <div className="text-xs opacity-80">Ø¯ÙŠÙ†Ø§Ø±</div>
               </div>
               <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-3 sm:p-4 text-white">
                 <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <ShoppingBag className="w-4 h-4" />مبيعات الشهر
+                  <ShoppingBag className="w-4 h-4" />Ù…Ø¨ÙŠØ¹Ø§Øª Ø§Ù„Ø´Ù‡Ø±
                 </div>
                 <div className="text-xl sm:text-2xl font-bold">{monthSales.toFixed(3)}</div>
-                <div className="text-xs opacity-80">دينار</div>
+                <div className="text-xs opacity-80">Ø¯ÙŠÙ†Ø§Ø±</div>
               </div>
               <div className="bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl p-3 sm:p-4 text-white">
                 <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <Package className="w-4 h-4" />عدد المنتجات
+                  <Package className="w-4 h-4" />Ø¹Ø¯Ø¯ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª
                 </div>
                 <div className="text-xl sm:text-2xl font-bold">{products.length}</div>
-                <div className="text-xs opacity-80">منتج</div>
+                <div className="text-xs opacity-80">Ù…Ù†ØªØ¬</div>
               </div>
             </div>
 
@@ -230,8 +221,8 @@ export default function RetailDashboardPage() {
                 className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
               >
                 <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-                <div className="font-bold text-sm sm:text-base">الآجل</div>
-                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">إدارة الديون</div>
+                <div className="font-bold text-sm sm:text-base">Ø§Ù„Ø¢Ø¬Ù„</div>
+                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ø¯ÙŠÙˆÙ†</div>
               </Link>
               <Link
                 href="/dashboard/retail/expenses"
@@ -239,8 +230,8 @@ export default function RetailDashboardPage() {
                 className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
               >
                 <Receipt className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-                <div className="font-bold text-sm sm:text-base">المصروفات</div>
-                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">تسجيل المصاريف</div>
+                <div className="font-bold text-sm sm:text-base">Ø§Ù„Ù…ØµØ±ÙˆÙØ§Øª</div>
+                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ù…ØµØ§Ø±ÙŠÙ</div>
               </Link>
               <Link
                 href="/dashboard/retail/financial"
@@ -248,8 +239,8 @@ export default function RetailDashboardPage() {
                 className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
               >
                 <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-                <div className="font-bold text-sm sm:text-base">المالية</div>
-                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">التقارير والأرباح</div>
+                <div className="font-bold text-sm sm:text-base">Ø§Ù„Ù…Ø§Ù„ÙŠØ©</div>
+                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">Ø§Ù„ØªÙ‚Ø§Ø±ÙŠØ± ÙˆØ§Ù„Ø£Ø±Ø¨Ø§Ø­</div>
               </Link>
             </div>
 
@@ -258,14 +249,14 @@ export default function RetailDashboardPage() {
               <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-3 sm:p-4">
                 <div className="flex items-center gap-2 text-yellow-700 font-bold mb-3 text-sm sm:text-base">
                   <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
-                  منتجات منخفضة المخزون ({lowStockProducts.length})
+                  Ù…Ù†ØªØ¬Ø§Øª Ù…Ù†Ø®ÙØ¶Ø© Ø§Ù„Ù…Ø®Ø²ÙˆÙ† ({lowStockProducts.length})
                 </div>
                 <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
                   {lowStockProducts.slice(0, 10).map(p => (
                     <div key={p.id} className="flex-shrink-0 bg-white rounded-xl p-2 sm:p-3 min-w-[120px] sm:min-w-[140px]">
                       <div className="font-medium text-sm truncate mb-1">{p.name}</div>
-                      <div className={`text-lg font-bold ${p.stock <= 0 ? 'text-red-600' : 'text-yellow-600'}`}>
-                        {p.stock} <span className="text-xs font-normal text-gray-400">متبقي</span>
+                      <div className={`text-lg font-bold ${(p.stock ?? 0) <= 0 ? 'text-red-600' : 'text-yellow-600'}`}>
+                        {p.stock ?? 0} <span className="text-xs font-normal text-gray-400">Ù…ØªØ¨Ù‚ÙŠ</span>
                       </div>
                     </div>
                   ))}
@@ -276,19 +267,19 @@ export default function RetailDashboardPage() {
             {/* Recent Sales */}
             <div className="bg-white rounded-2xl border overflow-hidden">
               <div className="p-3 sm:p-4 border-b font-bold flex items-center gap-2 text-sm sm:text-base">
-                <History className="w-4 h-4 sm:w-5 sm:h-5" />آخر المبيعات
+                <History className="w-4 h-4 sm:w-5 sm:h-5" />Ø¢Ø®Ø± Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª
               </div>
               <div className="divide-y">
                 {transactions.slice(0, 5).map(t => (
                   <div key={t.id} className="p-3 sm:p-4 flex justify-between items-center">
                     <div>
-                      <div className="font-medium text-sm sm:text-base">{t.items?.length || 0} منتج</div>
+                      <div className="font-medium text-sm sm:text-base">{t.items?.length || 0} Ù…Ù†ØªØ¬</div>
                       <div className="text-xs sm:text-sm text-gray-500">{new Date(t.created_at).toLocaleString('ar-TN')}</div>
                     </div>
                     <div className="text-base sm:text-lg font-bold text-green-600">{t.amount.toFixed(3)} <span className="text-xs text-gray-400">DT</span></div>
                   </div>
                 ))}
-                {transactions.length === 0 && <div className="p-6 sm:p-8 text-center text-gray-400 text-sm">لا توجد مبيعات</div>}
+                {transactions.length === 0 && <div className="p-6 sm:p-8 text-center text-gray-400 text-sm">Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ø¨ÙŠØ¹Ø§Øª</div>}
               </div>
             </div>
           </div>
@@ -300,9 +291,9 @@ export default function RetailDashboardPage() {
             {/* Categories Section */}
             <div className="bg-white rounded-xl border p-4">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold flex items-center gap-2"><Tags className="w-5 h-5" />الأصناف</h3>
+                <h3 className="font-bold flex items-center gap-2"><Tags className="w-5 h-5" />Ø§Ù„Ø£ØµÙ†Ø§Ù</h3>
                 <button onClick={() => { setEditingCategory(null); setShowCategoryModal(true) }} className="text-primary-600 hover:text-primary-700 text-sm font-medium flex items-center gap-1">
-                  <Plus className="w-4 h-4" />إضافة صنف
+                  <Plus className="w-4 h-4" />Ø¥Ø¶Ø§ÙØ© ØµÙ†Ù
                 </button>
               </div>
               <div className="flex gap-2 overflow-x-auto pb-1">
@@ -323,7 +314,7 @@ export default function RetailDashboardPage() {
                     </button>
                   </div>
                 ))}
-                {categories.length === 0 && <span className="text-gray-400 text-sm">لا توجد أصناف</span>}
+                {categories.length === 0 && <span className="text-gray-400 text-sm">Ù„Ø§ ØªÙˆØ¬Ø¯ Ø£ØµÙ†Ø§Ù</span>}
               </div>
             </div>
 
@@ -331,10 +322,10 @@ export default function RetailDashboardPage() {
             <div className="flex gap-4">
               <div className="relative flex-1">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="بحث عن منتج..." className="w-full pr-10 pl-4 py-2.5 bg-white border rounded-xl" />
+                <input type="text" value={search} onChange={e => setSearch(e.target.value)} placeholder="Ø¨Ø­Ø« Ø¹Ù† Ù…Ù†ØªØ¬..." className="w-full pr-10 pl-4 py-2.5 bg-white border rounded-xl" />
               </div>
               <button onClick={() => { setEditingProduct(null); setShowProductModal(true) }} className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium">
-                <Plus className="w-5 h-5" />منتج جديد
+                <Plus className="w-5 h-5" />Ù…Ù†ØªØ¬ Ø¬Ø¯ÙŠØ¯
               </button>
             </div>
 
@@ -342,11 +333,11 @@ export default function RetailDashboardPage() {
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>
-                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">المنتج</th>
-                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">الصنف</th>
-                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">السعر</th>
-                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">المخزون</th>
-                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">الحالة</th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Ø§Ù„Ù…Ù†ØªØ¬</th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Ø§Ù„ØµÙ†Ù</th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Ø§Ù„Ø³Ø¹Ø±</th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</th>
+                    <th className="text-right px-4 py-3 text-sm font-medium text-gray-600">Ø§Ù„Ø­Ø§Ù„Ø©</th>
                     <th className="text-right px-4 py-3 text-sm font-medium text-gray-600"></th>
                   </tr>
                 </thead>
@@ -368,8 +359,8 @@ export default function RetailDashboardPage() {
                       <td className="px-4 py-3 font-medium">{p.price.toFixed(3)} DT</td>
                       <td className="px-4 py-3">
                         {p.track_stock ? (
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${p.stock <= 0 ? 'bg-red-100 text-red-700' : p.stock <= p.reorder_level ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
-                            {p.stock}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${(p.stock ?? 0) <= 0 ? 'bg-red-100 text-red-700' : (p.stock ?? 0) <= p.reorder_level ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+                            {p.stock ?? 0}
                           </span>
                         ) : (
                           <span className="text-gray-400 text-sm">-</span>
@@ -377,7 +368,7 @@ export default function RetailDashboardPage() {
                       </td>
                       <td className="px-4 py-3">
                         <span className={`px-2 py-1 rounded-full text-xs ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
-                          {p.is_active ? 'نشط' : 'غير نشط'}
+                          {p.is_active ? 'Ù†Ø´Ø·' : 'ØºÙŠØ± Ù†Ø´Ø·'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
@@ -385,7 +376,7 @@ export default function RetailDashboardPage() {
                           <button 
                             onClick={() => { setStockProduct(p); setShowStockModal(true) }} 
                             className="p-2 hover:bg-blue-50 text-blue-600 rounded-lg"
-                            title="تعديل المخزون"
+                            title="ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø®Ø²ÙˆÙ†"
                           >
                             <Warehouse className="w-4 h-4" />
                           </button>
@@ -402,7 +393,7 @@ export default function RetailDashboardPage() {
                   ))}
                 </tbody>
               </table>
-              {filteredProducts.length === 0 && <div className="p-8 text-center text-gray-400">لا توجد منتجات</div>}
+              {filteredProducts.length === 0 && <div className="p-8 text-center text-gray-400">Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ù†ØªØ¬Ø§Øª</div>}
             </div>
           </div>
         )}
@@ -413,10 +404,10 @@ export default function RetailDashboardPage() {
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div className="flex gap-2">
               {[
-                { k: 'today', l: 'اليوم' },
-                { k: 'week', l: 'الأسبوع' },
-                { k: 'month', l: 'الشهر' },
-                { k: 'all', l: 'الكل' }
+                { k: 'today', l: 'Ø§Ù„ÙŠÙˆÙ…' },
+                { k: 'week', l: 'Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹' },
+                { k: 'month', l: 'Ø§Ù„Ø´Ù‡Ø±' },
+                { k: 'all', l: 'Ø§Ù„ÙƒÙ„' }
               ].map(f => (
                 <button 
                   key={f.k}
@@ -431,34 +422,34 @@ export default function RetailDashboardPage() {
                 <button
                   onClick={() => {
                     const paymentLabels: Record<string, string> = {
-                      'cash': 'نقداً',
-                      'debt': 'آجل',
-                      'card': 'بطاقة'
+                      'cash': 'Ù†Ù‚Ø¯Ø§Ù‹',
+                      'debt': 'Ø¢Ø¬Ù„',
+                      'card': 'Ø¨Ø·Ø§Ù‚Ø©'
                     }
-                    const headers = ['التاريخ', 'الوقت', 'المبلغ (د.ت)', 'عدد المنتجات', 'المنتجات', 'طريقة الدفع']
+                    const headers = ['Ø§Ù„ØªØ§Ø±ÙŠØ®', 'Ø§Ù„ÙˆÙ‚Øª', 'Ø§Ù„Ù…Ø¨Ù„Øº (Ø¯.Øª)', 'Ø¹Ø¯Ø¯ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª', 'Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª', 'Ø·Ø±ÙŠÙ‚Ø© Ø§Ù„Ø¯ÙØ¹']
                     const rows = filteredTransactions.map(t => [
                       new Date(t.created_at).toLocaleDateString('ar-TN'),
                       new Date(t.created_at).toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' }),
                       t.amount?.toFixed(3) || '0',
                       t.items?.length || 0,
                       t.items?.map(item => `${item.name} (${item.quantity})`).join(' - ') || '-',
-                      paymentLabels[t.payment_method] || t.payment_method || 'نقداً'
+                      paymentLabels[t.payment_method] || t.payment_method || 'Ù†Ù‚Ø¯Ø§Ù‹'
                     ])
                     // Calculate total
                     const total = filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
-                    rows.push(['', '', total.toFixed(3), '', 'المجموع', ''])
+                    rows.push(['', '', total.toFixed(3), '', 'Ø§Ù„Ù…Ø¬Ù…ÙˆØ¹', ''])
                     const csv = [headers.join('\t'), ...rows.map(r => r.join('\t'))].join('\n')
                     const blob = new Blob(['\ufeff' + csv], { type: 'text/tab-separated-values;charset=utf-8;' })
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
                     a.href = url
-                    a.download = `سجل-المبيعات-${new Date().toLocaleDateString('ar-TN').replace(/\//g, '-')}.xls`
+                    a.download = `Ø³Ø¬Ù„-Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª-${new Date().toLocaleDateString('ar-TN').replace(/\//g, '-')}.xls`
                     a.click()
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium text-sm"
                 >
                   <Download className="w-4 h-4" />
-                  تحميل Excel
+                  ØªØ­Ù…ÙŠÙ„ Excel
                 </button>
               )}
             </div>
@@ -478,7 +469,7 @@ export default function RetailDashboardPage() {
                       <div className="mt-2 pt-2 border-t text-sm text-gray-600">
                         {t.items.map((item, i) => (
                           <div key={i} className="flex justify-between py-1">
-                            <span>{item.name} × {item.quantity}</span>
+                            <span>{item.name} Ã— {item.quantity}</span>
                             <span>{item.total_price.toFixed(3)} DT</span>
                           </div>
                         ))}
@@ -486,7 +477,7 @@ export default function RetailDashboardPage() {
                     )}
                   </div>
                 ))}
-                {filteredTransactions.length === 0 && <div className="p-8 text-center text-gray-400">لا توجد مبيعات</div>}
+                {filteredTransactions.length === 0 && <div className="p-8 text-center text-gray-400">Ù„Ø§ ØªÙˆØ¬Ø¯ Ù…Ø¨ÙŠØ¹Ø§Øª</div>}
               </div>
             </div>
           </div>
@@ -530,7 +521,7 @@ export default function RetailDashboardPage() {
               fetchData()
             } catch (err: any) {
               console.error('Product save error:', err)
-              alert('خطأ: ' + (err.message || 'فشل حفظ المنتج'))
+              alert('Ø®Ø·Ø£: ' + (err.message || 'ÙØ´Ù„ Ø­ÙØ¸ Ø§Ù„Ù…Ù†ØªØ¬'))
             }
           }}
         />
@@ -556,7 +547,7 @@ export default function RetailDashboardPage() {
               fetchData()
             } catch (err: any) {
               console.error('Category save error:', err)
-              alert('خطأ: جدول الأصناف غير موجود. يرجى تشغيل retail-tables.sql في Supabase')
+              alert('Ø®Ø·Ø£: Ø¬Ø¯ÙˆÙ„ Ø§Ù„Ø£ØµÙ†Ø§Ù ØºÙŠØ± Ù…ÙˆØ¬ÙˆØ¯. ÙŠØ±Ø¬Ù‰ ØªØ´ØºÙŠÙ„ retail-tables.sql ÙÙŠ Supabase')
             }
           }}
         />
@@ -567,7 +558,7 @@ export default function RetailDashboardPage() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
           <div className="bg-white rounded-2xl w-full max-w-sm">
             <div className="p-4 border-b flex justify-between items-center">
-              <h3 className="text-lg font-bold">تعديل المخزون</h3>
+              <h3 className="text-lg font-bold">ØªØ¹Ø¯ÙŠÙ„ Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</h3>
               <button onClick={() => { setShowStockModal(false); setStockProduct(null); setStockAmount('') }} className="p-2 hover:bg-gray-100 rounded-lg">
                 <X className="w-5 h-5" />
               </button>
@@ -576,14 +567,14 @@ export default function RetailDashboardPage() {
               <div className="text-center">
                 <div className="text-lg font-bold">{stockProduct.name}</div>
                 <div className="text-3xl font-bold text-primary-600 my-3">{stockProduct.stock}</div>
-                <div className="text-sm text-gray-500">المخزون الحالي</div>
+                <div className="text-sm text-gray-500">Ø§Ù„Ù…Ø®Ø²ÙˆÙ† Ø§Ù„Ø­Ø§Ù„ÙŠ</div>
               </div>
               
               <div className="flex items-center gap-2 justify-center">
                 <button 
                   onClick={async () => {
-                    await supabase.from('products').update({ stock: Math.max(0, stockProduct.stock - 1) }).eq('id', stockProduct.id)
-                    setStockProduct({ ...stockProduct, stock: Math.max(0, stockProduct.stock - 1) })
+                    await supabase.from('products').update({ stock: Math.max(0, (stockProduct.stock ?? 0) - 1) }).eq('id', stockProduct.id)
+                    setStockProduct({ ...stockProduct, stock: Math.max(0, (stockProduct.stock ?? 0) - 1) })
                     fetchData()
                   }}
                   className="w-12 h-12 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl flex items-center justify-center text-xl font-bold"
@@ -599,8 +590,8 @@ export default function RetailDashboardPage() {
                 />
                 <button 
                   onClick={async () => {
-                    await supabase.from('products').update({ stock: stockProduct.stock + 1 }).eq('id', stockProduct.id)
-                    setStockProduct({ ...stockProduct, stock: stockProduct.stock + 1 })
+                    await supabase.from('products').update({ stock: (stockProduct.stock ?? 0) + 1 }).eq('id', stockProduct.id)
+                    setStockProduct({ ...stockProduct, stock: (stockProduct.stock ?? 0) + 1 })
                     fetchData()
                   }}
                   className="w-12 h-12 bg-green-100 hover:bg-green-200 text-green-600 rounded-xl flex items-center justify-center text-xl font-bold"
@@ -614,8 +605,8 @@ export default function RetailDashboardPage() {
                   <button
                     key={n}
                     onClick={async () => {
-                      await supabase.from('products').update({ stock: stockProduct.stock + n }).eq('id', stockProduct.id)
-                      setStockProduct({ ...stockProduct, stock: stockProduct.stock + n })
+                      await supabase.from('products').update({ stock: (stockProduct.stock ?? 0) + n }).eq('id', stockProduct.id)
+                      setStockProduct({ ...stockProduct, stock: (stockProduct.stock ?? 0) + n })
                       fetchData()
                     }}
                     className="py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg font-medium"
@@ -640,7 +631,7 @@ export default function RetailDashboardPage() {
                 }}
                 className="w-full py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold"
               >
-                حفظ
+                Ø­ÙØ¸
               </button>
             </div>
           </div>
@@ -686,34 +677,34 @@ function ProductModal({ product, categories, onClose, onSave }: {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-2xl w-full max-w-lg max-h-[90vh] overflow-auto">
         <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white">
-          <h3 className="text-lg font-bold">{product ? 'تعديل منتج' : 'منتج جديد'}</h3>
+          <h3 className="text-lg font-bold">{product ? 'ØªØ¹Ø¯ÙŠÙ„ Ù…Ù†ØªØ¬' : 'Ù…Ù†ØªØ¬ Ø¬Ø¯ÙŠØ¯'}</h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">اسم المنتج *</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="اسم المنتج" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ø§Ø³Ù… Ø§Ù„Ù…Ù†ØªØ¬ *</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="Ø§Ø³Ù… Ø§Ù„Ù…Ù†ØªØ¬" />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">سعر البيع *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ø³Ø¹Ø± Ø§Ù„Ø¨ÙŠØ¹ *</label>
               <input type="number" step="0.001" value={price} onChange={e => setPrice(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="0.000" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">سعر التكلفة</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Ø³Ø¹Ø± Ø§Ù„ØªÙƒÙ„ÙØ©</label>
               <input type="number" step="0.001" value={cost} onChange={e => setCost(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="0.000" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">الصنف</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ø§Ù„ØµÙ†Ù</label>
             <select value={categoryId} onChange={e => setCategoryId(e.target.value)} className="w-full px-4 py-2 border rounded-xl">
-              <option value="">اختر صنف</option>
+              <option value="">Ø§Ø®ØªØ± ØµÙ†Ù</option>
               {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
-            <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full px-4 py-2 border rounded-xl resize-none" rows={2} placeholder="وصف اختياري" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ø§Ù„ÙˆØµÙ</label>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full px-4 py-2 border rounded-xl resize-none" rows={2} placeholder="ÙˆØµÙ Ø§Ø®ØªÙŠØ§Ø±ÙŠ" />
           </div>
           <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
             <input 
@@ -722,16 +713,16 @@ function ProductModal({ product, categories, onClose, onSave }: {
               onChange={(e) => setTrackStock(e.target.checked)}
               className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
             />
-            <span className="font-medium">تتبع المخزون</span>
+            <span className="font-medium">ØªØªØ¨Ø¹ Ø§Ù„Ù…Ø®Ø²ÙˆÙ†</span>
           </label>
           {trackStock && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">الكمية الحالية</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ø§Ù„ÙƒÙ…ÙŠØ© Ø§Ù„Ø­Ø§Ù„ÙŠØ©</label>
                 <input type="number" value={stock} onChange={e => setStock(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="0" />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">حد إعادة الطلب</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Ø­Ø¯ Ø¥Ø¹Ø§Ø¯Ø© Ø§Ù„Ø·Ù„Ø¨</label>
                 <input type="number" value={reorderLevel} onChange={e => setReorderLevel(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="5" />
               </div>
             </div>
@@ -739,9 +730,9 @@ function ProductModal({ product, categories, onClose, onSave }: {
         </div>
         <div className="p-4 border-t flex gap-3">
           <button onClick={handleSave} className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold flex items-center justify-center gap-2">
-            <Save className="w-5 h-5" />حفظ
+            <Save className="w-5 h-5" />Ø­ÙØ¸
           </button>
-          <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium">إلغاء</button>
+          <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium">Ø¥Ù„ØºØ§Ø¡</button>
         </div>
       </div>
     </div>
@@ -768,16 +759,16 @@ function CategoryModal({ category, onClose, onSave }: {
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
       <div className="bg-white rounded-2xl w-full max-w-sm">
         <div className="p-4 border-b flex justify-between items-center">
-          <h3 className="text-lg font-bold">{category ? 'تعديل صنف' : 'صنف جديد'}</h3>
+          <h3 className="text-lg font-bold">{category ? 'ØªØ¹Ø¯ÙŠÙ„ ØµÙ†Ù' : 'ØµÙ†Ù Ø¬Ø¯ÙŠØ¯'}</h3>
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">اسم الصنف *</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="مثال: مشروبات" />
+            <label className="block text-sm font-medium text-gray-700 mb-1">Ø§Ø³Ù… Ø§Ù„ØµÙ†Ù *</label>
+            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="Ù…Ø«Ø§Ù„: Ù…Ø´Ø±ÙˆØ¨Ø§Øª" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">اللون</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">Ø§Ù„Ù„ÙˆÙ†</label>
             <div className="flex gap-2 flex-wrap">
               {colors.map(c => (
                 <button 
@@ -791,10 +782,11 @@ function CategoryModal({ category, onClose, onSave }: {
           </div>
         </div>
         <div className="p-4 border-t flex gap-3">
-          <button onClick={handleSave} className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold">حفظ</button>
-          <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium">إلغاء</button>
+          <button onClick={handleSave} className="flex-1 py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold">Ø­ÙØ¸</button>
+          <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-medium">Ø¥Ù„ØºØ§Ø¡</button>
         </div>
       </div>
     </div>
   )
 }
+

@@ -166,15 +166,6 @@ export default function DashboardClient({ user, profile }: Props) {
   const expiredCount = members.filter(m => ['expired', 'single_used'].includes(getMemberStatus(m))).length
   const totalRevenue = transactions.reduce((sum, t) => sum + (t.amount || 0), 0)
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
-      <div className="text-center">
-        <div className="w-8 h-8 mx-auto border-3 border-gray-200 border-t-primary-600 rounded-full animate-spin" />
-        <p className="mt-2 text-gray-500 text-sm">جاري التحميل...</p>
-      </div>
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       {/* Header */}

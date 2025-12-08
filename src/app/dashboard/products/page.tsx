@@ -157,7 +157,7 @@ export default function ProductsPage() {
   }
 
   const updateStock = async (product: Product, change: number) => {
-    const newStock = Math.max(0, product.stock + change)
+    const newStock = Math.max(0, (product.stock ?? 0) + change)
     try {
       await supabase
         .from('products')
@@ -238,7 +238,7 @@ export default function ProductsPage() {
                       }`}>
                         {product.is_active ? 'نشط' : 'معطل'}
                       </span>
-                      {product.stock <= product.reorder_level && product.is_active && (
+                      {(product.stock ?? 0) <= product.reorder_level && product.is_active && (
                         <span className="px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-700 flex items-center gap-1">
                           <AlertTriangle className="w-3 h-3" />
                           مخزون منخفض
@@ -269,8 +269,8 @@ export default function ProductsPage() {
                       -
                     </button>
                     <div className="w-16 text-center">
-                      <div className={`text-xl font-bold ${product.stock <= product.reorder_level ? 'text-orange-600' : 'text-gray-900'}`}>
-                        {product.stock}
+                      <div className={`text-xl font-bold ${(product.stock ?? 0) <= product.reorder_level ? 'text-orange-600' : 'text-gray-900'}`}>
+                        {product.stock ?? 0}
                       </div>
                       <div className="text-xs text-gray-500">المخزون</div>
                     </div>

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
@@ -101,7 +101,7 @@ export default function RetailFinancialPage() {
   // Chart data - last 7 days
   const chartData = useMemo(() => {
     const days = []
-    const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+    const dayNames = ['Ø§Ù„Ø£Ø­Ø¯', 'Ø§Ù„Ø¥Ø«Ù†ÙŠÙ†', 'Ø§Ù„Ø«Ù„Ø§Ø«Ø§Ø¡', 'Ø§Ù„Ø£Ø±Ø¨Ø¹Ø§Ø¡', 'Ø§Ù„Ø®Ù…ÙŠØ³', 'Ø§Ù„Ø¬Ù…Ø¹Ø©', 'Ø§Ù„Ø³Ø¨Øª']
     
     for (let i = 6; i >= 0; i--) {
       const date = new Date(today.getTime() - i * 86400000)
@@ -171,9 +171,9 @@ export default function RetailFinancialPage() {
           <div>
             <h1 className="text-lg font-bold flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-primary-600" />
-              لوحة المالية
+              Ù„ÙˆØ­Ø© Ø§Ù„Ù…Ø§Ù„ÙŠØ©
             </h1>
-            <p className="text-xs text-gray-500">عرض وتحليل الأداء المالي لمحلك</p>
+            <p className="text-xs text-gray-500">Ø¹Ø±Ø¶ ÙˆØªØ­Ù„ÙŠÙ„ Ø§Ù„Ø£Ø¯Ø§Ø¡ Ø§Ù„Ù…Ø§Ù„ÙŠ Ù„Ù…Ø­Ù„Ùƒ</p>
           </div>
         </div>
       </header>
@@ -182,10 +182,10 @@ export default function RetailFinancialPage() {
         {/* Period Tabs */}
         <div className="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm overflow-x-auto">
           {[
-            { k: 'today', l: 'اليوم' },
-            { k: 'week', l: 'الأسبوع' },
-            { k: 'month', l: 'الشهر' },
-            { k: 'all', l: 'الكل' }
+            { k: 'today', l: 'Ø§Ù„ÙŠÙˆÙ…' },
+            { k: 'week', l: 'Ø§Ù„Ø£Ø³Ø¨ÙˆØ¹' },
+            { k: 'month', l: 'Ø§Ù„Ø´Ù‡Ø±' },
+            { k: 'all', l: 'Ø§Ù„ÙƒÙ„' }
           ].map(p => (
             <button
               key={p.k}
@@ -207,11 +207,11 @@ export default function RetailFinancialPage() {
             <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
               <PiggyBank className="w-6 h-6" />
             </div>
-            <span className="font-medium opacity-90">صافي الربح</span>
+            <span className="font-medium opacity-90">ØµØ§ÙÙŠ Ø§Ù„Ø±Ø¨Ø­</span>
           </div>
-          <div className="text-4xl font-bold mb-2">{netProfit.toFixed(3)} <span className="text-lg font-normal opacity-80">د.ت</span></div>
+          <div className="text-4xl font-bold mb-2">{netProfit.toFixed(3)} <span className="text-lg font-normal opacity-80">Ø¯.Øª</span></div>
           <div className="text-sm opacity-80 flex items-center gap-1">
-            <span>= الإيرادات - تكلفة البضاعة - المصروفات</span>
+            <span>= Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª - ØªÙƒÙ„ÙØ© Ø§Ù„Ø¨Ø¶Ø§Ø¹Ø© - Ø§Ù„Ù…ØµØ±ÙˆÙØ§Øª</span>
           </div>
         </div>
 
@@ -223,10 +223,10 @@ export default function RetailFinancialPage() {
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
                 <ArrowUpRight className="w-4 h-4 text-green-600" />
               </div>
-              <span className="text-sm text-gray-600">الإيرادات</span>
+              <span className="text-sm text-gray-600">Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª</span>
             </div>
             <div className="text-2xl font-bold text-gray-900">{revenue.toFixed(3)}</div>
-            <div className="text-xs text-gray-500 mt-1">إجمالي المبيعات</div>
+            <div className="text-xs text-gray-500 mt-1">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</div>
           </div>
 
           {/* Cost of Goods */}
@@ -235,10 +235,10 @@ export default function RetailFinancialPage() {
               <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
                 <Package className="w-4 h-4 text-blue-600" />
               </div>
-              <span className="text-sm text-gray-600">تكلفة البضاعة</span>
+              <span className="text-sm text-gray-600">ØªÙƒÙ„ÙØ© Ø§Ù„Ø¨Ø¶Ø§Ø¹Ø©</span>
             </div>
             <div className="text-2xl font-bold text-gray-900">{costOfGoods.toFixed(3)}</div>
-            <div className="text-xs text-gray-500 mt-1">سعر شراء المنتجات</div>
+            <div className="text-xs text-gray-500 mt-1">Ø³Ø¹Ø± Ø´Ø±Ø§Ø¡ Ø§Ù„Ù…Ù†ØªØ¬Ø§Øª</div>
           </div>
 
           {/* Expenses */}
@@ -247,10 +247,10 @@ export default function RetailFinancialPage() {
               <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
                 <Receipt className="w-4 h-4 text-red-600" />
               </div>
-              <span className="text-sm text-gray-600">المصروفات</span>
+              <span className="text-sm text-gray-600">Ø§Ù„Ù…ØµØ±ÙˆÙØ§Øª</span>
             </div>
             <div className="text-2xl font-bold text-gray-900">{expenseTotal.toFixed(3)}</div>
-            <div className="text-xs text-gray-500 mt-1">إيجار، كهرباء، رواتب...</div>
+            <div className="text-xs text-gray-500 mt-1">Ø¥ÙŠØ¬Ø§Ø±ØŒ ÙƒÙ‡Ø±Ø¨Ø§Ø¡ØŒ Ø±ÙˆØ§ØªØ¨...</div>
           </div>
 
           {/* Gross Profit */}
@@ -259,10 +259,10 @@ export default function RetailFinancialPage() {
               <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
                 <BarChart3 className="w-4 h-4 text-purple-600" />
               </div>
-              <span className="text-sm text-gray-600">الربح الإجمالي</span>
+              <span className="text-sm text-gray-600">Ø§Ù„Ø±Ø¨Ø­ Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ</span>
             </div>
             <div className="text-2xl font-bold text-gray-900">{grossProfit.toFixed(3)}</div>
-            <div className="text-xs text-gray-500 mt-1">الإيرادات - تكلفة البضاعة</div>
+            <div className="text-xs text-gray-500 mt-1">Ø§Ù„Ø¥ÙŠØ±Ø§Ø¯Ø§Øª - ØªÙƒÙ„ÙØ© Ø§Ù„Ø¨Ø¶Ø§Ø¹Ø©</div>
           </div>
         </div>
 
@@ -273,7 +273,7 @@ export default function RetailFinancialPage() {
               <ShoppingCart className="w-5 h-5 text-indigo-600" />
             </div>
             <div className="text-2xl font-bold text-gray-900">{salesCount}</div>
-            <div className="text-xs text-gray-500">عملية بيع</div>
+            <div className="text-xs text-gray-500">Ø¹Ù…Ù„ÙŠØ© Ø¨ÙŠØ¹</div>
           </div>
           <div className="flex-1 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
             <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-2">
@@ -282,7 +282,7 @@ export default function RetailFinancialPage() {
             <div className={`text-2xl font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
               {profitMargin.toFixed(1)}%
             </div>
-            <div className="text-xs text-gray-500">هامش الربح</div>
+            <div className="text-xs text-gray-500">Ù‡Ø§Ù…Ø´ Ø§Ù„Ø±Ø¨Ø­</div>
           </div>
         </div>
 
@@ -291,27 +291,27 @@ export default function RetailFinancialPage() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-primary-600" />
-              <span className="font-bold text-gray-900">إحصائيات المبيعات</span>
+              <span className="font-bold text-gray-900">Ø¥Ø­ØµØ§Ø¦ÙŠØ§Øª Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</span>
             </div>
-            <span className="text-xs text-gray-500">آخر 7 أيام</span>
+            <span className="text-xs text-gray-500">Ø¢Ø®Ø± 7 Ø£ÙŠØ§Ù…</span>
           </div>
 
           {/* Chart Stats */}
           <div className="grid grid-cols-4 gap-2 mb-4">
             <div className="bg-gray-50 rounded-xl p-2 text-center">
-              <div className="text-xs text-gray-500">الإجمالي</div>
+              <div className="text-xs text-gray-500">Ø§Ù„Ø¥Ø¬Ù…Ø§Ù„ÙŠ</div>
               <div className="font-bold text-gray-900">{totalChartRevenue >= 1000 ? `${(totalChartRevenue/1000).toFixed(1)}k` : totalChartRevenue.toFixed(0)}</div>
             </div>
             <div className="bg-gray-50 rounded-xl p-2 text-center">
-              <div className="text-xs text-gray-500">المتوسط</div>
+              <div className="text-xs text-gray-500">Ø§Ù„Ù…ØªÙˆØ³Ø·</div>
               <div className="font-bold text-gray-900">{avgChartRevenue.toFixed(0)}</div>
             </div>
             <div className="bg-gray-50 rounded-xl p-2 text-center">
-              <div className="text-xs text-gray-500">الأعلى</div>
+              <div className="text-xs text-gray-500">Ø§Ù„Ø£Ø¹Ù„Ù‰</div>
               <div className="font-bold text-green-600">{maxChartRevenue.toFixed(0)}</div>
             </div>
             <div className="bg-gray-50 rounded-xl p-2 text-center">
-              <div className="text-xs text-gray-500">الأدنى</div>
+              <div className="text-xs text-gray-500">Ø§Ù„Ø£Ø¯Ù†Ù‰</div>
               <div className="font-bold text-gray-600">{minChartRevenue.toFixed(0)}</div>
             </div>
           </div>
@@ -320,11 +320,11 @@ export default function RetailFinancialPage() {
           <div className="flex items-center gap-4 mb-3 text-sm">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-green-500 rounded"></div>
-              <span className="text-gray-600">المبيعات</span>
+              <span className="text-gray-600">Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</span>
             </div>
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-red-400 rounded"></div>
-              <span className="text-gray-600">المصروفات</span>
+              <span className="text-gray-600">Ø§Ù„Ù…ØµØ±ÙˆÙØ§Øª</span>
             </div>
           </div>
 
@@ -337,13 +337,13 @@ export default function RetailFinancialPage() {
                   <div 
                     className="flex-1 bg-gradient-to-t from-green-500 to-green-400 rounded-t-md transition-all hover:from-green-600 hover:to-green-500"
                     style={{ height: `${(day.revenue / chartMax) * 100}%`, minHeight: day.revenue > 0 ? '4px' : '0' }}
-                    title={`مبيعات: ${day.revenue.toFixed(3)}`}
+                    title={`Ù…Ø¨ÙŠØ¹Ø§Øª: ${day.revenue.toFixed(3)}`}
                   ></div>
                   {/* Expense Bar */}
                   <div 
                     className="flex-1 bg-gradient-to-t from-red-400 to-red-300 rounded-t-md transition-all hover:from-red-500 hover:to-red-400"
                     style={{ height: `${(day.expense / chartMax) * 100}%`, minHeight: day.expense > 0 ? '4px' : '0' }}
-                    title={`مصروفات: ${day.expense.toFixed(3)}`}
+                    title={`Ù…ØµØ±ÙˆÙØ§Øª: ${day.expense.toFixed(3)}`}
                   ></div>
                 </div>
                 <div className="text-[10px] text-gray-500 truncate w-full text-center">{day.name}</div>
@@ -354,12 +354,12 @@ export default function RetailFinancialPage() {
           {/* Chart Totals */}
           <div className="flex justify-between mt-3 pt-3 border-t border-gray-100">
             <div className="text-sm">
-              <span className="text-gray-500">إجمالي المبيعات</span>
-              <span className="font-bold text-green-600 mr-2">{totalChartRevenue.toFixed(2)} د.ت</span>
+              <span className="text-gray-500">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª</span>
+              <span className="font-bold text-green-600 mr-2">{totalChartRevenue.toFixed(2)} Ø¯.Øª</span>
             </div>
             <div className="text-sm">
-              <span className="text-gray-500">إجمالي المصروفات</span>
-              <span className="font-bold text-red-500 mr-2">{totalChartExpense.toFixed(2)} د.ت</span>
+              <span className="text-gray-500">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…ØµØ±ÙˆÙØ§Øª</span>
+              <span className="font-bold text-red-500 mr-2">{totalChartExpense.toFixed(2)} Ø¯.Øª</span>
             </div>
           </div>
         </div>
@@ -373,13 +373,13 @@ export default function RetailFinancialPage() {
                   <CreditCard className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-bold text-gray-900">البيع بالآجل (الديون)</div>
-                  <div className="text-xs text-gray-500">هذه المبالغ غير محسوبة في الأرباح أعلاه</div>
+                  <div className="font-bold text-gray-900">Ø§Ù„Ø¨ÙŠØ¹ Ø¨Ø§Ù„Ø¢Ø¬Ù„ (Ø§Ù„Ø¯ÙŠÙˆÙ†)</div>
+                  <div className="text-xs text-gray-500">Ù‡Ø°Ù‡ Ø§Ù„Ù…Ø¨Ø§Ù„Øº ØºÙŠØ± Ù…Ø­Ø³ÙˆØ¨Ø© ÙÙŠ Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø£Ø¹Ù„Ø§Ù‡</div>
                 </div>
               </div>
               <div className="text-left">
                 <div className="text-2xl font-bold text-orange-600">{totalDebt.toFixed(3)}</div>
-                <div className="text-xs text-gray-500">{debtCustomers.length} عميل</div>
+                <div className="text-xs text-gray-500">{debtCustomers.length} Ø¹Ù…ÙŠÙ„</div>
               </div>
             </div>
             
@@ -388,7 +388,7 @@ export default function RetailFinancialPage() {
               className="w-full mt-3 py-2 bg-orange-100 hover:bg-orange-200 rounded-xl text-orange-700 font-medium text-sm flex items-center justify-center gap-2 transition-colors"
             >
               {showDebtDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-              عرض التفاصيل
+              Ø¹Ø±Ø¶ Ø§Ù„ØªÙØ§ØµÙŠÙ„
             </button>
 
             {showDebtDetails && debtCustomers.length > 0 && (
@@ -411,20 +411,20 @@ export default function RetailFinancialPage() {
         <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
           <div className="flex items-center gap-2 mb-4">
             <Calendar className="w-5 h-5 text-primary-600" />
-            <span className="font-bold text-gray-900">مقارنة الفترات</span>
+            <span className="font-bold text-gray-900">Ù…Ù‚Ø§Ø±Ù†Ø© Ø§Ù„ÙØªØ±Ø§Øª</span>
           </div>
           <div className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-              <span className="text-gray-600">اليوم</span>
-              <span className="font-bold text-gray-900">{todayRevenue.toFixed(2)} دينار</span>
+              <span className="text-gray-600">Ø§Ù„ÙŠÙˆÙ…</span>
+              <span className="font-bold text-gray-900">{todayRevenue.toFixed(2)} Ø¯ÙŠÙ†Ø§Ø±</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-              <span className="text-gray-600">آخر 7 أيام</span>
-              <span className="font-bold text-gray-900">{last7DaysRevenue.toFixed(2)} دينار</span>
+              <span className="text-gray-600">Ø¢Ø®Ø± 7 Ø£ÙŠØ§Ù…</span>
+              <span className="font-bold text-gray-900">{last7DaysRevenue.toFixed(2)} Ø¯ÙŠÙ†Ø§Ø±</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
-              <span className="text-gray-600">آخر 30 يوم</span>
-              <span className="font-bold text-gray-900">{last30DaysRevenue.toFixed(2)} دينار</span>
+              <span className="text-gray-600">Ø¢Ø®Ø± 30 ÙŠÙˆÙ…</span>
+              <span className="font-bold text-gray-900">{last30DaysRevenue.toFixed(2)} Ø¯ÙŠÙ†Ø§Ø±</span>
             </div>
           </div>
         </div>
@@ -432,3 +432,4 @@ export default function RetailFinancialPage() {
     </div>
   )
 }
+

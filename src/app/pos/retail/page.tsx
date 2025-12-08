@@ -108,7 +108,7 @@ export default function RetailPOSPage() {
   }, [supabase, router])
   
   // Low stock products count
-  const lowStockProducts = products.filter(p => p.track_stock && p.stock <= p.reorder_level)
+  const lowStockProducts = products.filter(p => p.track_stock && (p.stock ?? 0) <= p.reorder_level)
   
   // Category scroll
   const scrollCategories = (direction: 'left' | 'right') => {
@@ -286,16 +286,6 @@ export default function RetailPOSPage() {
     }
   }
 
-  // Fast loading spinner
-  if (loading) return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center" dir="rtl">
-      <div className="text-center">
-        <div className="w-8 h-8 mx-auto border-3 border-gray-200 border-t-primary-600 rounded-full animate-spin" />
-        <p className="mt-2 text-gray-500 text-sm">جاري التحميل...</p>
-      </div>
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col" dir="rtl">
       {/* Header */}
@@ -394,7 +384,18 @@ export default function RetailPOSPage() {
 
           {/* Products Grid - Grouped by Category */}
           <div className="flex-1 overflow-auto p-2 sm:p-4">
-            {products.length === 0 ? (
+            {loading ? (
+              /* Skeleton loader while fetching */
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+                {[1,2,3,4,5,6,7,8].map(i => (
+                  <div key={i} className="bg-white rounded-2xl p-3 border-2 border-gray-100">
+                    <div className="h-16 sm:h-20 bg-gray-100 rounded-xl mb-2" />
+                    <div className="h-4 bg-gray-100 rounded w-3/4 mb-2" />
+                    <div className="h-5 bg-gray-100 rounded w-1/2" />
+                  </div>
+                ))}
+              </div>
+            ) : products.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
                 <Package className="w-12 h-12 sm:w-16 sm:h-16 mb-2 sm:mb-4" />
                 <p className="text-sm sm:text-base mb-4">لا توجد منتجات بعد</p>
@@ -906,9 +907,9 @@ export default function RetailPOSPage() {
                 <div key={p.id} className="flex items-center justify-between p-3 bg-yellow-50 rounded-xl">
                   <div className="font-medium">{p.name}</div>
                   <div className={`px-3 py-1 rounded-full text-sm font-bold ${
-                    p.stock <= 0 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
+                    (p.stock ?? 0) <= 0 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'
                   }`}>
-                    {p.stock}
+                    {p.stock ?? 0}
                   </div>
                 </div>
               ))}
