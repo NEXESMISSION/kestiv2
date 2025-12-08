@@ -870,15 +870,15 @@ function ProductModal({ product, onClose, onSave }: { product: Product | null; o
               <input type="number" value={cost} onChange={e => setCost(+e.target.value)} onFocus={e => e.target.select()} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" />
             </div>
           </div>
-          <div 
-            onClick={() => setTrackStock(!trackStock)}
-            className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors"
-          >
+          <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer select-none">
+            <input 
+              type="checkbox" 
+              checked={trackStock} 
+              onChange={(e) => setTrackStock(e.target.checked)}
+              className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+            />
             <span className="font-medium">تتبع المخزون</span>
-            <div className={`w-12 h-7 rounded-full p-1 transition-colors ${trackStock ? 'bg-green-500' : 'bg-gray-300'}`}>
-              <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${trackStock ? 'translate-x-5' : 'translate-x-0'}`} />
-            </div>
-          </div>
+          </label>
           {trackStock && (
             <div>
               <label className="block text-sm font-medium mb-1">الكمية في المخزون</label>
