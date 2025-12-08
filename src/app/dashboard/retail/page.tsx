@@ -158,7 +158,7 @@ export default function RetailDashboardPage() {
               <h1 className="text-xl font-bold">لوحة التحكم - تجزئة</h1>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 rounded-lg" title="الإعدادات">
+              <Link href="/dashboard/settings" prefetch={true} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="الإعدادات">
                 <Settings className="w-5 h-5" />
               </Link>
             </div>

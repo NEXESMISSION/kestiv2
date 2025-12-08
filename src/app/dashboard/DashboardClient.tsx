@@ -180,7 +180,7 @@ export default function DashboardClient({ user, profile }: Props) {
               <h1 className="text-xl font-bold">لوحة التحكم</h1>
             </div>
             <div className="flex items-center gap-2">
-              <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 rounded-lg"><Settings className="w-5 h-5" /></Link>
+              <Link href="/dashboard/settings" prefetch={true} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Settings className="w-5 h-5" /></Link>
             </div>
           </div>
         </div>

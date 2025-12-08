@@ -93,6 +93,11 @@ export default function SubscriptionPOSPage() {
   const [showCart, setShowCart] = useState(false)
   const [showProducts, setShowProducts] = useState(false)
   const [productSearch, setProductSearch] = useState('')
+  
+  // Credit (آجل) state for product sales
+  const [showDebtMemberSelect, setShowDebtMemberSelect] = useState(false)
+  const [debtMemberSearch, setDebtMemberSearch] = useState('')
+  const [selectedDebtMember, setSelectedDebtMember] = useState<Member | null>(null)
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -150,6 +155,12 @@ export default function SubscriptionPOSPage() {
   const completePurchase = async (paymentMethod: 'cash' | 'debt') => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user || cart.length === 0) return
+    
+    // For debt sales, require member selection
+    if (paymentMethod === 'debt' && !selectedDebtMember) {
+      setShowDebtMemberSelect(true)
+      return
+    }
 
     const items = cart.map(item => ({
       product_id: item.product.id,
@@ -161,12 +172,22 @@ export default function SubscriptionPOSPage() {
 
     await supabase.from('transactions').insert({
       business_id: user.id,
+      member_id: paymentMethod === 'debt' && selectedDebtMember ? selectedDebtMember.id : null,
       type: 'retail',
       payment_method: paymentMethod,
       amount: cartTotal,
       items,
-      notes: `بيع منتجات - ${cart.length} منتج`
+      notes: paymentMethod === 'debt' && selectedDebtMember 
+        ? `بيع آجل - ${selectedDebtMember.name} - ${cart.length} منتج` 
+        : `بيع منتجات - ${cart.length} منتج`
     })
+
+    // If debt sale, update member debt
+    if (paymentMethod === 'debt' && selectedDebtMember) {
+      await supabase.from('members').update({ 
+        debt: (selectedDebtMember.debt || 0) + cartTotal 
+      }).eq('id', selectedDebtMember.id)
+    }
 
     // Update stock
     for (const item of cart) {
@@ -179,6 +200,8 @@ export default function SubscriptionPOSPage() {
 
     setCart([])
     setShowCart(false)
+    setSelectedDebtMember(null)
+    setShowDebtMemberSelect(false)
     fetchData()
   }
 
@@ -536,6 +559,64 @@ export default function SubscriptionPOSPage() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Member Selection Modal for Debt Sales */}
+      {showDebtMemberSelect && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl">
+          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] overflow-hidden">
+            <div className="p-4 border-b flex justify-between items-center sticky top-0 bg-white">
+              <h3 className="font-bold text-lg">اختر العميل للبيع الآجل</h3>
+              <button onClick={() => setShowDebtMemberSelect(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-4">
+              <div className="relative mb-4">
+                <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  value={debtMemberSearch}
+                  onChange={(e) => setDebtMemberSearch(e.target.value)}
+                  placeholder="بحث عن عميل..."
+                  className="w-full pr-10 pl-4 py-2.5 border rounded-xl"
+                />
+              </div>
+              <div className="space-y-2 max-h-60 overflow-y-auto">
+                {members.filter(m => 
+                  m.name.toLowerCase().includes(debtMemberSearch.toLowerCase()) ||
+                  m.phone.includes(debtMemberSearch)
+                ).map(member => (
+                  <button
+                    key={member.id}
+                    onClick={() => {
+                      setSelectedDebtMember(member)
+                      setShowDebtMemberSelect(false)
+                      completePurchase('debt')
+                    }}
+                    className="w-full p-3 bg-gray-50 hover:bg-primary-50 border hover:border-primary-300 rounded-xl text-right flex items-center justify-between"
+                  >
+                    <div>
+                      <div className="font-bold">{member.name}</div>
+                      <div className="text-sm text-gray-500">{member.phone}</div>
+                    </div>
+                    {member.debt > 0 && (
+                      <div className="text-orange-600 text-sm font-medium">
+                        دين: {member.debt.toFixed(3)} DT
+                      </div>
+                    )}
+                  </button>
+                ))}
+                {members.filter(m => 
+                  m.name.toLowerCase().includes(debtMemberSearch.toLowerCase()) ||
+                  m.phone.includes(debtMemberSearch)
+                ).length === 0 && (
+                  <div className="text-center text-gray-400 py-8">لا يوجد عملاء</div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
