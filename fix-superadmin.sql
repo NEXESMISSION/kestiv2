@@ -9,19 +9,24 @@ ALTER TABLE profiles ADD COLUMN IF NOT EXISTS pause_reason TEXT;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscription_status TEXT DEFAULT 'trial';
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscription_end_date TIMESTAMPTZ;
 ALTER TABLE profiles ADD COLUMN IF NOT EXISTS subscription_days INTEGER DEFAULT 0;
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS has_seen_welcome BOOLEAN DEFAULT false;
 
 -- 2. UPDATE EXISTING NULL VALUES
 UPDATE profiles SET is_paused = false WHERE is_paused IS NULL;
 UPDATE profiles SET subscription_status = 'trial' WHERE subscription_status IS NULL;
 UPDATE profiles SET subscription_days = 0 WHERE subscription_days IS NULL;
+UPDATE profiles SET has_seen_welcome = false WHERE has_seen_welcome IS NULL;
 
 -- 3. DROP OLD POLICIES (if they exist)
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
+DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
 DROP POLICY IF EXISTS "Enable read access for users" ON profiles;
 DROP POLICY IF EXISTS "Enable update for users" ON profiles;
+DROP POLICY IF EXISTS "Enable insert for auth users" ON profiles;
 DROP POLICY IF EXISTS "profiles_select_policy" ON profiles;
 DROP POLICY IF EXISTS "profiles_update_policy" ON profiles;
+DROP POLICY IF EXISTS "profiles_insert_policy" ON profiles;
 DROP POLICY IF EXISTS "profiles_policy" ON profiles;
 
 -- 4. CREATE NEW POLICIES THAT ALLOW SUPER_ADMIN
@@ -48,10 +53,15 @@ CREATE POLICY "profiles_update_policy" ON profiles
         EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'super_admin')
     );
 
--- 5. ENSURE RLS IS ENABLED
+-- 5. INSERT policy for new users
+CREATE POLICY "profiles_insert_policy" ON profiles
+    FOR INSERT TO authenticated
+    WITH CHECK (auth.uid() = id);
+
+-- 6. ENSURE RLS IS ENABLED
 ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 
--- 6. GRANT PERMISSIONS
+-- 7. GRANT PERMISSIONS
 GRANT ALL ON profiles TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;
 

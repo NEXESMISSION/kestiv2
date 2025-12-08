@@ -26,7 +26,7 @@ export default function WelcomePopup({ userName, trialDays = 15 }: WelcomePopupP
         .from('profiles')
         .select('has_seen_welcome')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
       
       console.log('Welcome popup check - has_seen_welcome:', profile?.has_seen_welcome)
       

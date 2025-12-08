@@ -76,7 +76,7 @@ export default function LoginPage() {
         .from('profiles')
         .select('role, is_paused, pause_reason')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
       
       // Use profile data if available, otherwise fall back to metadata
       const userRole = profile?.role || user.user_metadata?.role || 'user'

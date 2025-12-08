@@ -13,8 +13,14 @@ export default async function SuperAdminPage() {
     redirect('/login')
   }
 
-  // Check if user is super_admin from user metadata
-  const userRole = user.user_metadata?.role || 'user'
+  // Check if user is super_admin from profile table first, then user metadata
+  const { data: profileData } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .maybeSingle()
+  
+  const userRole = (profileData as { role?: string } | null)?.role || user.user_metadata?.role || 'user'
   
   if (userRole !== 'super_admin') {
     // Not a super admin, redirect to POS

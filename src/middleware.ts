@@ -91,7 +91,7 @@ export async function middleware(request: NextRequest) {
     .from('profiles')
     .select('role, is_paused, subscription_status, subscription_end_date')
     .eq('id', user.id)
-    .single()
+    .maybeSingle()
 
   if (!profile) {
     return supabaseResponse
