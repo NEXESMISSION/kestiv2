@@ -39,11 +39,11 @@ ORDER BY month DESC;
 DROP VIEW IF EXISTS public.daily_check_ins;
 CREATE VIEW public.daily_check_ins AS
 SELECT 
-  DATE(check_in_time) as check_date,
+  DATE(checked_in_at) as check_date,
   COUNT(*) as total_check_ins
 FROM public.check_ins
 WHERE business_id = (SELECT auth.uid())
-GROUP BY DATE(check_in_time)
+GROUP BY DATE(checked_in_at)
 ORDER BY check_date DESC;
 
 -- =====================================================
