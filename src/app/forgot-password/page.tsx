@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Mail, Loader2, XCircle, CheckCircle2, ArrowRight, KeyRound } from 'lucide-react'
+import { Mail, Loader2, XCircle, CheckCircle2, ArrowRight, KeyRound, MessageCircle, Phone } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const forgotPasswordSchema = z.object({
@@ -26,6 +26,7 @@ export default function ForgotPasswordPage() {
   const [notification, setNotification] = useState<Notification | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [smtpError, setSmtpError] = useState(false)
 
   const showNotification = (type: NotificationType, message: string) => {
     setNotification({ type, message })
@@ -59,11 +60,10 @@ export default function ForgotPasswordPage() {
           showNotification('error', 'محاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.')
         } else if (error.message.includes('User not found') || error.message.includes('not found')) {
           showNotification('error', 'هذا البريد الإلكتروني غير مسجل. تأكد من البريد أو أنشئ حساب جديد.')
-        } else if (error.status === 500 || error.message.includes('sending recovery email')) {
-          // 500 error means SMTP not configured in Supabase
-          showNotification('error', 'خدمة البريد غير متاحة حالياً. يرجى التواصل مع الدعم الفني أو المحاولة لاحقاً.')
         } else {
-          showNotification('error', 'حدث خطأ. تأكد من البريد الإلكتروني وحاول مرة أخرى.')
+          // Any other error including 500
+          setSmtpError(true)
+          showNotification('error', 'تعذر إرسال البريد الإلكتروني. يرجى استخدام طريقة بديلة.')
         }
         return
       }
@@ -158,6 +158,37 @@ export default function ForgotPasswordPage() {
                   )}
                 </button>
               </form>
+              
+              {/* SMTP Error - Contact Support */}
+              {smtpError && (
+                <div className="mt-6 p-4 bg-orange-50 border border-orange-200 rounded-xl">
+                  <h3 className="font-bold text-orange-800 mb-3 flex items-center gap-2">
+                    <MessageCircle className="w-5 h-5" />
+                    طريقة بديلة
+                  </h3>
+                  <p className="text-orange-700 text-sm mb-4">
+                    تعذر إرسال البريد الإلكتروني. يمكنك التواصل معنا مباشرة لإعادة تعيين كلمة المرور:
+                  </p>
+                  <div className="space-y-2">
+                    <a 
+                      href="https://wa.me/21600000000" 
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      تواصل عبر واتساب
+                    </a>
+                    <a 
+                      href="mailto:support@kestipro.com?subject=طلب إعادة تعيين كلمة المرور" 
+                      className="flex items-center gap-2 p-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                    >
+                      <Mail className="w-5 h-5" />
+                      راسلنا عبر البريد
+                    </a>
+                  </div>
+                </div>
+              )}
             </>
           ) : (
             /* Success State */
