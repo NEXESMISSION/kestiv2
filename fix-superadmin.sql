@@ -17,19 +17,17 @@ UPDATE profiles SET subscription_status = 'trial' WHERE subscription_status IS N
 UPDATE profiles SET subscription_days = 0 WHERE subscription_days IS NULL;
 UPDATE profiles SET has_seen_welcome = false WHERE has_seen_welcome IS NULL;
 
--- 3. CREATE A FUNCTION TO CHECK SUPER ADMIN (bypasses RLS)
+-- 3. CREATE A FUNCTION TO CHECK SUPER ADMIN (checks JWT metadata, no table query)
 CREATE OR REPLACE FUNCTION public.is_super_admin()
 RETURNS BOOLEAN AS $$
-DECLARE
-  user_role TEXT;
 BEGIN
-  SELECT role INTO user_role FROM profiles WHERE id = auth.uid();
-  RETURN user_role = 'super_admin';
-EXCEPTION
-  WHEN OTHERS THEN
-    RETURN FALSE;
+  -- Check role from JWT token metadata (set during signup/login)
+  RETURN COALESCE(
+    (auth.jwt() -> 'user_metadata' ->> 'role') = 'super_admin',
+    FALSE
+  );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql STABLE SECURITY DEFINER;
 
 -- 4. DROP ALL OLD POLICIES
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
@@ -83,3 +81,26 @@ FROM pg_policies
 WHERE tablename = 'profiles';
 
 SELECT '✅ SuperAdmin fix complete!' as result;
+
+-- =====================================================
+-- IMPORTANT: SET YOUR SUPER ADMIN
+-- Run this AFTER the above, replacing the email
+-- =====================================================
+
+-- Option 1: Update auth.users metadata (REQUIRED for RLS to work)
+-- Replace 'your-admin-email@example.com' with your actual email
+/*
+UPDATE auth.users 
+SET raw_user_meta_data = raw_user_meta_data || '{"role": "super_admin"}'::jsonb
+WHERE email = 'your-admin-email@example.com';
+*/
+
+-- Option 2: Also update profiles table
+/*
+UPDATE profiles 
+SET role = 'super_admin' 
+WHERE id = (SELECT id FROM auth.users WHERE email = 'your-admin-email@example.com');
+*/
+
+-- Verify super admin is set
+-- SELECT id, email, raw_user_meta_data->>'role' as role FROM auth.users WHERE email = 'your-admin-email@example.com';
