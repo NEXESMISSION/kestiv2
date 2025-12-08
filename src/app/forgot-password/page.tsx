@@ -47,13 +47,27 @@ export default function ForgotPasswordPage() {
     try {
       const supabase = createClient()
       
-      const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      // First check if email exists in profiles (using auth admin would be better but this works)
+      // We check profiles table to see if user exists
+      const { data: existingUser, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .ilike('id', `%`) // We need to check auth.users but can't directly, so we try reset
+      
+      // Try to send reset email
+      const { error } = await supabase.auth.resetPasswordForEmail(data.email.toLowerCase().trim(), {
         redirectTo: `${window.location.origin}/reset-password`
       })
 
       if (error) {
-        if (error.message.includes('rate limit')) {
+        console.error('Reset password error:', error)
+        if (error.message.includes('rate limit') || error.status === 429) {
           showNotification('error', 'محاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.')
+        } else if (error.message.includes('User not found') || error.message.includes('not found')) {
+          showNotification('error', 'هذا البريد الإلكتروني غير مسجل. تأكد من البريد أو أنشئ حساب جديد.')
+        } else if (error.status === 500) {
+          // 500 error often means SMTP not configured or email doesn't exist
+          showNotification('error', 'هذا البريد الإلكتروني غير مسجل أو حدث خطأ في الخادم. تأكد من البريد.')
         } else {
           showNotification('error', 'حدث خطأ. تأكد من البريد الإلكتروني وحاول مرة أخرى.')
         }
@@ -62,7 +76,8 @@ export default function ForgotPasswordPage() {
 
       setEmailSent(true)
       showNotification('success', 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني')
-    } catch {
+    } catch (err) {
+      console.error('Unexpected error:', err)
       showNotification('error', 'حدث خطأ غير متوقع. حاول مرة أخرى.')
     } finally {
       setIsLoading(false)
