@@ -1,5 +1,5 @@
 -- =====================================================
--- FIX SUPERADMIN - Complete Fix
+-- FIX SUPERADMIN - Complete Fix (v2)
 -- Run this ENTIRE script in Supabase SQL Editor
 -- =====================================================
 
@@ -17,7 +17,21 @@ UPDATE profiles SET subscription_status = 'trial' WHERE subscription_status IS N
 UPDATE profiles SET subscription_days = 0 WHERE subscription_days IS NULL;
 UPDATE profiles SET has_seen_welcome = false WHERE has_seen_welcome IS NULL;
 
--- 3. DROP OLD POLICIES (if they exist)
+-- 3. CREATE A FUNCTION TO CHECK SUPER ADMIN (bypasses RLS)
+CREATE OR REPLACE FUNCTION public.is_super_admin()
+RETURNS BOOLEAN AS $$
+DECLARE
+  user_role TEXT;
+BEGIN
+  SELECT role INTO user_role FROM profiles WHERE id = auth.uid();
+  RETURN user_role = 'super_admin';
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- 4. DROP ALL OLD POLICIES
 DROP POLICY IF EXISTS "Users can view own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can update own profile" ON profiles;
 DROP POLICY IF EXISTS "Users can insert own profile" ON profiles;
@@ -28,32 +42,21 @@ DROP POLICY IF EXISTS "profiles_select_policy" ON profiles;
 DROP POLICY IF EXISTS "profiles_update_policy" ON profiles;
 DROP POLICY IF EXISTS "profiles_insert_policy" ON profiles;
 DROP POLICY IF EXISTS "profiles_policy" ON profiles;
+DROP POLICY IF EXISTS "profiles_all_policy" ON profiles;
 
--- 4. CREATE NEW POLICIES THAT ALLOW SUPER_ADMIN
--- Super admins can view ALL profiles, regular users can only view their own
+-- 5. CREATE NEW POLICIES USING THE FUNCTION
+-- SELECT: users see own profile, super_admin sees all
 CREATE POLICY "profiles_select_policy" ON profiles
     FOR SELECT TO authenticated
-    USING (
-        auth.uid() = id 
-        OR 
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'super_admin')
-    );
+    USING (auth.uid() = id OR public.is_super_admin());
 
--- Super admins can update ALL profiles, regular users can only update their own
+-- UPDATE: users update own profile, super_admin updates all
 CREATE POLICY "profiles_update_policy" ON profiles
     FOR UPDATE TO authenticated
-    USING (
-        auth.uid() = id 
-        OR 
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'super_admin')
-    )
-    WITH CHECK (
-        auth.uid() = id 
-        OR 
-        EXISTS (SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'super_admin')
-    );
+    USING (auth.uid() = id OR public.is_super_admin())
+    WITH CHECK (auth.uid() = id OR public.is_super_admin());
 
--- 5. INSERT policy for new users
+-- INSERT: users can only insert their own profile
 CREATE POLICY "profiles_insert_policy" ON profiles
     FOR INSERT TO authenticated
     WITH CHECK (auth.uid() = id);
@@ -64,17 +67,18 @@ ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
 -- 7. GRANT PERMISSIONS
 GRANT ALL ON profiles TO authenticated;
 GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT EXECUTE ON FUNCTION public.is_super_admin() TO authenticated;
 
--- 7. VERIFY CHANGES
+-- 8. VERIFY CHANGES
 SELECT 'Profiles columns:' as info;
 SELECT column_name, data_type, column_default 
 FROM information_schema.columns 
 WHERE table_name = 'profiles' 
-AND column_name IN ('is_paused', 'pause_reason', 'subscription_status', 'subscription_end_date', 'subscription_days', 'role')
+AND column_name IN ('is_paused', 'pause_reason', 'subscription_status', 'subscription_end_date', 'subscription_days', 'role', 'has_seen_welcome')
 ORDER BY column_name;
 
 SELECT 'Policies on profiles:' as info;
-SELECT policyname, cmd, qual 
+SELECT policyname, cmd 
 FROM pg_policies 
 WHERE tablename = 'profiles';
 
