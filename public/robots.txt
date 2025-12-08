@@ -1,0 +1,44 @@
+# Kesti Pro - كاستي برو
+# https://kestipro.com
+
+# Allow all crawlers
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://kestipro.com/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin and private routes
+Disallow: /superadmin
+Disallow: /superadmin/*
+Disallow: /dashboard/*
+Disallow: /pos
+Disallow: /pos/*
+Disallow: /api/*
+Disallow: /login
+Disallow: /register
+Disallow: /expired
+Disallow: /paused
+
+# Allow important public pages
+Allow: /
+Allow: /landing
+
+# Google specific
+User-agent: Googlebot
+Allow: /
+Disallow: /superadmin
+Disallow: /dashboard/*
+Disallow: /pos/*
+Disallow: /api/*
+
+# Bing specific  
+User-agent: Bingbot
+Allow: /
+Disallow: /superadmin
+Disallow: /dashboard/*
+Disallow: /pos/*
+Disallow: /api/*

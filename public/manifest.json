@@ -1,0 +1,51 @@
+{
+  "name": "Kesti Pro - كاستي برو | نظام إدارة المبيعات",
+  "short_name": "Kesti Pro",
+  "description": "نظام إدارة المبيعات والمخزون الذكي - Smart POS & Inventory Management System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#3b82f6",
+  "orientation": "portrait-primary",
+  "scope": "/",
+  "lang": "ar",
+  "dir": "rtl",
+  "categories": ["business", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/kesti.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "/favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "نقطة البيع",
+      "short_name": "POS",
+      "description": "فتح نقطة البيع",
+      "url": "/pos",
+      "icons": [{ "src": "/kesti.png", "sizes": "512x512" }]
+    },
+    {
+      "name": "لوحة التحكم",
+      "short_name": "Dashboard",
+      "description": "فتح لوحة التحكم",
+      "url": "/dashboard",
+      "icons": [{ "src": "/kesti.png", "sizes": "512x512" }]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
+}

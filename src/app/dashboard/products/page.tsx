@@ -76,7 +76,7 @@ export default function ProductsPage() {
       name: product.name,
       price: product.price,
       cost: product.cost,
-      stock: product.stock,
+      stock: product.stock ?? 0,
       reorder_level: product.reorder_level,
       is_active: product.is_active
     })
