@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { X, Sparkles, Clock, Gift } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 
 interface WelcomePopupProps {
   userName?: string
@@ -10,27 +11,63 @@ interface WelcomePopupProps {
 
 export default function WelcomePopup({ userName, trialDays = 15 }: WelcomePopupProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const [userId, setUserId] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check if user has seen the welcome popup
-    const hasSeenWelcome = localStorage.getItem('kesti_welcome_shown')
-    if (!hasSeenWelcome) {
-      // Small delay for better UX
-      const timer = setTimeout(() => setIsOpen(true), 500)
-      return () => clearTimeout(timer)
+    const checkWelcome = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) return
+      setUserId(user.id)
+      
+      // Check database for has_seen_welcome
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('has_seen_welcome')
+        .eq('id', user.id)
+        .single()
+      
+      console.log('Welcome popup check - has_seen_welcome:', profile?.has_seen_welcome)
+      
+      if (profile && !profile.has_seen_welcome) {
+        // Small delay for better UX
+        setTimeout(() => {
+          console.log('Showing welcome popup!')
+          setIsOpen(true)
+        }, 800)
+      }
     }
+    
+    checkWelcome()
   }, [])
 
-  const handleClose = () => {
-    localStorage.setItem('kesti_welcome_shown', 'true')
+  const handleClose = async () => {
     setIsOpen(false)
+    
+    if (userId) {
+      const supabase = createClient()
+      await supabase
+        .from('profiles')
+        .update({ has_seen_welcome: true })
+        .eq('id', userId)
+      console.log('Welcome popup marked as seen in database')
+    }
   }
 
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" dir="rtl">
-      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-300">
+    <div className="fixed inset-0 bg-black/60 z-[100] flex items-center justify-center p-4" dir="rtl">
+      <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl relative">
+        {/* Close button - moved here for proper positioning */}
+        <button
+          onClick={handleClose}
+          className="absolute top-4 left-4 z-10 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        
         {/* Header with gradient */}
         <div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 p-6 text-center relative overflow-hidden">
           {/* Decorative elements */}
@@ -93,14 +130,6 @@ export default function WelcomePopup({ userName, trialDays = 15 }: WelcomePopupP
             يمكنك الترقية في أي وقت من الإعدادات
           </p>
         </div>
-
-        {/* Close button */}
-        <button
-          onClick={handleClose}
-          className="absolute top-4 left-4 p-2 bg-white/20 hover:bg-white/30 rounded-full text-white transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
       </div>
     </div>
   )

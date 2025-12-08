@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
@@ -8,7 +8,7 @@ import { Product, Category, Transaction, TransactionItem } from '@/types/databas
 import { 
   Package, Tags, Warehouse, History, ArrowLeft, Plus, Edit2, Trash2, Minus,
   Search, RefreshCw, TrendingUp, ShoppingBag, DollarSign, AlertTriangle,
-  ToggleLeft, ToggleRight, X, Save, CreditCard, Receipt, BarChart3, Settings, Download, Calendar
+  ToggleLeft, ToggleRight, X, Save, CreditCard, Receipt, BarChart3, Settings, Download, Calendar, Camera
 } from 'lucide-react'
 import { Profile } from '@/types/database'
 
@@ -43,11 +43,13 @@ export default function RetailDashboardPage() {
   
   // Profile for subscription status
   const [profile, setProfile] = useState<Profile | null>(null)
+  const [userId, setUserId] = useState<string>('')
 
   const fetchData = useCallback(async () => {
     setLoading(true)
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
+    setUserId(user.id)
     
     // Fetch profile for subscription status
     const { data: profileData } = await supabase
@@ -598,6 +600,7 @@ export default function RetailDashboardPage() {
         <ProductModal 
           product={editingProduct}
           categories={categories}
+          userId={userId}
           onClose={() => setShowProductModal(false)}
           onSave={async (data) => {
             const { data: { user } } = await supabase.auth.getUser()
@@ -610,7 +613,8 @@ export default function RetailDashboardPage() {
               cost: data.cost || 0,
               stock: data.stock || 0,
               reorder_level: data.reorder_level || 5,
-              is_active: data.is_active ?? true
+              is_active: data.is_active ?? true,
+              image_url: data.image_url || null
             }
             
             // Add category_id if provided
@@ -751,11 +755,12 @@ export default function RetailDashboardPage() {
 }
 
 // Product Modal Component
-function ProductModal({ product, categories, onClose, onSave }: { 
+function ProductModal({ product, categories, onClose, onSave, userId }: { 
   product: Product | null
   categories: Category[]
   onClose: () => void
-  onSave: (data: Partial<Product>) => void 
+  onSave: (data: Partial<Product>) => void
+  userId: string
 }) {
   const [name, setName] = useState(product?.name || '')
   const [price, setPrice] = useState(product?.price?.toString() || '')
@@ -766,6 +771,48 @@ function ProductModal({ product, categories, onClose, onSave }: {
   const [stock, setStock] = useState(product?.stock?.toString() || '0')
   const [reorderLevel, setReorderLevel] = useState(product?.reorder_level?.toString() || '5')
   const [isActive, setIsActive] = useState(product?.is_active ?? true)
+  const [imageUrl, setImageUrl] = useState(product?.image_url || '')
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+  const supabaseClient = createClient()
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      alert('يرجى اختيار صورة فقط')
+      return
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      alert('حجم الصورة يجب أن يكون أقل من 2MB')
+      return
+    }
+
+    setUploading(true)
+    try {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${userId}/products/${Date.now()}.${fileExt}`
+
+      // Delete old image if exists
+      if (imageUrl) {
+        const oldPath = imageUrl.split('/images/')[1]
+        if (oldPath) await supabaseClient.storage.from('images').remove([oldPath])
+      }
+
+      const { error } = await supabaseClient.storage.from('images').upload(fileName, file, { cacheControl: '3600', upsert: true })
+      if (error) throw error
+
+      const { data: { publicUrl } } = supabaseClient.storage.from('images').getPublicUrl(fileName)
+      setImageUrl(publicUrl)
+    } catch (err) {
+      console.error('Upload error:', err)
+      alert('فشل رفع الصورة')
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSave = () => {
     if (!name.trim() || !price) return
@@ -775,6 +822,7 @@ function ProductModal({ product, categories, onClose, onSave }: {
       cost: parseFloat(cost) || 0,
       category_id: categoryId || null,
       description: description.trim() || null,
+      image_url: imageUrl || null,
       track_stock: trackStock,
       stock: trackStock ? parseInt(stock) || 0 : 0,
       reorder_level: trackStock ? parseInt(reorderLevel) || 5 : 0,
@@ -790,9 +838,33 @@ function ProductModal({ product, categories, onClose, onSave }: {
           <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
         </div>
         <div className="p-4 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">اسم المنتج *</label>
-            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="اسم المنتج" />
+          {/* Image Upload */}
+          <div className="flex items-center gap-4">
+            <input ref={fileInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+            <div 
+              onClick={() => !uploading && fileInputRef.current?.click()}
+              className="w-20 h-20 rounded-xl border-2 border-dashed border-gray-300 hover:border-primary-400 cursor-pointer bg-gray-50 flex items-center justify-center overflow-hidden relative group"
+            >
+              {uploading ? (
+                <div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full" />
+              ) : imageUrl ? (
+                <>
+                  <img src={imageUrl} alt="صورة المنتج" className="w-full h-full object-cover" />
+                  <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                    <Camera className="w-5 h-5 text-white" />
+                  </div>
+                </>
+              ) : (
+                <div className="text-center">
+                  <Camera className="w-6 h-6 text-gray-400 mx-auto" />
+                  <span className="text-xs text-gray-400">صورة</span>
+                </div>
+              )}
+            </div>
+            <div className="flex-1">
+              <label className="block text-sm font-medium text-gray-700 mb-1">اسم المنتج *</label>
+              <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="اسم المنتج" />
+            </div>
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>

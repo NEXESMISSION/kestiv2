@@ -47,8 +47,9 @@ export default function LoginPage() {
       })
 
       if (authError) {
+        console.error('Login error:', authError)
         // Handle different error cases with Arabic messages
-        if (authError.message.includes('Invalid login credentials')) {
+        if (authError.message.includes('Invalid login credentials') || authError.status === 400) {
           showNotification('error', 'البريد الإلكتروني أو كلمة المرور غير صحيحة')
         } else if (authError.message.includes('Email not confirmed')) {
           showNotification('error', 'يرجى تأكيد بريدك الإلكتروني أولاً قبل تسجيل الدخول')

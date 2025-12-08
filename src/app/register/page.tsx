@@ -109,17 +109,20 @@ export default function RegisterPage() {
       })
 
       if (authError) {
+        console.error('Signup error:', authError)
         // Handle different error cases with Arabic messages
         if (authError.message.includes('already registered') || authError.message.includes('User already registered')) {
           showNotification('error', 'هذا البريد الإلكتروني مسجّل مسبقاً. جرّب تسجيل الدخول.')
         } else if (authError.message.includes('Invalid email')) {
           showNotification('error', 'البريد الإلكتروني غير صالح. تأكد من كتابته بشكل صحيح.')
         } else if (authError.message.includes('Password') || authError.message.includes('password')) {
-          showNotification('error', 'كلمة المرور ضعيفة. استخدم 6 أحرف على الأقل.')
+          showNotification('error', 'كلمة المرور ضعيفة. استخدم 8 أحرف على الأقل مع رقم وحرف.')
         } else if (authError.message.includes('rate limit') || authError.message.includes('Too many requests') || authError.status === 429) {
           showNotification('error', 'لقد قمت بمحاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.')
         } else if (authError.message.includes('network') || authError.message.includes('fetch')) {
           showNotification('error', 'خطأ في الاتصال بالإنترنت. تحقق من اتصالك وحاول مرة أخرى.')
+        } else if (authError.status === 500 || authError.message.includes('sending') || authError.message.includes('email')) {
+          showNotification('error', 'خدمة التسجيل غير متاحة حالياً. يرجى المحاولة لاحقاً أو التواصل مع الدعم.')
         } else {
           showNotification('error', 'حدث خطأ أثناء إنشاء الحساب. حاول مرة أخرى.')
         }
@@ -170,9 +173,9 @@ export default function RegisterPage() {
           })
         
         if (profileError) {
-          console.error('Profile insertion error:', profileError)
+          // Profile already exists (created by trigger) - update it with full data
+          console.log('Profile exists, updating with full data...')
           
-          // Try update instead if insert failed
           const { error: updateError } = await supabase
             .from('profiles')
             .update({
@@ -180,13 +183,15 @@ export default function RegisterPage() {
               phone_number: formData.phone || null,
               pin_code: formData.pinCode,
               business_mode: selectedCategory,
+              subscription_status: 'trial',
+              subscription_end_date: trialEndDate.toISOString(),
+              subscription_days: 15,
               updated_at: new Date().toISOString()
             })
             .eq('id', authData.user.id)
           
           if (updateError) {
             console.error('Profile update error:', updateError)
-            showNotification('warning', 'تم إنشاء الحساب ولكن قد تكون هناك مشكلة في الملف الشخصي')
           } else {
             console.log('Profile successfully updated')
           }
