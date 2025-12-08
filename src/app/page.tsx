@@ -1,6 +1,12 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import LandingPage from './landing/page'
+
+export const metadata: Metadata = {
+  title: 'كاستي برو | نظام نقاط البيع الذكي وإدارة المخزون',
+  description: 'حوّل محلك إلى نظام مبيعات ومخزون ذكي يعمل من هاتفك. تجربة مجانية 15 يوم، بيع أسرع، تنبيهات مخزون، وربح واضح.',
+}
 
 type ProfileData = {
   role: string | null

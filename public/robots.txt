@@ -5,7 +5,7 @@
 User-agent: *
 Allow: /
 
-# Sitemap location
+# Sitemap location (primary domain)
 Sitemap: https://kestipro.com/sitemap.xml
 
 # Crawl-delay for respectful crawling
