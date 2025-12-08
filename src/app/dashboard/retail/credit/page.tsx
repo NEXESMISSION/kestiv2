@@ -1,4 +1,4 @@
-﻿'use client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
@@ -64,7 +64,7 @@ export default function CreditPage() {
       
       const amount = parseFloat(paymentAmount)
       if (isNaN(amount) || amount <= 0) {
-        alert('Ø§Ù„Ù…Ø¨Ù„Øº ØºÙŠØ± ØµØ­ÙŠØ­')
+        alert('المبلغ غير صحيح')
         return
       }
       
@@ -77,7 +77,7 @@ export default function CreditPage() {
         type: 'debt_payment',
         payment_method: 'cash',
         amount: amount,
-        notes: `ØªØ³Ø¯ÙŠØ¯ Ø¯ÙŠÙ† - ${payingCustomer.name}`
+        notes: `تسديد دين - ${payingCustomer.name}`
       })
       
       // Try to log in debt_payments table
@@ -87,7 +87,7 @@ export default function CreditPage() {
           customer_id: payingCustomer.id,
           amount: amount,
           payment_type: paymentType,
-          notes: paymentType === 'full' ? 'ØªØ³Ø¯ÙŠØ¯ ÙƒØ§Ù…Ù„' : 'ØªØ³Ø¯ÙŠØ¯ Ø¬Ø²Ø¦ÙŠ'
+          notes: paymentType === 'full' ? 'تسديد كامل' : 'تسديد جزئي'
         })
       } catch (e) {
         console.log('debt_payments table may not exist')
@@ -104,7 +104,7 @@ export default function CreditPage() {
       fetchData()
     } catch (error) {
       console.error('Payment error:', error)
-      alert('Ø­Ø¯Ø« Ø®Ø·Ø£ Ø£Ø«Ù†Ø§Ø¡ ØªØ³Ø¬ÙŠÙ„ Ø§Ù„Ø¯ÙØ¹')
+      alert('حدث خطأ أثناء تسجيل الدفع')
     } finally {
       setProcessing(false)
     }
@@ -128,7 +128,7 @@ export default function CreditPage() {
             <div className="flex-1">
               <h1 className="text-lg font-bold flex items-center gap-2">
                 <CreditCard className="w-5 h-5 text-orange-600" />
-                Ø§Ù„Ø¢Ø¬Ù„ (Ø§Ù„Ø¯ÙŠÙˆÙ†)
+                الآجل (الديون)
               </h1>
             </div>
           </div>
@@ -138,9 +138,9 @@ export default function CreditPage() {
       <main className="p-4 space-y-4">
         {/* Total Debt Card */}
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-4 text-white">
-          <div className="text-sm opacity-90">Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ø¯ÙŠÙˆÙ†</div>
+          <div className="text-sm opacity-90">إجمالي الديون</div>
           <div className="text-3xl font-bold mt-1">{totalDebt.toFixed(3)} DT</div>
-          <div className="text-sm opacity-80 mt-2">{customers.length} Ø¹Ù…ÙŠÙ„</div>
+          <div className="text-sm opacity-80 mt-2">{customers.length} عميل</div>
         </div>
 
         {/* Search */}
@@ -150,7 +150,7 @@ export default function CreditPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Ø¨Ø­Ø« Ø¹Ù† Ø¹Ù…ÙŠÙ„..."
+            placeholder="بحث عن عميل..."
             className="w-full pr-10 pl-4 py-3 bg-white border rounded-xl"
           />
         </div>
@@ -160,7 +160,7 @@ export default function CreditPage() {
           {filteredCustomers.length === 0 ? (
             <div className="bg-white rounded-xl p-8 text-center text-gray-400">
               <CreditCard className="w-12 h-12 mx-auto mb-3 opacity-50" />
-              <p>Ù„Ø§ ØªÙˆØ¬Ø¯ Ø¯ÙŠÙˆÙ† Ù…Ø³ØªØ­Ù‚Ø©</p>
+              <p>لا توجد ديون مستحقة</p>
             </div>
           ) : (
             filteredCustomers.map(customer => (
@@ -186,14 +186,14 @@ export default function CreditPage() {
                     className="flex-1 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium flex items-center justify-center gap-1"
                   >
                     <Check className="w-4 h-4" />
-                    ØªØ³Ø¯ÙŠØ¯ ÙƒØ§Ù…Ù„
+                    تسديد كامل
                   </button>
                   <button
                     onClick={() => openPayment(customer, 'partial')}
                     className="flex-1 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1"
                   >
                     <DollarSign className="w-4 h-4" />
-                    ØªØ³Ø¯ÙŠØ¯ Ø¬Ø²Ø¦ÙŠ
+                    تسديد جزئي
                   </button>
                 </div>
               </div>
@@ -208,7 +208,7 @@ export default function CreditPage() {
           <div className="bg-white rounded-2xl w-full max-w-sm">
             <div className="p-4 border-b flex justify-between items-center">
               <h3 className="text-lg font-bold">
-                {paymentType === 'full' ? 'ØªØ³Ø¯ÙŠØ¯ ÙƒØ§Ù…Ù„' : 'ØªØ³Ø¯ÙŠØ¯ Ø¬Ø²Ø¦ÙŠ'}
+                {paymentType === 'full' ? 'تسديد كامل' : 'تسديد جزئي'}
               </h3>
               <button onClick={() => setPayingCustomer(null)} className="p-2 hover:bg-gray-100 rounded-lg">
                 <X className="w-5 h-5" />
@@ -216,13 +216,13 @@ export default function CreditPage() {
             </div>
             <div className="p-4 space-y-4">
               <div className="bg-gray-50 rounded-xl p-3">
-                <div className="text-sm text-gray-500">Ø§Ù„Ø¹Ù…ÙŠÙ„</div>
+                <div className="text-sm text-gray-500">العميل</div>
                 <div className="font-bold">{payingCustomer.name}</div>
-                <div className="text-sm text-orange-600 mt-1">Ø§Ù„Ø¯ÙŠÙ†: {payingCustomer.total_debt.toFixed(3)} DT</div>
+                <div className="text-sm text-orange-600 mt-1">الدين: {payingCustomer.total_debt.toFixed(3)} DT</div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Ø§Ù„Ù…Ø¨Ù„Øº</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ</label>
                 <input
                   type="number"
                   step="0.001"
@@ -244,7 +244,7 @@ export default function CreditPage() {
                 ) : (
                   <>
                     <Check className="w-5 h-5" />
-                    ØªØ£ÙƒÙŠØ¯ Ø§Ù„Ø¯ÙØ¹
+                    تأكيد الدفع
                   </>
                 )}
               </button>
@@ -255,4 +255,3 @@ export default function CreditPage() {
     </div>
   )
 }
-
