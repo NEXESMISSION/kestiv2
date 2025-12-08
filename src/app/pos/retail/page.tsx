@@ -410,67 +410,165 @@ export default function RetailPOSPage() {
             </div>
           </div>
 
-          {/* Products Grid */}
+          {/* Products Grid - Grouped by Category */}
           <div className="flex-1 overflow-auto p-2 sm:p-4">
-            {filteredProducts.length === 0 ? (
+            {products.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
                 <Package className="w-12 h-12 sm:w-16 sm:h-16 mb-2 sm:mb-4" />
-                <p className="text-sm sm:text-base mb-4">{products.length === 0 ? 'لا توجد منتجات بعد' : 'لا توجد منتجات'}</p>
-                {products.length === 0 && (
-                  <button
-                    onClick={() => { setPinDestination('/dashboard/retail'); setShowPinModal(true) }}
-                    className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center gap-2"
-                  >
-                    <Plus className="w-5 h-5" />
-                    إضافة منتجات
-                  </button>
-                )}
+                <p className="text-sm sm:text-base mb-4">لا توجد منتجات بعد</p>
+                <button
+                  onClick={() => { setPinDestination('/dashboard/retail'); setShowPinModal(true) }}
+                  className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center gap-2"
+                >
+                  <Plus className="w-5 h-5" />
+                  إضافة منتجات
+                </button>
               </div>
-            ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
-                {filteredProducts.map(product => {
-                  const inCart = cart.find(item => item.product.id === product.id)
-                  const lowStock = product.track_stock && product.stock <= product.reorder_level
-                  const outOfStock = product.track_stock && product.stock <= 0
-                  
-                  return (
-                    <button
-                      key={product.id}
-                      onClick={() => addToCart(product)}
-                      className={`bg-white rounded-xl sm:rounded-2xl p-2 sm:p-4 text-right transition-all hover:shadow-lg border-2 relative ${
-                        inCart ? 'border-primary-500 ring-2 ring-primary-200' : 'border-transparent'
-                      }`}
-                    >
-                      {/* Image */}
-                      <div className={`h-16 sm:h-24 rounded-lg sm:rounded-xl mb-2 sm:mb-3 flex items-center justify-center ${
-                        product.image_url ? '' : 'bg-gradient-to-br from-primary-100 to-primary-50'
-                      }`}>
-                        {product.image_url ? (
-                          <img src={product.image_url} alt={product.name} className="h-full w-full object-cover rounded-lg sm:rounded-xl" />
-                        ) : (
-                          <Package className="w-8 h-8 sm:w-10 sm:h-10 text-primary-400" />
-                        )}
-                      </div>
-                      
-                      <h3 className="font-bold text-gray-900 truncate text-xs sm:text-sm">{product.name}</h3>
-                      <div className="flex items-center justify-between mt-1 sm:mt-2">
-                        <span className="text-sm sm:text-lg font-bold text-primary-600">{product.price.toFixed(3)}</span>
-                        {product.track_stock && (
-                          <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full ${
-                            outOfStock ? 'bg-red-100 text-red-600' : 
-                            lowStock ? 'bg-yellow-100 text-yellow-700' : 
-                            'bg-green-100 text-green-700'
-                          }`}>
-                            {outOfStock ? 'نفذ' : product.stock}
-                          </span>
-                        )}
-                      </div>
-                      {inCart && (
-                        <div className="absolute top-1 left-1 sm:top-2 sm:left-2 w-5 h-5 sm:w-6 sm:h-6 bg-primary-600 text-white text-xs sm:text-sm font-bold rounded-full flex items-center justify-center">
-                          {inCart.quantity}
+            ) : selectedCategory || searchQuery ? (
+              /* Grid View when category selected or searching */
+              filteredProducts.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                  <Package className="w-12 h-12 mb-2" />
+                  <p>لا توجد منتجات</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-3">
+                  {filteredProducts.map(product => {
+                    const inCart = cart.find(item => item.product.id === product.id)
+                    const lowStock = product.track_stock && product.stock !== null && product.stock <= product.reorder_level
+                    const outOfStock = product.track_stock && product.stock !== null && product.stock <= 0
+                    return (
+                      <button
+                        key={product.id}
+                        onClick={() => addToCart(product)}
+                        className={`bg-white rounded-2xl p-3 text-right transition-all hover:shadow-lg border-2 relative ${
+                          inCart ? 'border-primary-500 bg-primary-50' : 'border-gray-100'
+                        }`}
+                      >
+                        <div className={`h-16 sm:h-20 rounded-xl mb-2 flex items-center justify-center ${
+                          product.image_url ? '' : 'bg-gradient-to-br from-primary-100 to-blue-50'
+                        }`}>
+                          {product.image_url ? (
+                            <img src={product.image_url} alt={product.name} className="h-full w-full object-cover rounded-xl" />
+                          ) : (
+                            <Package className="w-8 h-8 text-primary-400" />
+                          )}
                         </div>
-                      )}
-                    </button>
+                        <h3 className="font-bold text-gray-900 truncate text-sm">{product.name}</h3>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className="text-base font-bold text-primary-600">{product.price.toFixed(3)}</span>
+                          {product.track_stock && product.stock !== null && (
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${
+                              outOfStock ? 'bg-red-100 text-red-600' : lowStock ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
+                            }`}>{outOfStock ? 'نفذ' : product.stock}</span>
+                          )}
+                        </div>
+                        {inCart && (
+                          <div className="absolute top-2 left-2 w-6 h-6 bg-primary-600 text-white text-sm font-bold rounded-full flex items-center justify-center">
+                            {inCart.quantity}
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+              )
+            ) : (
+              /* Grouped by Category View */
+              <div className="space-y-6">
+                {/* Products without category */}
+                {(() => {
+                  const uncategorizedProducts = products.filter(p => !p.category_id)
+                  if (uncategorizedProducts.length === 0) return null
+                  return (
+                    <div>
+                      <h3 className="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                        <Package className="w-5 h-5" />
+                        عام
+                      </h3>
+                      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+                        {uncategorizedProducts.map(product => {
+                          const inCart = cart.find(item => item.product.id === product.id)
+                          const outOfStock = product.track_stock && product.stock !== null && product.stock <= 0
+                          return (
+                            <button
+                              key={product.id}
+                              onClick={() => addToCart(product)}
+                              className={`flex-shrink-0 w-32 sm:w-40 bg-white rounded-2xl p-3 text-right transition-all hover:shadow-lg border-2 relative ${
+                                inCart ? 'border-primary-500 bg-primary-50' : 'border-gray-100'
+                              }`}
+                            >
+                              <div className="h-16 rounded-xl mb-2 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-50">
+                                <Package className="w-8 h-8 text-gray-400" />
+                              </div>
+                              <h3 className="font-bold text-gray-900 truncate text-sm">{product.name}</h3>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="text-base font-bold text-primary-600">{product.price.toFixed(3)}</span>
+                                {outOfStock && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-600">نفذ</span>}
+                              </div>
+                              {inCart && (
+                                <div className="absolute top-2 left-2 w-6 h-6 bg-primary-600 text-white text-sm font-bold rounded-full flex items-center justify-center">
+                                  {inCart.quantity}
+                                </div>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })()}
+                
+                {/* Products by category */}
+                {categories.map(category => {
+                  const categoryProducts = products.filter(p => p.category_id === category.id)
+                  if (categoryProducts.length === 0) return null
+                  return (
+                    <div key={category.id}>
+                      <h3 className="font-bold text-gray-700 mb-3 flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: category.color }}></div>
+                        {category.name}
+                        <span className="text-sm font-normal text-gray-400">({categoryProducts.length})</span>
+                      </h3>
+                      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none' }}>
+                        {categoryProducts.map(product => {
+                          const inCart = cart.find(item => item.product.id === product.id)
+                          const lowStock = product.track_stock && product.stock !== null && product.stock <= product.reorder_level
+                          const outOfStock = product.track_stock && product.stock !== null && product.stock <= 0
+                          return (
+                            <button
+                              key={product.id}
+                              onClick={() => addToCart(product)}
+                              className={`flex-shrink-0 w-32 sm:w-40 bg-white rounded-2xl p-3 text-right transition-all hover:shadow-lg border-2 relative ${
+                                inCart ? 'border-primary-500 bg-primary-50' : 'border-gray-100'
+                              }`}
+                            >
+                              <div className={`h-16 rounded-xl mb-2 flex items-center justify-center`} style={{ backgroundColor: category.color + '20' }}>
+                                {product.image_url ? (
+                                  <img src={product.image_url} alt={product.name} className="h-full w-full object-cover rounded-xl" />
+                                ) : (
+                                  <Package className="w-8 h-8" style={{ color: category.color }} />
+                                )}
+                              </div>
+                              <h3 className="font-bold text-gray-900 truncate text-sm">{product.name}</h3>
+                              <div className="flex items-center justify-between mt-1">
+                                <span className="text-base font-bold text-primary-600">{product.price.toFixed(3)}</span>
+                                {product.track_stock && product.stock !== null && (
+                                  <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                    outOfStock ? 'bg-red-100 text-red-600' : lowStock ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'
+                                  }`}>{outOfStock ? 'نفذ' : product.stock}</span>
+                                )}
+                              </div>
+                              {inCart && (
+                                <div className="absolute top-2 left-2 w-6 h-6 bg-primary-600 text-white text-sm font-bold rounded-full flex items-center justify-center">
+                                  {inCart.quantity}
+                                </div>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
                   )
                 })}
               </div>

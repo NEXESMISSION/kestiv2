@@ -135,7 +135,7 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center">
-              <Image src="/kesti.png" alt="Kesti Pro" width={48} height={48} className="w-12 h-12 rounded-xl" />
+              <Image src="/kesti.png" alt="Kesti Pro" width={56} height={56} className="w-14 h-14 rounded-xl shadow-md" />
             </div>
             
             {/* Desktop Menu */}
@@ -308,10 +308,18 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-4">
             <div className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl text-lg sm:text-xl font-bold shadow-lg shadow-green-500/30 animate-bounce-subtle">
               <Check className="w-5 h-5 sm:w-6 sm:h-6" />
               Kesti Pro يحل كل هذه المشاكل
+            </div>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
+              <Link href="/register" className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold rounded-xl hover:shadow-lg transition-all">
+                ابدأ الآن مجاناً
+              </Link>
+              <Link href="/login" className="px-6 py-3 border-2 border-primary-300 text-primary-700 font-bold rounded-xl hover:bg-primary-50 transition-all">
+                لديك حساب؟ سجل دخول
+              </Link>
             </div>
           </div>
         </div>
@@ -338,6 +346,14 @@ export default function LandingPage() {
                 <p className="text-gray-600 text-sm sm:text-base">{feature.desc}</p>
               </div>
             ))}
+          </div>
+
+          {/* CTA after features */}
+          <div className="text-center mt-12">
+            <Link href="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold text-lg rounded-2xl hover:shadow-xl hover:shadow-primary-500/30 transition-all transform hover:-translate-y-1">
+              <Zap className="w-5 h-5" />
+              جرب كل هذه المميزات مجاناً
+            </Link>
           </div>
         </div>
       </section>
@@ -366,6 +382,16 @@ export default function LandingPage() {
               <span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />خطوات واضحة</span>
               <span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />بالعربية</span>
             </div>
+          </div>
+
+          {/* CTA after video */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+            <Link href="/register" className="px-8 py-4 bg-white text-primary-700 font-bold rounded-2xl hover:bg-gray-100 transition-all shadow-lg">
+              سجل الآن واحصل على تجربة مجانية
+            </Link>
+            <a href="#pricing" className="px-8 py-4 border-2 border-white/50 text-white font-bold rounded-2xl hover:bg-white/10 transition-all">
+              شاهد الأسعار
+            </a>
           </div>
         </div>
       </section>

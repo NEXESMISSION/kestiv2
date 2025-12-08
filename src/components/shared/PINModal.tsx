@@ -39,9 +39,9 @@ export default function PINModal({
     setError(false)
   }, [])
 
-  // Check PIN when matching length entered
-  useEffect(() => {
-    if (pin.length === pinLength && pin.length >= 4) {
+  // Manual PIN check function
+  const handleSubmit = useCallback(() => {
+    if (pin.length >= 4 && pin.length <= 6) {
       if (pin === correctPin) {
         onSuccess()
         setPin('')
@@ -54,7 +54,7 @@ export default function PINModal({
         }, 500)
       }
     }
-  }, [pin, correctPin, pinLength, onSuccess])
+  }, [pin, correctPin, onSuccess])
 
   // Keyboard support
   useEffect(() => {
@@ -67,12 +67,14 @@ export default function PINModal({
         handleDelete()
       } else if (e.key === 'Escape' && onCancel) {
         onCancel()
+      } else if (e.key === 'Enter') {
+        handleSubmit()
       }
     }
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, handleNumberClick, handleDelete, onCancel])
+  }, [isOpen, handleNumberClick, handleDelete, onCancel, handleSubmit])
 
   if (!isOpen) return null
 
@@ -159,6 +161,19 @@ export default function PINModal({
               <Delete className="w-5 h-5 mx-auto" />
             </button>
           </div>
+
+          {/* Submit Button */}
+          <button
+            onClick={handleSubmit}
+            disabled={pin.length < 4}
+            className={`w-full mt-4 py-3.5 rounded-xl font-bold text-lg transition-all ${
+              pin.length >= 4
+                ? 'bg-primary-600 text-white hover:bg-primary-700 active:scale-[0.98]'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            تأكيد
+          </button>
         </div>
 
         {/* Cancel Button (if allowed) */}

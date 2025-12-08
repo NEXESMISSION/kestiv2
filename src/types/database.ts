@@ -108,7 +108,8 @@ export type Product = {
   description: string | null
   price: number
   cost: number
-  stock: number
+  cost_price: number // alias for cost
+  stock: number | null
   reorder_level: number
   category: string
   category_id: string | null
@@ -131,6 +132,14 @@ export type Service = {
   created_at: string
 }
 
+export type TransactionItemData = {
+  product_id: string
+  name: string
+  quantity: number
+  price: number
+  total_price: number
+}
+
 export type Transaction = {
   id: string
   business_id: string
@@ -141,6 +150,7 @@ export type Transaction = {
   amount: number
   discount: number
   notes: string | null
+  items: TransactionItemData[] | null
   created_at: string
 }
 

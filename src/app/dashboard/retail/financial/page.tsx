@@ -81,10 +81,10 @@ export default function RetailFinancialPage() {
   // Estimate cost of goods sold based on product cost prices
   const costOfGoods = periodTransactions.reduce((sum, tx) => {
     // If transaction has items with cost tracking
-    const items = (tx as any).items || []
+    const items = tx.items || []
     const cost = items.reduce((itemSum: number, item: any) => {
-      const product = products.find(p => p.id === item.product_id) as any
-      return itemSum + ((product?.cost_price || 0) * (item.quantity || 1))
+      const product = products.find(p => p.id === item.product_id)
+      return itemSum + ((product?.cost || product?.cost_price || 0) * (item.quantity || 1))
     }, 0)
     return sum + cost
   }, 0)

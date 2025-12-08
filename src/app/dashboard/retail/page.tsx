@@ -196,70 +196,84 @@ export default function RetailDashboardPage() {
       <main className="max-w-6xl mx-auto px-4 py-4">
         {/* OVERVIEW TAB */}
         {tab === 'overview' && (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white rounded-xl p-4 border">
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-1"><DollarSign className="w-4 h-4" />مبيعات اليوم</div>
-                <div className="text-2xl font-bold text-green-600">{todaySales.toFixed(3)} DT</div>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-3 sm:p-4 text-white">
+                <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
+                  <DollarSign className="w-4 h-4" />مبيعات اليوم
+                </div>
+                <div className="text-xl sm:text-2xl font-bold">{todaySales.toFixed(3)}</div>
+                <div className="text-xs opacity-80">دينار</div>
               </div>
-              <div className="bg-white rounded-xl p-4 border">
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-1"><TrendingUp className="w-4 h-4" />مبيعات الأسبوع</div>
-                <div className="text-2xl font-bold text-blue-600">{weekSales.toFixed(3)} DT</div>
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 sm:p-4 text-white">
+                <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
+                  <TrendingUp className="w-4 h-4" />مبيعات الأسبوع
+                </div>
+                <div className="text-xl sm:text-2xl font-bold">{weekSales.toFixed(3)}</div>
+                <div className="text-xs opacity-80">دينار</div>
               </div>
-              <div className="bg-white rounded-xl p-4 border">
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-1"><ShoppingBag className="w-4 h-4" />مبيعات الشهر</div>
-                <div className="text-2xl font-bold text-primary-600">{monthSales.toFixed(3)} DT</div>
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-3 sm:p-4 text-white">
+                <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
+                  <ShoppingBag className="w-4 h-4" />مبيعات الشهر
+                </div>
+                <div className="text-xl sm:text-2xl font-bold">{monthSales.toFixed(3)}</div>
+                <div className="text-xs opacity-80">دينار</div>
               </div>
-              <div className="bg-white rounded-xl p-4 border">
-                <div className="flex items-center gap-2 text-sm text-gray-500 mb-1"><Package className="w-4 h-4" />عدد المنتجات</div>
-                <div className="text-2xl font-bold text-gray-700">{products.length}</div>
+              <div className="bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl p-3 sm:p-4 text-white">
+                <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
+                  <Package className="w-4 h-4" />عدد المنتجات
+                </div>
+                <div className="text-xl sm:text-2xl font-bold">{products.length}</div>
+                <div className="text-xs opacity-80">منتج</div>
               </div>
             </div>
 
             {/* Quick Links */}
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               <Link
                 href="/dashboard/retail/credit"
                 prefetch={true}
-                className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-4 text-white text-right hover:shadow-lg transition-shadow"
+                className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
               >
-                <CreditCard className="w-6 h-6 mb-2" />
-                <div className="font-bold">الآجل</div>
-                <div className="text-sm opacity-80">إدارة الديون</div>
+                <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
+                <div className="font-bold text-sm sm:text-base">الآجل</div>
+                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">إدارة الديون</div>
               </Link>
               <Link
                 href="/dashboard/retail/expenses"
                 prefetch={true}
-                className="bg-gradient-to-br from-red-500 to-red-600 rounded-xl p-4 text-white text-right hover:shadow-lg transition-shadow"
+                className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
               >
-                <Receipt className="w-6 h-6 mb-2" />
-                <div className="font-bold">المصروفات</div>
-                <div className="text-sm opacity-80">تسجيل المصاريف</div>
+                <Receipt className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
+                <div className="font-bold text-sm sm:text-base">المصروفات</div>
+                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">تسجيل المصاريف</div>
               </Link>
               <Link
                 href="/dashboard/retail/financial"
                 prefetch={true}
-                className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-4 text-white text-right hover:shadow-lg transition-shadow"
+                className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
               >
-                <BarChart3 className="w-6 h-6 mb-2" />
-                <div className="font-bold">المالية</div>
-                <div className="text-sm opacity-80">التقارير والأرباح</div>
+                <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
+                <div className="font-bold text-sm sm:text-base">المالية</div>
+                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">التقارير والأرباح</div>
               </Link>
             </div>
 
             {/* Low Stock Alert */}
             {lowStockProducts.length > 0 && (
-              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
-                <div className="flex items-center gap-2 text-yellow-700 font-bold mb-3">
-                  <AlertTriangle className="w-5 h-5" />
+              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-3 sm:p-4">
+                <div className="flex items-center gap-2 text-yellow-700 font-bold mb-3 text-sm sm:text-base">
+                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
                   منتجات منخفضة المخزون ({lowStockProducts.length})
                 </div>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                  {lowStockProducts.slice(0, 8).map(p => (
-                    <div key={p.id} className="bg-white rounded-lg p-2 text-sm flex justify-between">
-                      <span className="truncate">{p.name}</span>
-                      <span className={`font-bold ${p.stock <= 0 ? 'text-red-600' : 'text-yellow-600'}`}>{p.stock}</span>
+                <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
+                  {lowStockProducts.slice(0, 10).map(p => (
+                    <div key={p.id} className="flex-shrink-0 bg-white rounded-xl p-2 sm:p-3 min-w-[120px] sm:min-w-[140px]">
+                      <div className="font-medium text-sm truncate mb-1">{p.name}</div>
+                      <div className={`text-lg font-bold ${p.stock <= 0 ? 'text-red-600' : 'text-yellow-600'}`}>
+                        {p.stock} <span className="text-xs font-normal text-gray-400">متبقي</span>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -267,19 +281,21 @@ export default function RetailDashboardPage() {
             )}
 
             {/* Recent Sales */}
-            <div className="bg-white rounded-xl border">
-              <div className="p-4 border-b font-bold flex items-center gap-2"><History className="w-5 h-5" />آخر المبيعات</div>
+            <div className="bg-white rounded-2xl border overflow-hidden">
+              <div className="p-3 sm:p-4 border-b font-bold flex items-center gap-2 text-sm sm:text-base">
+                <History className="w-4 h-4 sm:w-5 sm:h-5" />آخر المبيعات
+              </div>
               <div className="divide-y">
                 {transactions.slice(0, 5).map(t => (
-                  <div key={t.id} className="p-4 flex justify-between items-center">
+                  <div key={t.id} className="p-3 sm:p-4 flex justify-between items-center">
                     <div>
-                      <div className="font-medium">{t.items?.length || 0} منتج</div>
-                      <div className="text-sm text-gray-500">{new Date(t.created_at).toLocaleString('ar-TN')}</div>
+                      <div className="font-medium text-sm sm:text-base">{t.items?.length || 0} منتج</div>
+                      <div className="text-xs sm:text-sm text-gray-500">{new Date(t.created_at).toLocaleString('ar-TN')}</div>
                     </div>
-                    <div className="text-lg font-bold text-green-600">{t.amount.toFixed(3)} DT</div>
+                    <div className="text-base sm:text-lg font-bold text-green-600">{t.amount.toFixed(3)} <span className="text-xs text-gray-400">DT</span></div>
                   </div>
                 ))}
-                {transactions.length === 0 && <div className="p-8 text-center text-gray-400">لا توجد مبيعات</div>}
+                {transactions.length === 0 && <div className="p-6 sm:p-8 text-center text-gray-400 text-sm">لا توجد مبيعات</div>}
               </div>
             </div>
           </div>

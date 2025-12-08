@@ -109,3 +109,43 @@ body {
 .category-card:not(.selected) {
   @apply border-gray-200 hover:border-gray-300;
 }
+
+/* Faster loading animations */
+@keyframes pulse-fast {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-pulse-fast {
+  animation: pulse-fast 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1s infinite;
+}
+
+/* Override default pulse to be faster */
+.animate-pulse {
+  animation: pulse-fast 0.6s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+}
+
+/* Smooth transitions */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}

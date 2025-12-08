@@ -3,16 +3,21 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Member, SubscriptionPlan, SubscriptionHistory, Service } from '@/types/database'
+import { Member, SubscriptionPlan, SubscriptionHistory, Service, Product } from '@/types/database'
 import { 
   Search, Users, Zap, Package, Calendar, Snowflake, X,
   Phone, RefreshCw, Plus, LayoutDashboard, UserPlus, LogOut,
   Clock, CheckCircle, XCircle, Play, History,
-  ArrowLeftRight, Sparkles, User
+  ArrowLeftRight, Sparkles, User, ShoppingCart, Minus, Trash2
 } from 'lucide-react'
 import PINModal from '@/components/shared/PINModal'
 import CustomerModal from '@/components/subscription/CustomerModal'
 import NewMemberModal from '@/components/subscription/NewMemberModal'
+
+interface CartItem {
+  product: Product
+  quantity: number
+}
 
 type FilterType = 'all' | 'active' | 'expiring' | 'expired' | 'single' | 'package' | 'frozen'
 
@@ -73,6 +78,7 @@ export default function SubscriptionPOSPage() {
   const [members, setMembers] = useState<Member[]>([])
   const [plans, setPlans] = useState<SubscriptionPlan[]>([])
   const [services, setServices] = useState<Service[]>([])
+  const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
   const [userPin, setUserPin] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState('')
@@ -81,25 +87,105 @@ export default function SubscriptionPOSPage() {
   const [showNewMemberModal, setShowNewMemberModal] = useState(false)
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
   const [pinDestination, setPinDestination] = useState<string | null>(null)
+  
+  // Cart state
+  const [cart, setCart] = useState<CartItem[]>([])
+  const [showCart, setShowCart] = useState(false)
+  const [showProducts, setShowProducts] = useState(false)
+  const [productSearch, setProductSearch] = useState('')
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
     
     // Fetch all data in parallel for speed
-    const [profileRes, m, p, s] = await Promise.all([
+    const [profileRes, m, p, s, prod] = await Promise.all([
       supabase.from('profiles').select('pin_code').eq('id', user.id).single(),
       supabase.from('members').select('*').eq('business_id', user.id).order('name'),
       supabase.from('subscription_plans').select('*').eq('business_id', user.id).eq('is_active', true),
-      supabase.from('services').select('*').eq('business_id', user.id).eq('is_active', true)
+      supabase.from('services').select('*').eq('business_id', user.id).eq('is_active', true),
+      supabase.from('products').select('*').eq('business_id', user.id).eq('is_active', true)
     ])
     
     if (profileRes.data) setUserPin(profileRes.data.pin_code)
     if (m.data) setMembers(m.data)
     if (p.data) setPlans(p.data)
     if (s.data) setServices(s.data)
+    if (prod.data) setProducts(prod.data)
     setLoading(false)
   }, [supabase, router])
+
+  // Cart functions
+  const addToCart = (product: Product) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.product.id === product.id)
+      if (existing) {
+        return prev.map(item => 
+          item.product.id === product.id 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        )
+      }
+      return [...prev, { product, quantity: 1 }]
+    })
+  }
+
+  const removeFromCart = (productId: string) => {
+    setCart(prev => prev.filter(item => item.product.id !== productId))
+  }
+
+  const updateQuantity = (productId: string, delta: number) => {
+    setCart(prev => prev.map(item => {
+      if (item.product.id === productId) {
+        const newQty = item.quantity + delta
+        return newQty > 0 ? { ...item, quantity: newQty } : item
+      }
+      return item
+    }).filter(item => item.quantity > 0))
+  }
+
+  const cartTotal = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
+  const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0)
+
+  const completePurchase = async (paymentMethod: 'cash' | 'debt') => {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user || cart.length === 0) return
+
+    const items = cart.map(item => ({
+      product_id: item.product.id,
+      name: item.product.name,
+      quantity: item.quantity,
+      price: item.product.price,
+      total_price: item.product.price * item.quantity
+    }))
+
+    await supabase.from('transactions').insert({
+      business_id: user.id,
+      type: 'retail',
+      payment_method: paymentMethod,
+      amount: cartTotal,
+      items,
+      notes: `بيع منتجات - ${cart.length} منتج`
+    })
+
+    // Update stock
+    for (const item of cart) {
+      if (item.product.stock !== null) {
+        await supabase.from('products').update({ 
+          stock: Math.max(0, item.product.stock - item.quantity) 
+        }).eq('id', item.product.id)
+      }
+    }
+
+    setCart([])
+    setShowCart(false)
+    fetchData()
+  }
+
+  const filteredProducts = products.filter(p => 
+    p.name.toLowerCase().includes(productSearch.toLowerCase()) ||
+    (p.barcode && p.barcode.includes(productSearch))
+  )
 
   useEffect(() => { fetchData() }, [fetchData])
 
@@ -159,6 +245,19 @@ export default function SubscriptionPOSPage() {
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold text-gray-900">نقطة البيع</h1>
             <div className="flex items-center gap-2">
+              {/* Cart Button */}
+              <button 
+                onClick={() => setShowProducts(true)} 
+                className="relative flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-medium"
+              >
+                <ShoppingCart className="w-5 h-5" />
+                <span className="hidden sm:inline">المنتجات</span>
+                {cartCount > 0 && (
+                  <span className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                    {cartCount}
+                  </span>
+                )}
+              </button>
               <button onClick={() => setShowNewMemberModal(true)} className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium">
                 <UserPlus className="w-5 h-5" /><span className="hidden sm:inline">عميل جديد</span>
               </button>
@@ -281,6 +380,179 @@ export default function SubscriptionPOSPage() {
             fetchData()
           }}
         />
+      )}
+
+      {/* Products + Cart Modal - Combined */}
+      {showProducts && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowProducts(false)}>
+          <div className="bg-white w-full sm:max-w-4xl sm:rounded-2xl max-h-[95vh] flex flex-col sm:flex-row" onClick={e => e.stopPropagation()}>
+            {/* Products Section */}
+            <div className="flex-1 flex flex-col min-h-0 border-l">
+              {/* Header */}
+              <div className="p-3 border-b flex items-center justify-between">
+                <h2 className="text-lg font-bold">المنتجات</h2>
+                <button onClick={() => setShowProducts(false)} className="p-2 hover:bg-gray-100 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              
+              {/* Search */}
+              <div className="p-3 border-b">
+                <div className="relative">
+                  <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <input type="text" value={productSearch} onChange={(e) => setProductSearch(e.target.value)} placeholder="بحث..." className="w-full pr-9 pl-3 py-2 bg-gray-100 rounded-lg text-sm" />
+                </div>
+              </div>
+              
+              {/* Products Grid */}
+              <div className="flex-1 overflow-y-auto p-3">
+                {filteredProducts.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Package className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+                    <p className="text-gray-500 text-sm">لا توجد منتجات</p>
+                    <button onClick={() => { setPinDestination('/dashboard/products'); setShowPinModal(true); setShowProducts(false) }} className="mt-2 px-3 py-1.5 bg-primary-600 text-white rounded-lg text-sm">إضافة منتجات</button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                    {filteredProducts.map(product => {
+                      const inCart = cart.find(item => item.product.id === product.id)
+                      return (
+                        <button key={product.id} onClick={() => addToCart(product)} className={`p-2 rounded-xl border-2 text-right transition-all ${inCart ? 'border-green-500 bg-green-50' : 'border-gray-200'}`}>
+                          <h3 className="font-medium text-sm truncate">{product.name}</h3>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="text-primary-600 font-bold text-sm">{product.price.toFixed(3)}</span>
+                            {inCart && <span className="bg-green-500 text-white text-xs px-1.5 py-0.5 rounded-full">{inCart.quantity}</span>}
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Cart Section - Always Visible */}
+            <div className="w-full sm:w-72 bg-gray-50 flex flex-col border-t sm:border-t-0">
+              <div className="p-3 border-b bg-white flex items-center justify-between">
+                <h3 className="font-bold flex items-center gap-2"><ShoppingCart className="w-4 h-4" />السلة ({cartCount})</h3>
+                {cart.length > 0 && <button onClick={() => setCart([])} className="text-red-500 text-xs">مسح</button>}
+              </div>
+              <div className="flex-1 overflow-y-auto p-2 max-h-[200px] sm:max-h-none">
+                {cart.length === 0 ? (
+                  <div className="text-center py-6 text-gray-400 text-sm">السلة فارغة</div>
+                ) : (
+                  <div className="space-y-2">
+                    {cart.map(item => (
+                      <div key={item.product.id} className="bg-white rounded-lg p-2 flex items-center gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">{item.product.name}</div>
+                          <div className="text-xs text-primary-600 font-bold">{(item.product.price * item.quantity).toFixed(3)} د.ت</div>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button onClick={() => updateQuantity(item.product.id, -1)} className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center"><Minus className="w-3 h-3" /></button>
+                          <span className="w-6 text-center text-sm font-bold">{item.quantity}</span>
+                          <button onClick={() => addToCart(item.product)} className="w-6 h-6 bg-gray-200 rounded flex items-center justify-center"><Plus className="w-3 h-3" /></button>
+                          <button onClick={() => removeFromCart(item.product.id)} className="w-6 h-6 bg-red-100 text-red-600 rounded flex items-center justify-center"><Trash2 className="w-3 h-3" /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+              {cart.length > 0 && (
+                <div className="p-3 border-t bg-white space-y-2">
+                  <div className="flex justify-between font-bold"><span>المجموع:</span><span className="text-primary-600">{cartTotal.toFixed(3)} د.ت</span></div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button onClick={() => completePurchase('cash')} className="py-2.5 bg-green-600 text-white rounded-lg font-bold text-sm">💵 نقداً</button>
+                    <button onClick={() => completePurchase('debt')} className="py-2.5 bg-orange-500 text-white rounded-lg font-bold text-sm">📝 آجل</button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cart Modal - Keep for mobile standalone access */}
+      {showCart && !showProducts && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center" onClick={() => setShowCart(false)}>
+          <div className="bg-white w-full sm:max-w-md sm:rounded-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="p-4 border-b flex items-center justify-between">
+              <h2 className="text-lg font-bold flex items-center gap-2"><ShoppingCart className="w-5 h-5" />السلة</h2>
+              <button onClick={() => setShowCart(false)} className="p-2 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5" /></button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4">
+              {cart.length === 0 ? (
+                <div className="text-center py-12">
+                  <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">السلة فارغة</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {cart.map(item => (
+                    <div key={item.product.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
+                      <div className="flex-1">
+                        <h3 className="font-medium">{item.product.name}</h3>
+                        <p className="text-sm text-primary-600 font-bold">{item.product.price.toFixed(3)} د.ت</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button 
+                          onClick={() => updateQuantity(item.product.id, -1)}
+                          className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-8 text-center font-bold">{item.quantity}</span>
+                        <button 
+                          onClick={() => updateQuantity(item.product.id, 1)}
+                          className="w-8 h-8 bg-gray-200 hover:bg-gray-300 rounded-lg flex items-center justify-center"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                        <button 
+                          onClick={() => removeFromCart(item.product.id)}
+                          className="w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg flex items-center justify-center"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Footer */}
+            {cart.length > 0 && (
+              <div className="p-4 border-t space-y-3">
+                <div className="flex justify-between items-center text-lg font-bold">
+                  <span>المجموع:</span>
+                  <span className="text-primary-600">{cartTotal.toFixed(3)} د.ت</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <button 
+                    onClick={() => completePurchase('cash')}
+                    className="py-3 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold"
+                  >
+                    💵 نقداً
+                  </button>
+                  <button 
+                    onClick={() => completePurchase('debt')}
+                    className="py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold"
+                  >
+                    📝 آجل
+                  </button>
+                </div>
+                <button 
+                  onClick={() => { setShowCart(false); setShowProducts(true) }}
+                  className="w-full py-2 border-2 border-gray-300 text-gray-700 rounded-xl font-medium hover:bg-gray-50"
+                >
+                  متابعة التسوق
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       <PINModal isOpen={showPinModal} correctPin={userPin} onSuccess={() => { setShowPinModal(false); router.push(pinDestination || '/dashboard'); setPinDestination(null) }} onCancel={() => { setShowPinModal(false); setPinDestination(null) }} />

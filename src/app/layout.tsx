@@ -7,6 +7,12 @@ export const metadata: Metadata = {
   icons: {
     icon: '/icon.svg',
   },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 }
 
 export default function RootLayout({
@@ -16,7 +22,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ar" dir="rtl">
-      <body className="min-h-screen bg-slate-50">
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+      </head>
+      <body className="min-h-screen bg-slate-50 touch-manipulation">
         {children}
       </body>
     </html>

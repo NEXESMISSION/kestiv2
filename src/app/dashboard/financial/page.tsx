@@ -81,7 +81,10 @@ export default function FinancialPage() {
   // Cost of goods (from retail transactions with cost tracking)
   const costOfGoods = periodTransactions
     .filter(tx => tx.type === 'retail')
-    .reduce((sum, tx) => sum + ((tx as any).cost || 0), 0)
+    .reduce((sum, tx) => {
+      const items = tx.items || []
+      return sum + items.reduce((itemSum: number, item: any) => itemSum + ((item.cost || 0) * (item.quantity || 1)), 0)
+    }, 0)
 
   const grossProfit = revenue - costOfGoods
   const netProfit = grossProfit - expenseTotal
