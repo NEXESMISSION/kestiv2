@@ -372,6 +372,7 @@ export default function ProductsPage() {
                     type="number"
                     value={formData.price}
                     onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                    onFocus={(e) => e.target.select()}
                     min="0"
                     step="0.001"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -385,6 +386,7 @@ export default function ProductsPage() {
                     type="number"
                     value={formData.cost}
                     onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) || 0 })}
+                    onFocus={(e) => e.target.select()}
                     min="0"
                     step="0.001"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
@@ -410,6 +412,7 @@ export default function ProductsPage() {
                     type="number"
                     value={formData.stock}
                     onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
+                    onFocus={(e) => e.target.select()}
                     min="0"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
@@ -422,6 +425,7 @@ export default function ProductsPage() {
                     type="number"
                     value={formData.reorder_level}
                     onChange={(e) => setFormData({ ...formData, reorder_level: parseInt(e.target.value) || 0 })}
+                    onFocus={(e) => e.target.select()}
                     min="0"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />

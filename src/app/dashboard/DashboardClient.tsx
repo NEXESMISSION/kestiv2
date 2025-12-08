@@ -785,11 +785,11 @@ function PlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan | null; o
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">أيام</label>
-                  <input type="number" value={daysInput} onChange={e => setDaysInput(+e.target.value || 0)} min="0" className="w-full px-4 py-2 border rounded-xl" />
+                  <input type="number" value={daysInput} onChange={e => setDaysInput(+e.target.value || 0)} onFocus={e => e.target.select()} min="0" className="w-full px-4 py-2 border rounded-xl" />
                 </div>
                 <div>
                   <label className="block text-xs text-gray-500 mb-1">دقائق</label>
-                  <input type="number" value={minsInput} onChange={e => setMinsInput(+e.target.value || 0)} min="0" max="1440" className="w-full px-4 py-2 border rounded-xl" />
+                  <input type="number" value={minsInput} onChange={e => setMinsInput(+e.target.value || 0)} onFocus={e => e.target.select()} min="0" max="1440" className="w-full px-4 py-2 border rounded-xl" />
                 </div>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -802,10 +802,10 @@ function PlanModal({ plan, onClose, onSave }: { plan: SubscriptionPlan | null; o
               </div>
             </div>
           )}
-          {type === 'package' && <div><label className="block text-sm font-medium mb-1">عدد الحصص</label><input type="number" value={sessions} onChange={e => setSessions(+e.target.value)} min="2" className="w-full px-4 py-2.5 border rounded-xl" /></div>}
+          {type === 'package' && <div><label className="block text-sm font-medium mb-1">عدد الحصص</label><input type="number" value={sessions} onChange={e => setSessions(+e.target.value)} onFocus={e => e.target.select()} min="2" className="w-full px-4 py-2.5 border rounded-xl" /></div>}
           {type === 'single' && <div className="p-3 bg-orange-50 rounded-xl text-sm text-orange-700">حصة واحدة فقط - للزيارات المؤقتة</div>}
           {/* Price */}
-          <div><label className="block text-sm font-medium mb-1">السعر (DT)</label><input type="number" value={price} onChange={e => setPrice(+e.target.value)} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" /></div>
+          <div><label className="block text-sm font-medium mb-1">السعر (DT)</label><input type="number" value={price} onChange={e => setPrice(+e.target.value)} onFocus={e => e.target.select()} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" /></div>
         </div>
         <div className="p-4 border-t flex gap-3">
           <button onClick={save} disabled={!name} className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 text-white rounded-xl font-bold">حفظ</button>
@@ -829,7 +829,7 @@ function ServiceModal({ service, onClose, onSave }: { service: Service | null; o
         <div className="p-4 space-y-4">
           <div><label className="block text-sm font-medium mb-1">اسم الخدمة</label><input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl" /></div>
           <div><label className="block text-sm font-medium mb-1">الوصف (اختياري)</label><textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full px-4 py-2.5 border rounded-xl resize-none" rows={2} /></div>
-          <div><label className="block text-sm font-medium mb-1">السعر (DT)</label><input type="number" value={price} onChange={e => setPrice(+e.target.value)} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" /></div>
+          <div><label className="block text-sm font-medium mb-1">السعر (DT)</label><input type="number" value={price} onChange={e => setPrice(+e.target.value)} onFocus={e => e.target.select()} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" /></div>
         </div>
         <div className="p-4 border-t flex gap-3">
           <button onClick={() => name && onSave({ name, description: description || null, price, is_active: true })} disabled={!name} className="flex-1 py-3 bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-300 text-white rounded-xl font-bold">حفظ</button>
@@ -863,11 +863,11 @@ function ProductModal({ product, onClose, onSave }: { product: Product | null; o
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-sm font-medium mb-1">سعر البيع (DT)</label>
-              <input type="number" value={price} onChange={e => setPrice(+e.target.value)} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" />
+              <input type="number" value={price} onChange={e => setPrice(+e.target.value)} onFocus={e => e.target.select()} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" />
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">التكلفة (DT)</label>
-              <input type="number" value={cost} onChange={e => setCost(+e.target.value)} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" />
+              <input type="number" value={cost} onChange={e => setCost(+e.target.value)} onFocus={e => e.target.select()} min="0" step="0.001" className="w-full px-4 py-2.5 border rounded-xl" />
             </div>
           </div>
           <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
@@ -879,12 +879,12 @@ function ProductModal({ product, onClose, onSave }: { product: Product | null; o
           {trackStock && (
             <div>
               <label className="block text-sm font-medium mb-1">الكمية في المخزون</label>
-              <input type="number" value={stock} onChange={e => setStock(+e.target.value)} min="0" className="w-full px-4 py-2.5 border rounded-xl" />
+              <input type="number" value={stock} onChange={e => setStock(+e.target.value)} onFocus={e => e.target.select()} min="0" className="w-full px-4 py-2.5 border rounded-xl" />
             </div>
           )}
         </div>
         <div className="p-4 border-t flex gap-3">
-          <button onClick={() => name && onSave({ name, price, cost, stock: trackStock ? stock : null, track_stock: trackStock, is_active: true })} disabled={!name} className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 text-white rounded-xl font-bold">حفظ</button>
+          <button onClick={() => name && onSave({ name, price, cost, stock: trackStock ? stock : undefined, track_stock: trackStock, is_active: true })} disabled={!name} className="flex-1 py-3 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 text-white rounded-xl font-bold">حفظ</button>
           <button onClick={onClose} className="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl">إلغاء</button>
         </div>
       </div>

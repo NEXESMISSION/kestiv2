@@ -862,8 +862,8 @@ function ProductModal({ product, categories, onClose, onSave, userId }: {
       description: description.trim() || null,
       image_url: imageUrl || null,
       track_stock: trackStock,
-      stock: trackStock ? parseInt(stock) || 0 : 0,
-      reorder_level: trackStock ? parseInt(reorderLevel) || 5 : 0,
+      stock: trackStock ? parseInt(stock) || 0 : undefined,
+      reorder_level: trackStock ? parseInt(reorderLevel) || 5 : undefined,
       is_active: isActive
     })
   }
@@ -907,11 +907,11 @@ function ProductModal({ product, categories, onClose, onSave, userId }: {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">سعر البيع *</label>
-              <input type="number" step="0.001" value={price} onChange={e => setPrice(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="0.000" />
+              <input type="number" step="0.001" value={price} onChange={e => setPrice(e.target.value)} onFocus={e => e.target.select()} className="w-full px-4 py-2 border rounded-xl" placeholder="0.000" />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">سعر التكلفة</label>
-              <input type="number" step="0.001" value={cost} onChange={e => setCost(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="0.000" />
+              <input type="number" step="0.001" value={cost} onChange={e => setCost(e.target.value)} onFocus={e => e.target.select()} className="w-full px-4 py-2 border rounded-xl" placeholder="0.000" />
             </div>
           </div>
           <div>
@@ -938,11 +938,11 @@ function ProductModal({ product, categories, onClose, onSave, userId }: {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">الكمية الحالية</label>
-                <input type="number" value={stock} onChange={e => setStock(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="0" />
+                <input type="number" value={stock} onChange={e => setStock(e.target.value)} onFocus={e => e.target.select()} className="w-full px-4 py-2 border rounded-xl" placeholder="0" />
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">حد إعادة الطلب</label>
-                <input type="number" value={reorderLevel} onChange={e => setReorderLevel(e.target.value)} className="w-full px-4 py-2 border rounded-xl" placeholder="5" />
+                <input type="number" value={reorderLevel} onChange={e => setReorderLevel(e.target.value)} onFocus={e => e.target.select()} className="w-full px-4 py-2 border rounded-xl" placeholder="5" />
               </div>
             </div>
           )}

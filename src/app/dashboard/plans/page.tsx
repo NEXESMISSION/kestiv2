@@ -445,6 +445,7 @@ export default function PlansPage() {
                           const mins = Math.round((formData.duration_days % 1) * 1440)
                           setFormData({ ...formData, duration_days: days + mins / 1440 })
                         }}
+                        onFocus={(e) => e.target.select()}
                         min="0"
                         className="w-full px-4 py-2 border border-gray-300 rounded-xl"
                         placeholder="0"
@@ -460,6 +461,7 @@ export default function PlansPage() {
                           const days = Math.floor(formData.duration_days)
                           setFormData({ ...formData, duration_days: days + mins / 1440 })
                         }}
+                        onFocus={(e) => e.target.select()}
                         min="0"
                         max="1440"
                         className="w-full px-4 py-2 border border-gray-300 rounded-xl"
@@ -507,6 +509,7 @@ export default function PlansPage() {
                     type="number"
                     value={formData.sessions}
                     onChange={(e) => setFormData({ ...formData, sessions: parseInt(e.target.value) || 2 })}
+                    onFocus={(e) => e.target.select()}
                     min="2"
                     className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                   />
@@ -551,6 +554,7 @@ export default function PlansPage() {
                   type="number"
                   value={formData.price}
                   onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                  onFocus={(e) => e.target.select()}
                   min="0"
                   step="0.001"
                   className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
