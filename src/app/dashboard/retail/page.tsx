@@ -166,20 +166,22 @@ export default function RetailDashboardPage() {
         </div>
       </header>
 
-      {/* Tabs */}
+      {/* Tabs - Grid style visible on all sizes */}
       <div className="max-w-6xl mx-auto px-4 pt-4">
-        <div className="flex gap-2 border-b bg-white rounded-t-xl px-2 overflow-x-auto">
+        <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl">
           {[
-            { k: 'overview', l: 'نظرة عامة', i: TrendingUp },
-            { k: 'products', l: 'المنتجات والأصناف', i: Package },
-            { k: 'history', l: 'المبيعات', i: History }
+            { k: 'overview', l: 'نظرة عامة', ls: 'نظرة', i: TrendingUp },
+            { k: 'products', l: 'المنتجات', ls: 'منتجات', i: Package },
+            { k: 'history', l: 'المبيعات', ls: 'مبيعات', i: History }
           ].map(t => (
             <button 
               key={t.k} 
               onClick={() => setTab(t.k as Tab)} 
-              className={`flex items-center gap-2 px-4 py-3 font-medium border-b-2 whitespace-nowrap ${tab === t.k ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}
+              className={`flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg font-medium text-sm transition-all ${tab === t.k ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
-              <t.i className="w-4 h-4" />{t.l}
+              <t.i className="w-4 h-4" />
+              <span className="hidden sm:inline">{t.l}</span>
+              <span className="sm:hidden">{t.ls}</span>
             </button>
           ))}
         </div>
@@ -338,7 +340,48 @@ export default function RetailDashboardPage() {
               </button>
             </div>
 
-            <div className="bg-white rounded-xl border overflow-hidden">
+            {/* Mobile: Card Layout */}
+            <div className="sm:hidden space-y-2">
+              {filteredProducts.map(p => (
+                <div key={p.id} className="bg-white rounded-xl border p-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
+                      {p.image_url ? <img src={p.image_url} className="w-12 h-12 rounded-lg object-cover" /> : <Package className="w-6 h-6 text-gray-400" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="font-bold truncate">{p.name}</div>
+                        <span className={`px-2 py-0.5 rounded-full text-xs flex-shrink-0 ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                          {p.is_active ? 'نشط' : 'غير نشط'}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-0.5">{categories.find(c => c.id === p.category_id)?.name || 'بدون صنف'}</div>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="font-bold text-primary-600">{p.price.toFixed(3)} DT</span>
+                        {p.track_stock && (
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${(p.stock ?? 0) <= 0 ? 'bg-red-100 text-red-700' : (p.stock ?? 0) <= p.reorder_level ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
+                            مخزون: {p.stock ?? 0}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1 mt-2 pt-2 border-t">
+                    <button onClick={() => { setStockProduct(p); setShowStockModal(true) }} className="flex-1 py-1.5 text-xs bg-blue-50 text-blue-600 rounded-lg font-medium">مخزون</button>
+                    <button onClick={() => { setEditingProduct(p); setShowProductModal(true) }} className="flex-1 py-1.5 text-xs bg-gray-50 text-gray-600 rounded-lg font-medium">تعديل</button>
+                    <button 
+                      onClick={async () => { await supabase.from('products').update({ is_active: !p.is_active }).eq('id', p.id); fetchData() }} 
+                      className={`flex-1 py-1.5 text-xs rounded-lg font-medium ${p.is_active ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'}`}
+                    >
+                      {p.is_active ? 'إيقاف' : 'تفعيل'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop: Table Layout */}
+            <div className="hidden sm:block bg-white rounded-xl border overflow-hidden">
               <table className="w-full">
                 <thead className="bg-gray-50 border-b">
                   <tr>

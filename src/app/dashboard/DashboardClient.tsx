@@ -233,12 +233,23 @@ export default function DashboardClient({ user, profile }: Props) {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs - Grid visible on all sizes */}
       <div className="max-w-6xl mx-auto px-4">
-        <div className="flex gap-1 sm:gap-2 border-b overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
-          {[{ k: 'members', l: 'العملاء', i: Users }, { k: 'plans', l: 'الخطط', i: Package }, { k: 'services', l: 'الخدمات', i: Sparkles }, { k: 'products', l: 'المنتجات', i: ShoppingBag }, { k: 'history', l: 'السجل', i: History }].map(t => (
-            <button key={t.k} onClick={() => setTab(t.k as Tab)} className={`flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 font-medium border-b-2 text-sm sm:text-base whitespace-nowrap ${tab === t.k ? 'border-primary-600 text-primary-600' : 'border-transparent text-gray-500'}`}>
-              <t.i className="w-4 h-4" />{t.l}
+        <div className="grid grid-cols-5 gap-1 bg-gray-100 p-1 rounded-xl">
+          {[
+            { k: 'members', l: 'العملاء', i: Users }, 
+            { k: 'plans', l: 'الخطط', i: Package }, 
+            { k: 'services', l: 'خدمات', i: Sparkles }, 
+            { k: 'products', l: 'منتجات', i: ShoppingBag }, 
+            { k: 'history', l: 'السجل', i: History }
+          ].map(t => (
+            <button 
+              key={t.k} 
+              onClick={() => setTab(t.k as Tab)} 
+              className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${tab === t.k ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <t.i className="w-4 h-4" />
+              <span className="truncate">{t.l}</span>
             </button>
           ))}
         </div>

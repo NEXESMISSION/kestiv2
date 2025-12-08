@@ -55,54 +55,25 @@ export default function RetailPOSPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) { router.push('/login'); return }
     
-    // Fetch profile and products
-    const { data: profile } = await supabase.from('profiles').select('pin_code').eq('id', user.id).single()
-    if (profile) setUserPin(profile.pin_code)
+    // Fetch all data in parallel for speed
+    const [profileRes, productsRes, categoriesRes, customersRes] = await Promise.all([
+      supabase.from('profiles').select('pin_code').eq('id', user.id).single(),
+      supabase.from('products')
+        .select('id, business_id, name, price, cost, stock, reorder_level, category_id, category, description, image_url, track_stock, is_active')
+        .eq('business_id', user.id)
+        .eq('is_active', true)
+        .order('name'),
+      supabase.from('categories').select('*').eq('business_id', user.id).eq('is_active', true).order('sort_order'),
+      supabase.from('retail_customers').select('*').eq('business_id', user.id).eq('is_active', true).order('name')
+    ])
     
-    // Fetch products - use only columns that exist in DB
-    const { data: productsData, error: productsError } = await supabase
-      .from('products')
-      .select('id, business_id, name, price, cost, stock, reorder_level, category_id, category, description, image_url, track_stock, is_active, created_at, updated_at')
-      .eq('business_id', user.id)
-      .eq('is_active', true)
-      .order('name')
-    
-    if (productsError) {
-      console.error('Products error:', productsError)
-    } else if (productsData) {
-      // Add default for barcode (not in DB)
-      const normalizedProducts = productsData.map(p => ({
-        ...p,
-        barcode: null
-      }))
+    if (profileRes.data) setUserPin(profileRes.data.pin_code)
+    if (productsRes.data) {
+      const normalizedProducts = productsRes.data.map(p => ({ ...p, barcode: null }))
       setProducts(normalizedProducts as Product[])
     }
-    
-    // Try to fetch categories (table might not exist)
-    try {
-      const { data: categoriesData } = await supabase
-        .from('categories')
-        .select('*')
-        .eq('business_id', user.id)
-        .eq('is_active', true)
-        .order('sort_order')
-      if (categoriesData) setCategories(categoriesData)
-    } catch (e) {
-      console.log('Categories table may not exist yet')
-    }
-    
-    // Try to fetch retail customers
-    try {
-      const { data: customersData } = await supabase
-        .from('retail_customers')
-        .select('*')
-        .eq('business_id', user.id)
-        .eq('is_active', true)
-        .order('name')
-      if (customersData) setCustomers(customersData)
-    } catch (e) {
-      console.log('retail_customers table may not exist yet')
-    }
+    if (categoriesRes.data) setCategories(categoriesRes.data)
+    if (customersRes.data) setCustomers(customersRes.data)
     
     setLoading(false)
   }, [supabase, router])
