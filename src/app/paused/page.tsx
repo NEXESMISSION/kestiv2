@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { PauseCircle, LogOut, Loader2, Phone, Mail } from 'lucide-react'
+import { PauseCircle, LogOut, Loader2, Phone, Mail, MessageCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 export default function PausedPage() {
@@ -104,14 +104,18 @@ export default function PausedPage() {
               <p className="text-gray-600 text-sm mb-3 text-center">
                 إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع الدعم الفني
               </p>
-              <div className="flex justify-center gap-4">
-                <a href="tel:+21600000000" className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700">
+              <div className="flex flex-wrap justify-center gap-3">
+                <a href="tel:+21653518337" className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700">
                   <Phone className="w-4 h-4" />
-                  اتصل بنا
+                  +216 53518337
+                </a>
+                <a href="https://wa.me/21653518337" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700">
+                  <MessageCircle className="w-4 h-4" />
+                  واتساب
                 </a>
                 <a href="mailto:support@kestipro.com" className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700">
                   <Mail className="w-4 h-4" />
-                  راسلنا
+                  support@kestipro.com
                 </a>
               </div>
             </div>
