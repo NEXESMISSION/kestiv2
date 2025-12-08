@@ -48,6 +48,8 @@ export async function middleware(request: NextRequest) {
     pathname === '/reset-password' ||
     pathname === '/' ||
     pathname === '/landing' ||
+    pathname === '/sitemap.xml' ||
+    pathname === '/robots.txt' ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next')
   ) {
