@@ -925,15 +925,15 @@ function ProductModal({ product, categories, onClose, onSave, userId }: {
             <label className="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
             <textarea value={description} onChange={e => setDescription(e.target.value)} className="w-full px-4 py-2 border rounded-xl resize-none" rows={2} placeholder="وصف اختياري" />
           </div>
-          <label className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={trackStock} 
-              onChange={(e) => setTrackStock(e.target.checked)}
-              className="w-5 h-5 rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-            />
+          <div 
+            onClick={() => setTrackStock(!trackStock)}
+            className="flex items-center justify-between p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors"
+          >
             <span className="font-medium">تتبع المخزون</span>
-          </label>
+            <div className={`w-12 h-7 rounded-full p-1 transition-colors ${trackStock ? 'bg-primary-500' : 'bg-gray-300'}`}>
+              <div className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${trackStock ? 'translate-x-5' : 'translate-x-0'}`} />
+            </div>
+          </div>
           {trackStock && (
             <div className="grid grid-cols-2 gap-4">
               <div>
