@@ -83,7 +83,7 @@ export default function RetailFinancialPage() {
     // If transaction has items with cost tracking
     const items = (tx as any).items || []
     const cost = items.reduce((itemSum: number, item: any) => {
-      const product = products.find(p => p.id === item.product_id)
+      const product = products.find(p => p.id === item.product_id) as any
       return itemSum + ((product?.cost_price || 0) * (item.quantity || 1))
     }, 0)
     return sum + cost
