@@ -453,8 +453,14 @@ export default function RetailPOSPage() {
                                 inCart ? 'border-primary-500 bg-primary-50' : 'border-gray-100'
                               }`}
                             >
-                              <div className="h-16 rounded-xl mb-2 flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-50">
-                                <Package className="w-8 h-8 text-gray-400" />
+                              <div className={`h-16 rounded-xl mb-2 flex items-center justify-center ${
+                                product.image_url ? '' : 'bg-gradient-to-br from-gray-100 to-gray-50'
+                              }`}>
+                                {product.image_url ? (
+                                  <img src={product.image_url} alt={product.name} className="h-full w-full object-cover rounded-xl" />
+                                ) : (
+                                  <Package className="w-8 h-8 text-gray-400" />
+                                )}
                               </div>
                               <h3 className="font-bold text-gray-900 truncate text-sm">{product.name}</h3>
                               <div className="flex items-center justify-between mt-1">

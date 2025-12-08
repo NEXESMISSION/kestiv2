@@ -11,6 +11,46 @@ interface ImageUploadProps {
   userId: string
   folder?: string // 'products' | 'categories' etc
   size?: 'sm' | 'md' | 'lg'
+  maxSizeMB?: number
+  compressQuality?: number // 0.1 to 1.0
+}
+
+// Compress image using canvas
+async function compressImage(file: File, maxWidth = 800, quality = 0.8): Promise<Blob> {
+  return new Promise((resolve, reject) => {
+    const img = document.createElement('img')
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    
+    img.onload = () => {
+      // Calculate new dimensions maintaining aspect ratio
+      let { width, height } = img
+      if (width > maxWidth) {
+        height = (height * maxWidth) / width
+        width = maxWidth
+      }
+      
+      canvas.width = width
+      canvas.height = height
+      
+      // Draw and compress
+      ctx?.drawImage(img, 0, 0, width, height)
+      canvas.toBlob(
+        (blob) => {
+          if (blob) {
+            resolve(blob)
+          } else {
+            reject(new Error('Compression failed'))
+          }
+        },
+        'image/jpeg',
+        quality
+      )
+    }
+    
+    img.onerror = () => reject(new Error('Failed to load image'))
+    img.src = URL.createObjectURL(file)
+  })
 }
 
 export default function ImageUpload({ 
@@ -18,7 +58,9 @@ export default function ImageUpload({
   onImageChange, 
   userId,
   folder = 'products',
-  size = 'md'
+  size = 'md',
+  maxSizeMB = 5,
+  compressQuality = 0.7
 }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [preview, setPreview] = useState<string | null>(currentImage || null)
@@ -35,47 +77,65 @@ export default function ImageUpload({
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file
+    // Validate file type
     if (!file.type.startsWith('image/')) {
       alert('يرجى اختيار صورة فقط')
       return
     }
 
-    if (file.size > 2 * 1024 * 1024) { // 2MB limit
-      alert('حجم الصورة يجب أن يكون أقل من 2MB')
+    // Check max size (5MB)
+    if (file.size > maxSizeMB * 1024 * 1024) {
+      alert(`حجم الصورة يجب أن يكون أقل من ${maxSizeMB}MB`)
       return
     }
 
     setUploading(true)
 
     try {
-      // Create unique filename: userId/folder/timestamp_originalname
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${userId}/${folder}/${Date.now()}.${fileExt}`
+      // Compress image before upload
+      let fileToUpload: Blob | File = file
+      const originalSize = file.size
+      
+      // Only compress if larger than 200KB
+      if (file.size > 200 * 1024) {
+        try {
+          fileToUpload = await compressImage(file, 800, compressQuality)
+          console.log(`Compressed: ${(originalSize / 1024).toFixed(0)}KB → ${(fileToUpload.size / 1024).toFixed(0)}KB`)
+        } catch {
+          // If compression fails, use original
+          fileToUpload = file
+        }
+      }
+
+      // Create unique filename
+      const fileName = `${userId}/${folder}/${Date.now()}.jpg`
 
       // Delete old image if exists
       if (currentImage) {
-        const oldPath = currentImage.split('/').slice(-3).join('/')
-        await supabase.storage.from('images').remove([oldPath])
+        const oldPath = currentImage.split('/products/')[1]
+        if (oldPath) {
+          await supabase.storage.from('products').remove([oldPath])
+        }
       }
 
-      // Upload new image
-      const { data, error } = await supabase.storage
-        .from('images')
-        .upload(fileName, file, {
-          cacheControl: '3600',
+      // Upload compressed image
+      const { error } = await supabase.storage
+        .from('products')
+        .upload(fileName, fileToUpload, {
+          cacheControl: '31536000', // 1 year cache
+          contentType: 'image/jpeg',
           upsert: true
         })
 
       if (error) {
         console.error('Upload error:', error)
-        alert('فشل رفع الصورة. حاول مرة أخرى.')
+        alert('فشل رفع الصورة. تأكد من إعداد Storage في Supabase')
         return
       }
 
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('images')
+        .from('products')
         .getPublicUrl(fileName)
 
       setPreview(publicUrl)
@@ -98,9 +158,9 @@ export default function ImageUpload({
     setUploading(true)
     try {
       // Extract path from URL
-      const urlParts = currentImage.split('/images/')
+      const urlParts = currentImage.split('/products/')
       if (urlParts[1]) {
-        await supabase.storage.from('images').remove([urlParts[1]])
+        await supabase.storage.from('products').remove([urlParts[1]])
       }
       setPreview(null)
       onImageChange(null)
