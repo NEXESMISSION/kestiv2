@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { 
@@ -215,7 +216,7 @@ export default function RegisterPage() {
       <div className="w-full max-w-lg">
         {/* Logo/Brand */}
         <div className="text-center mb-6 sm:mb-8">
-          <h1 className="text-3xl sm:text-4xl font-bold text-primary-600 mb-2">KESTI Pro</h1>
+          <Image src="/kesti.png" alt="Kesti Pro" width={100} height={100} className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 rounded-2xl shadow-lg" />
           <p className="text-gray-500 text-sm sm:text-base">نظام إدارة الأعمال المتكامل</p>
         </div>
 

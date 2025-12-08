@@ -47,6 +47,9 @@ export default function RetailPOSPage() {
   
   // Mobile cart popup
   const [showMobileCart, setShowMobileCart] = useState(false)
+  
+  // PIN navigation destination
+  const [pinDestination, setPinDestination] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -412,7 +415,16 @@ export default function RetailPOSPage() {
             {filteredProducts.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-400">
                 <Package className="w-12 h-12 sm:w-16 sm:h-16 mb-2 sm:mb-4" />
-                <p className="text-sm sm:text-base">لا توجد منتجات</p>
+                <p className="text-sm sm:text-base mb-4">{products.length === 0 ? 'لا توجد منتجات بعد' : 'لا توجد منتجات'}</p>
+                {products.length === 0 && (
+                  <button
+                    onClick={() => { setPinDestination('/dashboard/retail'); setShowPinModal(true) }}
+                    className="px-6 py-3 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold flex items-center gap-2"
+                  >
+                    <Plus className="w-5 h-5" />
+                    إضافة منتجات
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
@@ -792,8 +804,8 @@ export default function RetailPOSPage() {
       <PINModal 
         isOpen={showPinModal} 
         correctPin={userPin} 
-        onSuccess={() => { setShowPinModal(false); window.location.href = '/dashboard/retail' }} 
-        onCancel={() => setShowPinModal(false)} 
+        onSuccess={() => { setShowPinModal(false); router.push(pinDestination || '/dashboard/retail'); setPinDestination(null) }} 
+        onCancel={() => { setShowPinModal(false); setPinDestination(null) }} 
       />
 
       {/* Low Stock Modal - View Only */}

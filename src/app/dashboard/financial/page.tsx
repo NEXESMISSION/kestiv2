@@ -1,11 +1,18 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Transaction, Expense, Member } from '@/types/database'
-import { ArrowLeft, TrendingUp, Users, RefreshCw } from 'lucide-react'
+import { 
+  ArrowLeft, TrendingUp, RefreshCw, DollarSign, Package, 
+  Receipt, BarChart3, Users, CreditCard, Calendar,
+  ArrowUpRight, ArrowDownRight, ChevronDown, ChevronUp,
+  TrendingDown, Wallet, PiggyBank, ShoppingCart
+} from 'lucide-react'
+
+type PeriodType = 'today' | 'week' | 'month' | 'all' | 'custom'
 
 export default function FinancialPage() {
   const router = useRouter()
@@ -15,7 +22,9 @@ export default function FinancialPage() {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState<'today' | 'week' | 'month'>('today')
+  const [period, setPeriod] = useState<PeriodType>('week')
+  const [showDebtDetails, setShowDebtDetails] = useState(false)
+  const [chartView, setChartView] = useState<'week' | 'month' | 'year'>('week')
 
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -23,8 +32,8 @@ export default function FinancialPage() {
     if (!user) { router.push('/login'); return }
     
     const [txRes, expRes, memRes] = await Promise.all([
-      supabase.from('transactions').select('*').eq('business_id', user.id),
-      supabase.from('expenses').select('*').eq('business_id', user.id),
+      supabase.from('transactions').select('*').eq('business_id', user.id).order('created_at', { ascending: false }),
+      supabase.from('expenses').select('*').eq('business_id', user.id).order('date', { ascending: false }),
       supabase.from('members').select('*').eq('business_id', user.id)
     ])
     
@@ -42,30 +51,102 @@ export default function FinancialPage() {
   const weekAgo = new Date(today.getTime() - 7 * 86400000)
   const monthAgo = new Date(today.getTime() - 30 * 86400000)
 
-  const startDate = period === 'today' ? today : period === 'week' ? weekAgo : monthAgo
+  const getStartDate = (p: PeriodType) => {
+    if (p === 'today') return today
+    if (p === 'week') return weekAgo
+    if (p === 'month') return monthAgo
+    return new Date(0) // 'all'
+  }
 
-  // Calculate totals based on period
-  const revenue = transactions
-    .filter(tx => new Date(tx.created_at) >= startDate && tx.type === 'subscription' && tx.payment_method !== 'debt')
+  const startDate = getStartDate(period)
+
+  // Filter transactions by period (excluding debt payments from revenue)
+  const periodTransactions = useMemo(() => 
+    transactions.filter(tx => new Date(tx.created_at) >= startDate && tx.payment_method !== 'debt'),
+    [transactions, startDate]
+  )
+
+  // Calculate totals
+  const revenue = periodTransactions
+    .filter(tx => tx.type === 'subscription' || tx.type === 'retail')
     .reduce((sum, tx) => sum + tx.amount, 0)
 
-  const expenseTotal = expenses
-    .filter(exp => new Date(exp.date) >= startDate)
-    .reduce((sum, exp) => sum + exp.amount, 0)
+  const periodExpenses = useMemo(() => 
+    expenses.filter(exp => new Date(exp.date) >= startDate),
+    [expenses, startDate]
+  )
 
-  const profit = revenue - expenseTotal
+  const expenseTotal = periodExpenses.reduce((sum, exp) => sum + exp.amount, 0)
+
+  // Cost of goods (from retail transactions with cost tracking)
+  const costOfGoods = periodTransactions
+    .filter(tx => tx.type === 'retail')
+    .reduce((sum, tx) => sum + ((tx as any).cost || 0), 0)
+
+  const grossProfit = revenue - costOfGoods
+  const netProfit = grossProfit - expenseTotal
+  const profitMargin = revenue > 0 ? ((netProfit / revenue) * 100) : 0
+  const salesCount = periodTransactions.length
 
   // Total debt from members
   const totalDebt = members.reduce((sum, m) => sum + (m.debt || 0), 0)
+  const debtMembers = members.filter(m => m.debt > 0)
 
-  // Active members count
-  const activeMembers = members.filter(m => {
-    if (m.is_frozen) return false
-    if (m.expires_at && new Date(m.expires_at) < now) return false
-    return m.plan_id != null
-  }).length
+  // Chart data - last 7 days
+  const chartData = useMemo(() => {
+    const days = []
+    const dayNames = ['الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة', 'السبت']
+    
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today.getTime() - i * 86400000)
+      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
+      const dayEnd = new Date(dayStart.getTime() + 86400000)
+      
+      const dayRevenue = transactions
+        .filter(tx => {
+          const txDate = new Date(tx.created_at)
+          return txDate >= dayStart && txDate < dayEnd && tx.payment_method !== 'debt'
+        })
+        .reduce((sum, tx) => sum + tx.amount, 0)
+      
+      const dayExpense = expenses
+        .filter(exp => {
+          const expDate = new Date(exp.date)
+          return expDate >= dayStart && expDate < dayEnd
+        })
+        .reduce((sum, exp) => sum + exp.amount, 0)
+      
+      days.push({
+        name: dayNames[date.getDay()],
+        revenue: dayRevenue,
+        expense: dayExpense
+      })
+    }
+    return days
+  }, [transactions, expenses, today])
 
-  const inactiveMembers = members.length - activeMembers
+  // Calculate chart max for scaling
+  const chartMax = Math.max(...chartData.map(d => Math.max(d.revenue, d.expense)), 1)
+
+  // Period comparisons
+  const todayRevenue = transactions
+    .filter(tx => new Date(tx.created_at) >= today && tx.payment_method !== 'debt')
+    .reduce((sum, tx) => sum + tx.amount, 0)
+
+  const last7DaysRevenue = transactions
+    .filter(tx => new Date(tx.created_at) >= weekAgo && tx.payment_method !== 'debt')
+    .reduce((sum, tx) => sum + tx.amount, 0)
+
+  const last30DaysRevenue = transactions
+    .filter(tx => new Date(tx.created_at) >= monthAgo && tx.payment_method !== 'debt')
+    .reduce((sum, tx) => sum + tx.amount, 0)
+
+  // Chart stats
+  const totalChartRevenue = chartData.reduce((sum, d) => sum + d.revenue, 0)
+  const avgChartRevenue = totalChartRevenue / 7
+  const maxChartRevenue = Math.max(...chartData.map(d => d.revenue))
+  const minChartRevenue = Math.min(...chartData.map(d => d.revenue))
+  const totalChartExpense = chartData.reduce((sum, d) => sum + d.expense, 0)
 
   if (loading) return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
@@ -81,26 +162,32 @@ export default function FinancialPage() {
           <Link href="/dashboard" className="p-2 hover:bg-gray-100 rounded-xl">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <h1 className="text-lg font-bold flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-primary-600" />
-            المالية
-          </h1>
+          <div>
+            <h1 className="text-lg font-bold flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-primary-600" />
+              لوحة المالية
+            </h1>
+            <p className="text-xs text-gray-500">عرض وتحليل الأداء المالي لنشاطك التجاري</p>
+          </div>
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <main className="p-4 space-y-4 pb-20">
         {/* Period Tabs */}
-        <div className="flex gap-2 bg-white p-1 rounded-xl">
+        <div className="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm overflow-x-auto">
           {[
             { k: 'today', l: 'اليوم' },
             { k: 'week', l: 'الأسبوع' },
-            { k: 'month', l: 'الشهر' }
+            { k: 'month', l: 'الشهر' },
+            { k: 'all', l: 'الكل' }
           ].map(p => (
             <button
               key={p.k}
-              onClick={() => setPeriod(p.k as any)}
-              className={`flex-1 py-2 rounded-lg font-medium text-sm ${
-                period === p.k ? 'bg-primary-600 text-white' : 'text-gray-600'
+              onClick={() => setPeriod(p.k as PeriodType)}
+              className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm whitespace-nowrap transition-all ${
+                period === p.k 
+                  ? 'bg-primary-600 text-white shadow-md' 
+                  : 'text-gray-600 hover:bg-gray-100'
               }`}
             >
               {p.l}
@@ -108,52 +195,233 @@ export default function FinancialPage() {
           ))}
         </div>
 
-        {/* Main Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-green-500 rounded-2xl p-4 text-white">
-            <div className="text-sm opacity-90">الإيرادات</div>
-            <div className="text-2xl font-bold mt-1">{revenue.toFixed(3)}</div>
-          </div>
-          <div className="bg-red-500 rounded-2xl p-4 text-white">
-            <div className="text-sm opacity-90">المصروفات</div>
-            <div className="text-2xl font-bold mt-1">{expenseTotal.toFixed(3)}</div>
-          </div>
-        </div>
-
-        {/* Profit Card */}
-        <div className={`rounded-2xl p-5 text-white ${profit >= 0 ? 'bg-blue-600' : 'bg-red-600'}`}>
-          <div className="text-center">
-            <div className="text-sm opacity-90">صافي الربح</div>
-            <div className="text-4xl font-bold mt-2">{profit.toFixed(3)}</div>
-            <div className="text-sm opacity-80 mt-1">DT</div>
-          </div>
-        </div>
-
-        {/* Members Stats */}
-        <div className="grid grid-cols-2 gap-3">
-          <div className="bg-purple-500 rounded-2xl p-4 text-white">
-            <div className="flex items-center gap-2 text-sm opacity-90">
-              <Users className="w-4 h-4" />
-              نشط
+        {/* Net Profit Card - Hero */}
+        <div className={`rounded-3xl p-6 text-white shadow-lg ${netProfit >= 0 ? 'bg-gradient-to-br from-emerald-500 to-green-600' : 'bg-gradient-to-br from-red-500 to-rose-600'}`}>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
+              <PiggyBank className="w-6 h-6" />
             </div>
-            <div className="text-2xl font-bold mt-1">{activeMembers}</div>
+            <span className="font-medium opacity-90">صافي الربح</span>
           </div>
-          <div className="bg-gray-500 rounded-2xl p-4 text-white">
-            <div className="text-sm opacity-90">منتهي/مجمد</div>
-            <div className="text-2xl font-bold mt-1">{inactiveMembers}</div>
+          <div className="text-4xl font-bold mb-2">{netProfit.toFixed(3)} <span className="text-lg font-normal opacity-80">د.ت</span></div>
+          <div className="text-sm opacity-80 flex items-center gap-1">
+            <span>= الإيرادات - تكلفة البضاعة - المصروفات</span>
           </div>
         </div>
 
-        {/* Debt */}
+        {/* Main Stats Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Revenue */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                <ArrowUpRight className="w-4 h-4 text-green-600" />
+              </div>
+              <span className="text-sm text-gray-600">الإيرادات</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{revenue.toFixed(3)}</div>
+            <div className="text-xs text-gray-500 mt-1">إجمالي المبيعات</div>
+          </div>
+
+          {/* Cost of Goods */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                <Package className="w-4 h-4 text-blue-600" />
+              </div>
+              <span className="text-sm text-gray-600">تكلفة البضاعة</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{costOfGoods.toFixed(3)}</div>
+            <div className="text-xs text-gray-500 mt-1">سعر شراء المنتجات</div>
+          </div>
+
+          {/* Expenses */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
+                <Receipt className="w-4 h-4 text-red-600" />
+              </div>
+              <span className="text-sm text-gray-600">المصروفات</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{expenseTotal.toFixed(3)}</div>
+            <div className="text-xs text-gray-500 mt-1">إيجار، كهرباء، رواتب...</div>
+          </div>
+
+          {/* Gross Profit */}
+          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div className="flex items-center gap-2 mb-2">
+              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                <BarChart3 className="w-4 h-4 text-purple-600" />
+              </div>
+              <span className="text-sm text-gray-600">الربح الإجمالي</span>
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{grossProfit.toFixed(3)}</div>
+            <div className="text-xs text-gray-500 mt-1">الإيرادات - تكلفة البضاعة</div>
+          </div>
+        </div>
+
+        {/* Sales Stats Row */}
+        <div className="flex gap-3">
+          <div className="flex-1 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
+            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <ShoppingCart className="w-5 h-5 text-indigo-600" />
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{salesCount}</div>
+            <div className="text-xs text-gray-500">عملية بيع</div>
+          </div>
+          <div className="flex-1 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
+            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-2">
+              <TrendingUp className="w-5 h-5 text-amber-600" />
+            </div>
+            <div className={`text-2xl font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {profitMargin.toFixed(1)}%
+            </div>
+            <div className="text-xs text-gray-500">هامش الربح</div>
+          </div>
+        </div>
+
+        {/* Chart Section */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-primary-600" />
+              <span className="font-bold text-gray-900">إحصائيات الإيرادات</span>
+            </div>
+            <span className="text-xs text-gray-500">تتبع المبيعات</span>
+          </div>
+
+          {/* Chart Stats */}
+          <div className="grid grid-cols-4 gap-2 mb-4">
+            <div className="bg-gray-50 rounded-xl p-2 text-center">
+              <div className="text-xs text-gray-500">الإجمالي</div>
+              <div className="font-bold text-gray-900">{totalChartRevenue >= 1000 ? `${(totalChartRevenue/1000).toFixed(1)}k` : totalChartRevenue.toFixed(0)}</div>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-2 text-center">
+              <div className="text-xs text-gray-500">المتوسط</div>
+              <div className="font-bold text-gray-900">{avgChartRevenue.toFixed(0)}</div>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-2 text-center">
+              <div className="text-xs text-gray-500">الأعلى</div>
+              <div className="font-bold text-green-600">{maxChartRevenue.toFixed(0)}</div>
+            </div>
+            <div className="bg-gray-50 rounded-xl p-2 text-center">
+              <div className="text-xs text-gray-500">الأدنى</div>
+              <div className="font-bold text-gray-600">{minChartRevenue.toFixed(0)}</div>
+            </div>
+          </div>
+
+          {/* Legend */}
+          <div className="flex items-center gap-4 mb-3 text-sm">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-green-500 rounded"></div>
+              <span className="text-gray-600">الإيرادات</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 bg-red-400 rounded"></div>
+              <span className="text-gray-600">المصروفات</span>
+            </div>
+          </div>
+
+          {/* Chart */}
+          <div className="h-48 flex items-end gap-2">
+            {chartData.map((day, i) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1">
+                <div className="w-full flex gap-0.5 items-end h-36">
+                  {/* Revenue Bar */}
+                  <div 
+                    className="flex-1 bg-gradient-to-t from-green-500 to-green-400 rounded-t-md transition-all hover:from-green-600 hover:to-green-500"
+                    style={{ height: `${(day.revenue / chartMax) * 100}%`, minHeight: day.revenue > 0 ? '4px' : '0' }}
+                    title={`إيرادات: ${day.revenue.toFixed(3)}`}
+                  ></div>
+                  {/* Expense Bar */}
+                  <div 
+                    className="flex-1 bg-gradient-to-t from-red-400 to-red-300 rounded-t-md transition-all hover:from-red-500 hover:to-red-400"
+                    style={{ height: `${(day.expense / chartMax) * 100}%`, minHeight: day.expense > 0 ? '4px' : '0' }}
+                    title={`مصروفات: ${day.expense.toFixed(3)}`}
+                  ></div>
+                </div>
+                <div className="text-[10px] text-gray-500 truncate w-full text-center">{day.name}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Chart Totals */}
+          <div className="flex justify-between mt-3 pt-3 border-t border-gray-100">
+            <div className="text-sm">
+              <span className="text-gray-500">إجمالي الإيرادات</span>
+              <span className="font-bold text-green-600 mr-2">{totalChartRevenue.toFixed(2)} د.ت</span>
+            </div>
+            <div className="text-sm">
+              <span className="text-gray-500">إجمالي المصروفات</span>
+              <span className="font-bold text-red-500 mr-2">{totalChartExpense.toFixed(2)} د.ت</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Debt Section */}
         {totalDebt > 0 && (
-          <div className="bg-orange-500 rounded-2xl p-4 text-white flex justify-between items-center">
-            <div>
-              <div className="text-sm opacity-90">الديون</div>
-              <div className="text-xs opacity-70">{members.filter(m => m.debt > 0).length} عضو</div>
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-4 border border-orange-200">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-orange-500 rounded-xl flex items-center justify-center">
+                  <CreditCard className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <div className="font-bold text-gray-900">البيع بالآجل (الديون)</div>
+                  <div className="text-xs text-gray-500">هذه المبالغ غير محسوبة في الأرباح أعلاه</div>
+                </div>
+              </div>
+              <div className="text-left">
+                <div className="text-2xl font-bold text-orange-600">{totalDebt.toFixed(3)}</div>
+                <div className="text-xs text-gray-500">{debtMembers.length} عميل</div>
+              </div>
             </div>
-            <div className="text-2xl font-bold">{totalDebt.toFixed(3)}</div>
+            
+            <button 
+              onClick={() => setShowDebtDetails(!showDebtDetails)}
+              className="w-full mt-3 py-2 bg-orange-100 hover:bg-orange-200 rounded-xl text-orange-700 font-medium text-sm flex items-center justify-center gap-2 transition-colors"
+            >
+              {showDebtDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+              عرض التفاصيل
+            </button>
+
+            {showDebtDetails && debtMembers.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {debtMembers.map(m => (
+                  <div key={m.id} className="bg-white rounded-xl p-3 flex justify-between items-center">
+                    <div>
+                      <div className="font-medium text-gray-900">{m.name}</div>
+                      <div className="text-xs text-gray-500">{m.phone}</div>
+                    </div>
+                    <div className="text-lg font-bold text-orange-600">{m.debt.toFixed(3)}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
+
+        {/* Period Comparison */}
+        <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+          <div className="flex items-center gap-2 mb-4">
+            <Calendar className="w-5 h-5 text-primary-600" />
+            <span className="font-bold text-gray-900">مقارنة الفترات</span>
+          </div>
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+              <span className="text-gray-600">اليوم</span>
+              <span className="font-bold text-gray-900">{todayRevenue.toFixed(2)} دينار</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+              <span className="text-gray-600">آخر 7 أيام</span>
+              <span className="font-bold text-gray-900">{last7DaysRevenue.toFixed(2)} دينار</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-gray-50 rounded-xl">
+              <span className="text-gray-600">آخر 30 يوم</span>
+              <span className="font-bold text-gray-900">{last30DaysRevenue.toFixed(2)} دينار</span>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   )

@@ -1,5 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import LandingPage from './landing/page'
 
 type ProfileData = {
   role: string | null
@@ -12,8 +13,9 @@ export default async function Home() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Show landing page for non-authenticated users
   if (!user) {
-    redirect('/login')
+    return <LandingPage />
   }
 
   // Check user role, pause and subscription status from profile

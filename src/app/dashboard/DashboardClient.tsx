@@ -353,20 +353,40 @@ export default function DashboardClient({ user, profile }: Props) {
               <div className="flex justify-end mb-2">
                 <button
                   onClick={() => {
-                    const headers = ['التاريخ', 'النوع', 'الخطة', 'المبلغ', 'طريقة الدفع']
+                    // Type translations
+                    const typeLabels: Record<string, string> = {
+                      'subscription': 'اشتراك جديد',
+                      'plan_change': 'شراء خطة',
+                      'session_add': 'إضافة حصة',
+                      'session_use': 'استخدام حصة',
+                      'service': 'خدمة',
+                      'freeze': 'تجميد',
+                      'unfreeze': 'إلغاء تجميد',
+                      'cancellation': 'إلغاء'
+                    }
+                    const paymentLabels: Record<string, string> = {
+                      'cash': 'نقداً',
+                      'debt': 'آجل',
+                      'card': 'بطاقة'
+                    }
+                    const headers = ['التاريخ', 'الوقت', 'النوع', 'الخطة/الخدمة', 'المبلغ (د.ت)', 'طريقة الدفع']
                     const rows = history.map(h => [
-                      new Date(h.created_at).toLocaleDateString('en-GB'),
-                      h.type,
-                      h.new_plan_name || h.plan_name || '',
-                      h.amount?.toFixed(3) || '0',
-                      h.payment_method || ''
+                      new Date(h.created_at).toLocaleDateString('ar-TN'),
+                      new Date(h.created_at).toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' }),
+                      typeLabels[h.type] || h.type,
+                      h.new_plan_name || h.plan_name || '-',
+                      h.amount > 0 ? h.amount.toFixed(3) : '-',
+                      paymentLabels[h.payment_method] || h.payment_method || '-'
                     ])
-                    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-                    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
+                    // Calculate total
+                    const total = history.reduce((sum, h) => sum + (h.amount || 0), 0)
+                    rows.push(['', '', '', 'المجموع', total.toFixed(3), ''])
+                    const csv = [headers.join('\t'), ...rows.map(r => r.join('\t'))].join('\n')
+                    const blob = new Blob(['\ufeff' + csv], { type: 'text/tab-separated-values;charset=utf-8;' })
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
                     a.href = url
-                    a.download = `subscription-history-${new Date().toISOString().split('T')[0]}.csv`
+                    a.download = `سجل-الاشتراكات-${new Date().toLocaleDateString('ar-TN').replace(/\//g, '-')}.xls`
                     a.click()
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium text-sm"
@@ -473,6 +493,7 @@ export default function DashboardClient({ user, profile }: Props) {
         plans={plans}
         isOpen={showNewMember}
         onClose={() => setShowNewMember(false)}
+        onAddPlans={() => { setShowNewMember(false); setTab('plans'); setShowPlanModal(true) }}
         onSubmit={async (data) => {
           let memberData: any = { business_id: user.id, name: data.name, phone: data.phone, email: data.email || null, notes: data.notes || null }
           const plan = data.plan_id ? plans.find(p => p.id === data.plan_id) : null

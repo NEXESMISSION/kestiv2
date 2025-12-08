@@ -12,6 +12,7 @@ export async function middleware(request: NextRequest) {
     pathname === '/login' || 
     pathname === '/register' ||
     pathname === '/' ||
+    pathname === '/landing' ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next')
   ) {

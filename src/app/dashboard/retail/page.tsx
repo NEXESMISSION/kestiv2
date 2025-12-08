@@ -421,19 +421,29 @@ export default function RetailDashboardPage() {
               {filteredTransactions.length > 0 && (
                 <button
                   onClick={() => {
-                    const headers = ['التاريخ', 'الوقت', 'المبلغ', 'عدد المنتجات']
+                    const paymentLabels: Record<string, string> = {
+                      'cash': 'نقداً',
+                      'debt': 'آجل',
+                      'card': 'بطاقة'
+                    }
+                    const headers = ['التاريخ', 'الوقت', 'المبلغ (د.ت)', 'عدد المنتجات', 'المنتجات', 'طريقة الدفع']
                     const rows = filteredTransactions.map(t => [
-                      new Date(t.created_at).toLocaleDateString('en-GB'),
-                      new Date(t.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                      new Date(t.created_at).toLocaleDateString('ar-TN'),
+                      new Date(t.created_at).toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' }),
                       t.amount?.toFixed(3) || '0',
-                      t.items?.length || 0
+                      t.items?.length || 0,
+                      t.items?.map(item => `${item.name} (${item.quantity})`).join(' - ') || '-',
+                      paymentLabels[t.payment_method] || t.payment_method || 'نقداً'
                     ])
-                    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
-                    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
+                    // Calculate total
+                    const total = filteredTransactions.reduce((sum, t) => sum + (t.amount || 0), 0)
+                    rows.push(['', '', total.toFixed(3), '', 'المجموع', ''])
+                    const csv = [headers.join('\t'), ...rows.map(r => r.join('\t'))].join('\n')
+                    const blob = new Blob(['\ufeff' + csv], { type: 'text/tab-separated-values;charset=utf-8;' })
                     const url = URL.createObjectURL(blob)
                     const a = document.createElement('a')
                     a.href = url
-                    a.download = `retail-history-${new Date().toISOString().split('T')[0]}.csv`
+                    a.download = `سجل-المبيعات-${new Date().toLocaleDateString('ar-TN').replace(/\//g, '-')}.xls`
                     a.click()
                   }}
                   className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium text-sm"

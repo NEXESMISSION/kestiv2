@@ -80,6 +80,7 @@ export default function SubscriptionPOSPage() {
   const [showPinModal, setShowPinModal] = useState(false)
   const [showNewMemberModal, setShowNewMemberModal] = useState(false)
   const [selectedMember, setSelectedMember] = useState<Member | null>(null)
+  const [pinDestination, setPinDestination] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser()
@@ -247,6 +248,7 @@ export default function SubscriptionPOSPage() {
           plans={plans}
           isOpen={true}
           onClose={() => setShowNewMemberModal(false)}
+          onAddPlans={() => { setShowNewMemberModal(false); setPinDestination('/dashboard'); setShowPinModal(true) }}
           onSubmit={async (data) => {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
@@ -281,7 +283,7 @@ export default function SubscriptionPOSPage() {
         />
       )}
 
-      <PINModal isOpen={showPinModal} correctPin={userPin} onSuccess={() => { setShowPinModal(false); window.location.href = '/dashboard' }} onCancel={() => setShowPinModal(false)} />
+      <PINModal isOpen={showPinModal} correctPin={userPin} onSuccess={() => { setShowPinModal(false); router.push(pinDestination || '/dashboard'); setPinDestination(null) }} onCancel={() => { setShowPinModal(false); setPinDestination(null) }} />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { X, User, Phone, Mail, FileText, Zap, Package, Calendar } from 'lucide-react'
+import { X, User, Phone, Mail, FileText, Zap, Package, Calendar, Plus, Settings } from 'lucide-react'
 import { SubscriptionPlan } from '@/types/database'
 
 const planTypeConfig = {
@@ -22,9 +22,10 @@ interface Props {
   isOpen: boolean
   onClose: () => void
   onSubmit: (data: { name: string; phone: string; email?: string; plan_id?: string; notes?: string; paymentMethod: 'cash' | 'debt' }) => void
+  onAddPlans?: () => void
 }
 
-export default function NewMemberModal({ plans, isOpen, onClose, onSubmit }: Props) {
+export default function NewMemberModal({ plans, isOpen, onClose, onSubmit, onAddPlans }: Props) {
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
@@ -84,7 +85,19 @@ export default function NewMemberModal({ plans, isOpen, onClose, onSubmit }: Pro
 
           {/* Plan Selection - Optional */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">الخطة (اختياري - يمكن الإضافة لاحقاً)</label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">الخطة (اختياري - يمكن الإضافة لاحقاً)</label>
+              {onAddPlans && plans.filter(p => p.is_active).length === 0 && (
+                <button
+                  type="button"
+                  onClick={onAddPlans}
+                  className="text-xs flex items-center gap-1 px-2 py-1 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg font-medium"
+                >
+                  <Plus className="w-3 h-3" />
+                  إضافة خطط
+                </button>
+              )}
+            </div>
             <div className="space-y-2 max-h-48 overflow-auto">
               {/* No Plan */}
               <label className={`flex items-center p-3 rounded-xl border-2 cursor-pointer ${!planId ? 'border-primary-500 bg-primary-50' : 'border-gray-200 hover:border-gray-300'}`}>
