@@ -111,29 +111,29 @@ body {
 }
 
 /* Faster loading animations */
-@keyframes pulse-fast {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
-}
-
 @keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }
 
-.animate-pulse-fast {
-  animation: pulse-fast 0.8s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+@keyframes spin-fast {
+  to { transform: rotate(360deg); }
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, #e5e7eb 0%, #f3f4f6 50%, #e5e7eb 100%);
   background-size: 200% 100%;
-  animation: shimmer 1s infinite;
+  animation: shimmer 0.8s linear infinite;
 }
 
-/* Override default pulse to be faster */
+.animate-spin {
+  animation: spin-fast 0.5s linear infinite !important;
+}
+
+/* Override default pulse - make it instant */
 .animate-pulse {
-  animation: pulse-fast 0.6s cubic-bezier(0.4, 0, 0.6, 1) infinite !important;
+  animation: none !important;
+  background: #e5e7eb;
 }
 
 /* Smooth transitions */
