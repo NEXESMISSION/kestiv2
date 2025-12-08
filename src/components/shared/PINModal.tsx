@@ -1,7 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Lock, Delete, X, AlertCircle } from 'lucide-react'
+import { Lock, Delete, X, AlertCircle, Timer } from 'lucide-react'
+
+const MAX_ATTEMPTS = 5
+const LOCKOUT_DURATION = 30 // seconds
 
 interface PINModalProps {
   isOpen: boolean
@@ -19,42 +22,94 @@ export default function PINModal({
   const [pin, setPin] = useState('')
   const [error, setError] = useState(false)
   const [attempts, setAttempts] = useState(0)
+  const [lockedUntil, setLockedUntil] = useState<number | null>(null)
+  const [lockoutRemaining, setLockoutRemaining] = useState(0)
 
   const pinLength = correctPin?.length || 4
+  const isLocked = lockedUntil !== null && Date.now() < lockedUntil
 
-  const handleNumberClick = useCallback((num: string) => {
-    if (pin.length < 6) {
-      setPin(prev => prev + num)
-      setError(false)
-    }
-  }, [pin])
-
-  const handleDelete = useCallback(() => {
-    setPin(prev => prev.slice(0, -1))
-    setError(false)
-  }, [])
-
-  const handleClear = useCallback(() => {
-    setPin('')
-    setError(false)
-  }, [])
-
-  // Manual PIN check function
-  const handleSubmit = useCallback(() => {
-    if (pin.length >= 4 && pin.length <= 6) {
-      if (pin === correctPin) {
-        onSuccess()
-        setPin('')
-        setAttempts(0)
+  // Load lockout state from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem('pin_lockout')
+    if (stored) {
+      const lockTime = parseInt(stored)
+      if (Date.now() < lockTime) {
+        setLockedUntil(lockTime)
       } else {
-        setError(true)
-        setAttempts(prev => prev + 1)
-        setTimeout(() => {
-          setPin('')
-        }, 500)
+        localStorage.removeItem('pin_lockout')
+        localStorage.removeItem('pin_attempts')
       }
     }
-  }, [pin, correctPin, onSuccess])
+    const storedAttempts = localStorage.getItem('pin_attempts')
+    if (storedAttempts) {
+      setAttempts(parseInt(storedAttempts))
+    }
+  }, [isOpen])
+
+  // Lockout countdown timer
+  useEffect(() => {
+    if (!lockedUntil) return
+    
+    const interval = setInterval(() => {
+      const remaining = Math.ceil((lockedUntil - Date.now()) / 1000)
+      if (remaining <= 0) {
+        setLockedUntil(null)
+        setLockoutRemaining(0)
+        setAttempts(0)
+        localStorage.removeItem('pin_lockout')
+        localStorage.removeItem('pin_attempts')
+      } else {
+        setLockoutRemaining(remaining)
+      }
+    }, 1000)
+    
+    return () => clearInterval(interval)
+  }, [lockedUntil])
+
+  const handleNumberClick = useCallback((num: string) => {
+    if (isLocked || pin.length >= 6) return
+    setPin(prev => prev + num)
+    setError(false)
+  }, [pin, isLocked])
+
+  const handleDelete = useCallback(() => {
+    if (isLocked) return
+    setPin(prev => prev.slice(0, -1))
+    setError(false)
+  }, [isLocked])
+
+  const handleClear = useCallback(() => {
+    if (isLocked) return
+    setPin('')
+    setError(false)
+  }, [isLocked])
+
+  // Manual PIN check function with lockout
+  const handleSubmit = useCallback(() => {
+    if (isLocked || pin.length < 4 || pin.length > 6) return
+    
+    if (pin === correctPin) {
+      onSuccess()
+      setPin('')
+      setAttempts(0)
+      localStorage.removeItem('pin_attempts')
+      localStorage.removeItem('pin_lockout')
+    } else {
+      setError(true)
+      const newAttempts = attempts + 1
+      setAttempts(newAttempts)
+      localStorage.setItem('pin_attempts', String(newAttempts))
+      
+      // Lock after MAX_ATTEMPTS
+      if (newAttempts >= MAX_ATTEMPTS) {
+        const lockTime = Date.now() + (LOCKOUT_DURATION * 1000)
+        setLockedUntil(lockTime)
+        localStorage.setItem('pin_lockout', String(lockTime))
+      }
+      
+      setTimeout(() => setPin(''), 500)
+    }
+  }, [pin, correctPin, onSuccess, attempts, isLocked])
 
   // Keyboard support
   useEffect(() => {
@@ -117,46 +172,58 @@ export default function PINModal({
             ))}
           </div>
 
-          {/* Error Message */}
-          {error && (
-            <div className="flex items-center justify-center gap-2 text-red-600 text-sm mb-4">
-              <AlertCircle className="w-4 h-4" />
-              <span>رمز خاطئ، حاول مرة أخرى</span>
+          {/* Lockout Message */}
+          {isLocked && (
+            <div className="flex items-center justify-center gap-2 bg-red-50 text-red-600 text-sm mb-4 p-3 rounded-xl">
+              <Timer className="w-4 h-4" />
+              <span>محاولات كثيرة! انتظر {lockoutRemaining} ثانية</span>
             </div>
           )}
 
-          {attempts >= 3 && (
+          {/* Error Message */}
+          {error && !isLocked && (
+            <div className="flex items-center justify-center gap-2 text-red-600 text-sm mb-4">
+              <AlertCircle className="w-4 h-4" />
+              <span>رمز خاطئ ({MAX_ATTEMPTS - attempts} محاولات متبقية)</span>
+            </div>
+          )}
+
+          {attempts >= 3 && !isLocked && (
             <div className="text-center text-sm text-gray-500 mb-4">
               نسيت الرمز؟ تواصل مع الدعم الفني
             </div>
           )}
 
           {/* Numpad - LTR for proper number order */}
-          <div className="grid grid-cols-3 gap-2" dir="ltr">
+          <div className={`grid grid-cols-3 gap-2 ${isLocked ? 'opacity-50 pointer-events-none' : ''}`} dir="ltr">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
               <button
                 key={num}
                 onClick={() => handleNumberClick(String(num))}
-                className="h-14 rounded-xl font-bold text-xl bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 transition-all"
+                disabled={isLocked}
+                className="h-14 rounded-xl font-bold text-xl bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 transition-all disabled:opacity-50"
               >
                 {num}
               </button>
             ))}
             <button
               onClick={handleClear}
-              className="h-14 rounded-xl font-bold text-lg bg-gray-200 text-gray-600 hover:bg-gray-300 transition-all"
+              disabled={isLocked}
+              className="h-14 rounded-xl font-bold text-lg bg-gray-200 text-gray-600 hover:bg-gray-300 transition-all disabled:opacity-50"
             >
               <X className="w-5 h-5 mx-auto" />
             </button>
             <button
               onClick={() => handleNumberClick('0')}
-              className="h-14 rounded-xl font-bold text-xl bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 transition-all"
+              disabled={isLocked}
+              className="h-14 rounded-xl font-bold text-xl bg-gray-100 text-gray-900 hover:bg-gray-200 active:bg-gray-300 transition-all disabled:opacity-50"
             >
               0
             </button>
             <button
               onClick={handleDelete}
-              className="h-14 rounded-xl font-bold text-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all"
+              disabled={isLocked}
+              className="h-14 rounded-xl font-bold text-lg bg-red-100 text-red-600 hover:bg-red-200 transition-all disabled:opacity-50"
             >
               <Delete className="w-5 h-5 mx-auto" />
             </button>
@@ -165,14 +232,14 @@ export default function PINModal({
           {/* Submit Button */}
           <button
             onClick={handleSubmit}
-            disabled={pin.length < 4}
+            disabled={pin.length < 4 || isLocked}
             className={`w-full mt-4 py-3.5 rounded-xl font-bold text-lg transition-all ${
-              pin.length >= 4
+              pin.length >= 4 && !isLocked
                 ? 'bg-primary-600 text-white hover:bg-primary-700 active:scale-[0.98]'
                 : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             }`}
           >
-            تأكيد
+            {isLocked ? `مقفل (${lockoutRemaining}s)` : 'تأكيد'}
           </button>
         </div>
 

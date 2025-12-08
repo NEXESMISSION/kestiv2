@@ -2,8 +2,41 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
+// Rate limiting for API routes (in-memory, resets on deploy)
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
+const RATE_LIMIT_WINDOW = 60 * 1000 // 1 minute
+const RATE_LIMIT_MAX = 100 // requests per window
+
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const record = rateLimitMap.get(ip)
+  
+  if (!record || now > record.resetTime) {
+    rateLimitMap.set(ip, { count: 1, resetTime: now + RATE_LIMIT_WINDOW })
+    return true
+  }
+  
+  if (record.count >= RATE_LIMIT_MAX) {
+    return false
+  }
+  
+  record.count++
+  return true
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+  const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+  
+  // Rate limit API routes
+  if (pathname.startsWith('/api')) {
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+  }
   
   // Skip middleware entirely for static/non-protected routes
   if (
