@@ -130,12 +130,6 @@ export default function ExpensesPage() {
     fetchData()
   }
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
-      <RefreshCw className="w-8 h-8 animate-spin text-primary-600" />
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       {/* Header */}
@@ -162,6 +156,22 @@ export default function ExpensesPage() {
       </header>
 
       <main className="p-4 space-y-4">
+        {loading ? (
+          <div className="space-y-4">
+            <div className="h-24 bg-gradient-to-br from-red-200 to-red-300 rounded-2xl" />
+            <div className="flex gap-2">
+              {[1,2,3,4].map(i => <div key={i} className="h-10 w-20 bg-white rounded-xl" />)}
+            </div>
+            <div className="space-y-2">
+              {[1,2,3,4].map(i => (
+                <div key={i} className="bg-white rounded-xl p-4">
+                  <div className="h-4 bg-gray-100 rounded w-1/4" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Total Card */}
         <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 text-white">
           <div className="text-sm opacity-90">إجمالي المصروفات</div>
@@ -236,6 +246,8 @@ export default function ExpensesPage() {
             ))
           )}
         </div>
+        </>
+        )}
       </main>
 
       {/* Add/Edit Modal */}

@@ -151,12 +151,6 @@ export default function FinancialPage() {
   const minChartRevenue = Math.min(...chartData.map(d => d.revenue))
   const totalChartExpense = chartData.reduce((sum, d) => sum + d.expense, 0)
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
-      <RefreshCw className="w-8 h-8 animate-spin text-primary-600" />
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       {/* Header */}
@@ -176,6 +170,24 @@ export default function FinancialPage() {
       </header>
 
       <main className="p-4 space-y-4 pb-20">
+        {loading ? (
+          /* Skeleton loading */
+          <div className="space-y-4">
+            <div className="flex gap-2 bg-white p-1 rounded-xl">
+              {[1,2,3,4].map(i => <div key={i} className="flex-1 h-10 bg-gray-100 rounded-lg" />)}
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="h-28 bg-gray-100 rounded-2xl" />
+              <div className="h-28 bg-gray-100 rounded-2xl" />
+            </div>
+            <div className="h-32 bg-gray-100 rounded-2xl" />
+            <div className="h-48 bg-white rounded-2xl border p-4">
+              <div className="h-4 bg-gray-100 rounded w-1/3 mb-4" />
+              <div className="h-32 bg-gray-50 rounded" />
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Period Tabs */}
         <div className="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm overflow-x-auto">
           {[
@@ -425,6 +437,8 @@ export default function FinancialPage() {
             </div>
           </div>
         </div>
+        </>
+        )}
       </main>
     </div>
   )

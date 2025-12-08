@@ -110,12 +110,6 @@ export default function CreditPage() {
     }
   }
 
-  if (loading) return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center" dir="rtl">
-      <RefreshCw className="w-8 h-8 animate-spin text-primary-600" />
-    </div>
-  )
-
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
       {/* Header */}
@@ -136,6 +130,26 @@ export default function CreditPage() {
       </header>
 
       <main className="p-4 space-y-4">
+        {loading ? (
+          <div className="space-y-4">
+            <div className="h-28 bg-gradient-to-br from-orange-200 to-orange-300 rounded-2xl" />
+            <div className="h-12 bg-white rounded-xl" />
+            <div className="space-y-3">
+              {[1,2,3].map(i => (
+                <div key={i} className="bg-white rounded-xl p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gray-100 rounded-full" />
+                    <div className="flex-1">
+                      <div className="h-4 bg-gray-100 rounded w-1/3 mb-2" />
+                      <div className="h-3 bg-gray-100 rounded w-1/4" />
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+        <>
         {/* Total Debt Card */}
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-4 text-white">
           <div className="text-sm opacity-90">إجمالي الديون</div>
@@ -200,6 +214,8 @@ export default function CreditPage() {
             ))
           )}
         </div>
+        </>
+        )}
       </main>
 
       {/* Payment Modal */}

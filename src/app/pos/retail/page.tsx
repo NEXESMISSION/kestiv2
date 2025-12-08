@@ -274,7 +274,7 @@ export default function RetailPOSPage() {
       setCart([])
       setIsCredit(false)
       setSelectedCustomer(null)
-      setTimeout(() => setShowSuccess(false), 2000)
+      setTimeout(() => setShowSuccess(false), 800)
       
       // Refresh products to get updated stock
       fetchData()
@@ -869,14 +869,12 @@ export default function RetailPOSPage() {
         )}
       </div>
 
-      {/* Success Overlay */}
+      {/* Success Toast */}
       {showSuccess && (
-        <div className="fixed inset-0 bg-green-600/90 z-50 flex items-center justify-center">
-          <div className="text-center text-white">
-            <div className="w-24 h-24 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Check className="w-16 h-16" />
-            </div>
-            <h2 className="text-3xl font-bold">تم الشراء بنجاح!</h2>
+        <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
+            <Check className="w-5 h-5" />
+            <span className="font-bold">تم الشراء بنجاح!</span>
           </div>
         </div>
       )}
