@@ -44,6 +44,8 @@ export async function middleware(request: NextRequest) {
     pathname === '/expired' || 
     pathname === '/login' || 
     pathname === '/register' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password' ||
     pathname === '/' ||
     pathname === '/landing' ||
     pathname.startsWith('/api') ||

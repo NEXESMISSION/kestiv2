@@ -155,9 +155,14 @@ export default function LoginPage() {
 
             {/* Password Field */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                كلمة المرور
-              </label>
+              <div className="flex items-center justify-between mb-1.5">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
+                  كلمة المرور
+                </label>
+                <Link href="/forgot-password" className="text-xs text-primary-600 hover:text-primary-700 font-medium">
+                  نسيت كلمة المرور؟
+                </Link>
+              </div>
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
