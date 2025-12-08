@@ -376,7 +376,7 @@ export default function DashboardClient({ user, profile }: Props) {
                       typeLabels[h.type] || h.type,
                       h.new_plan_name || h.plan_name || '-',
                       h.amount > 0 ? h.amount.toFixed(3) : '-',
-                      paymentLabels[h.payment_method] || h.payment_method || '-'
+                      (h.payment_method ? paymentLabels[h.payment_method] : null) || h.payment_method || '-'
                     ])
                     // Calculate total
                     const total = history.reduce((sum, h) => sum + (h.amount || 0), 0)
