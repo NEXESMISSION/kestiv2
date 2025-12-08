@@ -296,7 +296,7 @@ export default function MemberModal({
                                   <div>
                                     <div className="font-medium text-sm">{plan.name}</div>
                                     <div className="text-xs text-blue-600">
-                                      {plan.duration_days === -1 ? 'غير محدود' : `${plan.duration_days} يوم`}
+                                      {plan.duration_days === -1 ? 'غير محدود' : plan.duration_days >= 1 ? `${Math.floor(plan.duration_days)} يوم${plan.duration_days % 1 > 0 ? ` و ${Math.round((plan.duration_days % 1) * 1440)} دقيقة` : ''}` : `${Math.round(plan.duration_days * 1440)} دقيقة`}
                                     </div>
                                   </div>
                                 </div>
@@ -425,7 +425,7 @@ export default function MemberModal({
                                 <input type="radio" name="changePlan" value={plan.id} checked={selectedPlan === plan.id} onChange={() => setSelectedPlan(plan.id)} className="w-4 h-4" />
                                 <div>
                                   <div className="font-medium">{plan.name}</div>
-                                  <div className="text-xs text-blue-600">{plan.duration_days} يوم</div>
+                                  <div className="text-xs text-blue-600">{plan.duration_days >= 1 ? `${Math.floor(plan.duration_days)} يوم${plan.duration_days % 1 > 0 ? ` و ${Math.round((plan.duration_days % 1) * 1440)} دقيقة` : ''}` : `${Math.round(plan.duration_days * 1440)} دقيقة`}</div>
                                 </div>
                               </div>
                               <span className="font-bold text-blue-600">{plan.price.toFixed(3)} DT</span>

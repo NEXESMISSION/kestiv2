@@ -129,8 +129,8 @@ export default function PINModal({
             </div>
           )}
 
-          {/* Numpad */}
-          <div className="grid grid-cols-3 gap-2">
+          {/* Numpad - LTR for proper number order */}
+          <div className="grid grid-cols-3 gap-2" dir="ltr">
             {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => (
               <button
                 key={num}

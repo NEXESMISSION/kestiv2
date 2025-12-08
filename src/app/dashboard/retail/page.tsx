@@ -8,7 +8,7 @@ import { Product, Category, Transaction, TransactionItem } from '@/types/databas
 import { 
   Package, Tags, Warehouse, History, ArrowLeft, Plus, Edit2, Trash2, Minus,
   Search, RefreshCw, TrendingUp, ShoppingBag, DollarSign, AlertTriangle,
-  ToggleLeft, ToggleRight, X, Save, CreditCard, Receipt, BarChart3
+  ToggleLeft, ToggleRight, X, Save, CreditCard, Receipt, BarChart3, Settings, Download
 } from 'lucide-react'
 
 type Tab = 'overview' | 'products' | 'history'
@@ -163,6 +163,11 @@ export default function RetailDashboardPage() {
                 <span>العودة للبيع</span>
               </Link>
               <h1 className="text-xl font-bold">لوحة التحكم - تجزئة</h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 rounded-lg" title="الإعدادات">
+                <Settings className="w-5 h-5" />
+              </Link>
             </div>
           </div>
         </div>
@@ -396,7 +401,8 @@ export default function RetailDashboardPage() {
         {/* HISTORY TAB */}
         {tab === 'history' && (
           <div className="space-y-4">
-            <div className="flex gap-2">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex gap-2">
               {[
                 { k: 'today', l: 'اليوم' },
                 { k: 'week', l: 'الأسبوع' },
@@ -411,6 +417,31 @@ export default function RetailDashboardPage() {
                   {f.l}
                 </button>
               ))}
+              </div>
+              {filteredTransactions.length > 0 && (
+                <button
+                  onClick={() => {
+                    const headers = ['التاريخ', 'الوقت', 'المبلغ', 'عدد المنتجات']
+                    const rows = filteredTransactions.map(t => [
+                      new Date(t.created_at).toLocaleDateString('en-GB'),
+                      new Date(t.created_at).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' }),
+                      t.amount?.toFixed(3) || '0',
+                      t.items?.length || 0
+                    ])
+                    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+                    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `retail-history-${new Date().toISOString().split('T')[0]}.csv`
+                    a.click()
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium text-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  تحميل Excel
+                </button>
+              )}
             </div>
 
             <div className="bg-white rounded-xl border overflow-hidden">

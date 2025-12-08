@@ -360,7 +360,7 @@ export default function CustomerModal({ member, plans, services, onClose, onUpda
                     <div className="flex items-center gap-2 mb-3"><cfg.icon className={`w-5 h-5 ${cfg.color}`} /><span className={`font-bold ${cfg.color}`}>{cfg.label}</span></div>
                     <div className="space-y-2">{tPlans.map(p => (
                       <label key={p.id} className={`flex justify-between p-3 bg-white rounded-xl cursor-pointer border-2 ${selectedPlan === p.id ? 'border-primary-500' : 'border-transparent'}`}>
-                        <div className="flex items-center gap-2"><input type="radio" checked={selectedPlan === p.id} onChange={() => setSelectedPlan(p.id)} className="w-4 h-4" /><div><div className="font-medium">{p.name}</div><div className="text-xs text-gray-500">{p.duration_days > 0 ? `${p.duration_days} يوم` : `${p.sessions} حصة`}</div></div></div>
+                        <div className="flex items-center gap-2"><input type="radio" checked={selectedPlan === p.id} onChange={() => setSelectedPlan(p.id)} className="w-4 h-4" /><div><div className="font-medium">{p.name}</div><div className="text-xs text-gray-500">{p.duration_days > 0 ? (p.duration_days >= 1 ? `${Math.floor(p.duration_days)} يوم${p.duration_days % 1 > 0 ? ` و ${Math.round((p.duration_days % 1) * 1440)} دقيقة` : ''}` : `${Math.round(p.duration_days * 1440)} دقيقة`) : `${p.sessions} حصة`}</div></div></div>
                         <span className="font-bold">{p.price.toFixed(3)} DT</span>
                       </label>
                     ))}</div>

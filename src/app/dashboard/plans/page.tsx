@@ -278,7 +278,7 @@ export default function PlansPage() {
                           return (
                             <div className="flex items-center gap-1.5 px-2.5 py-1 bg-blue-100 text-blue-700 rounded-full">
                               <Calendar className="w-3.5 h-3.5" />
-                              <span className="font-medium">{plan.duration_days === -1 ? 'غير محدود' : `${plan.duration_days} يوم`}</span>
+                              <span className="font-medium">{plan.duration_days === -1 ? 'غير محدود' : plan.duration_days >= 1 ? `${Math.floor(plan.duration_days)} يوم${plan.duration_days % 1 > 0 ? ` و ${Math.round((plan.duration_days % 1) * 1440)} د` : ''}` : `${Math.round(plan.duration_days * 1440)} دقيقة`}</span>
                             </div>
                           )
                         }

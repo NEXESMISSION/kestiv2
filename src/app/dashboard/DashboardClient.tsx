@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { Users, Package, CreditCard, Settings, ShoppingBag, Sparkles, Calendar, Zap, Phone, Search, Plus, Edit2, Trash2, ToggleRight, ToggleLeft, History, ArrowLeft, RefreshCw, User, X, Receipt, BarChart3 } from 'lucide-react'
+import { Users, Package, CreditCard, Settings, ShoppingBag, Sparkles, Calendar, Zap, Phone, Search, Plus, Edit2, Trash2, ToggleRight, ToggleLeft, History, ArrowLeft, RefreshCw, User, X, Receipt, BarChart3, Download } from 'lucide-react'
 import Link from 'next/link'
 import { Member, Service, SubscriptionPlan, Transaction, Profile, SubscriptionHistory } from '@/types/database'
 import CustomerModal from '@/components/subscription/CustomerModal'
@@ -148,10 +148,9 @@ export default function DashboardClient({ user, profile }: Props) {
 
       {/* Stats */}
       <div className="max-w-6xl mx-auto px-4 py-4 space-y-4">
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 gap-4">
           <div className="bg-white rounded-xl p-4 border"><div className="text-sm text-gray-500">العملاء النشطين</div><div className="text-2xl font-bold text-green-600">{activeCount}</div></div>
           <div className="bg-white rounded-xl p-4 border"><div className="text-sm text-gray-500">المنتهية صلاحيتهم</div><div className="text-2xl font-bold text-red-600">{expiredCount}</div></div>
-          <div className="bg-white rounded-xl p-4 border"><div className="text-sm text-gray-500">إجمالي الإيرادات</div><div className="text-2xl font-bold text-primary-600">{totalRevenue.toFixed(3)} DT</div></div>
         </div>
         
         {/* Quick Links */}
@@ -294,7 +293,7 @@ export default function DashboardClient({ user, profile }: Props) {
                         <div className={`w-10 h-10 rounded-full flex items-center justify-center ${cfg.bg}`}><cfg.icon className={`w-5 h-5 ${cfg.color}`} /></div>
                         <div>
                           <div className="font-bold">{p.name}</div>
-                          <div className="text-sm text-gray-500">{cfg.label} - {p.duration_days > 0 ? `${p.duration_days} يوم` : `${p.sessions} حصة`}</div>
+                          <div className="text-sm text-gray-500">{cfg.label} - {p.duration_days > 0 ? (p.duration_days >= 1 ? `${Math.floor(p.duration_days)} يوم${p.duration_days % 1 > 0 ? ` و ${Math.round((p.duration_days % 1) * 1440)} دقيقة` : ''}` : `${Math.round(p.duration_days * 1440)} دقيقة`) : `${p.sessions} حصة`}</div>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -350,6 +349,33 @@ export default function DashboardClient({ user, profile }: Props) {
         {/* HISTORY TAB */}
         {tab === 'history' && (
           <div className="space-y-2">
+            {history.length > 0 && (
+              <div className="flex justify-end mb-2">
+                <button
+                  onClick={() => {
+                    const headers = ['التاريخ', 'النوع', 'الخطة', 'المبلغ', 'طريقة الدفع']
+                    const rows = history.map(h => [
+                      new Date(h.created_at).toLocaleDateString('en-GB'),
+                      h.type,
+                      h.new_plan_name || h.plan_name || '',
+                      h.amount?.toFixed(3) || '0',
+                      h.payment_method || ''
+                    ])
+                    const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n')
+                    const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' })
+                    const url = URL.createObjectURL(blob)
+                    const a = document.createElement('a')
+                    a.href = url
+                    a.download = `subscription-history-${new Date().toISOString().split('T')[0]}.csv`
+                    a.click()
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl font-medium text-sm"
+                >
+                  <Download className="w-4 h-4" />
+                  تحميل Excel
+                </button>
+              </div>
+            )}
             {history.length === 0 ? (
               <div className="bg-white rounded-xl p-8 text-center text-gray-400">لا يوجد سجل</div>
             ) : (

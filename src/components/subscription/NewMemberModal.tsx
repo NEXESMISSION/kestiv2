@@ -103,7 +103,7 @@ export default function NewMemberModal({ plans, isOpen, onClose, onSubmit }: Pro
                       <cfg.icon className={`w-4 h-4 ${cfg.color}`} />
                       <div>
                         <div className="font-medium">{plan.name}</div>
-                        <div className="text-xs text-gray-500">{cfg.label} - {plan.duration_days > 0 ? `${plan.duration_days} يوم` : `${plan.sessions} حصة`}</div>
+                        <div className="text-xs text-gray-500">{cfg.label} - {plan.duration_days > 0 ? (plan.duration_days >= 1 ? `${Math.floor(plan.duration_days)} يوم${plan.duration_days % 1 > 0 ? ` و ${Math.round((plan.duration_days % 1) * 1440)} دقيقة` : ''}` : `${Math.round(plan.duration_days * 1440)} دقيقة`) : `${plan.sessions} حصة`}</div>
                       </div>
                     </div>
                     <span className="font-bold text-primary-600">{plan.price.toFixed(3)} DT</span>
