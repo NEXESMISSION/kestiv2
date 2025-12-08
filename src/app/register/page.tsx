@@ -147,9 +147,9 @@ export default function RegisterPage() {
       console.log('Selected category:', selectedCategory)
 
       try {
-        // Calculate trial end date (7 days from now)
+        // Calculate trial end date (15 days from now)
         const trialEndDate = new Date()
-        trialEndDate.setDate(trialEndDate.getDate() + 7)
+        trialEndDate.setDate(trialEndDate.getDate() + 15)
         
         // Try a direct insert first (for better error handling)
         const { error: profileError } = await supabase
@@ -166,7 +166,7 @@ export default function RegisterPage() {
             pause_reason: null,
             subscription_status: 'trial',
             subscription_end_date: trialEndDate.toISOString(),
-            subscription_days: 7
+            subscription_days: 15
           })
         
         if (profileError) {

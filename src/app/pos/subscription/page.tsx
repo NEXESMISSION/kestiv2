@@ -11,6 +11,7 @@ import {
   ArrowLeftRight, Sparkles, User, ShoppingCart, Minus, Trash2
 } from 'lucide-react'
 import PINModal from '@/components/shared/PINModal'
+import WelcomePopup from '@/components/shared/WelcomePopup'
 import CustomerModal from '@/components/subscription/CustomerModal'
 import NewMemberModal from '@/components/subscription/NewMemberModal'
 
@@ -622,6 +623,7 @@ export default function SubscriptionPOSPage() {
       )}
 
       <PINModal isOpen={showPinModal} correctPin={userPin} onSuccess={() => { setShowPinModal(false); router.push(pinDestination || '/dashboard'); setPinDestination(null) }} onCancel={() => { setShowPinModal(false); setPinDestination(null) }} />
+      <WelcomePopup trialDays={15} />
     </div>
   )
 }

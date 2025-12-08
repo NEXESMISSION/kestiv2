@@ -201,6 +201,51 @@ export default function DashboardClient({ user, profile }: Props) {
           </div>
         </div>
         
+        {/* Subscription Status */}
+        {profile?.subscription_end_date && (
+          <div className={`rounded-2xl p-3 sm:p-4 flex items-center gap-3 ${
+            (() => {
+              const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
+              if (days <= 3) return 'bg-red-50 border border-red-200'
+              if (days <= 7) return 'bg-yellow-50 border border-yellow-200'
+              return 'bg-primary-50 border border-primary-200'
+            })()
+          }`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+              (() => {
+                const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
+                if (days <= 3) return 'bg-red-100'
+                if (days <= 7) return 'bg-yellow-100'
+                return 'bg-primary-100'
+              })()
+            }`}>
+              <Calendar className={`w-5 h-5 ${
+                (() => {
+                  const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
+                  if (days <= 3) return 'text-red-600'
+                  if (days <= 7) return 'text-yellow-600'
+                  return 'text-primary-600'
+                })()
+              }`} />
+            </div>
+            <div className="flex-1">
+              <div className="text-xs text-gray-500">حالة الاشتراك</div>
+              <div className="font-bold">
+                {(() => {
+                  const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
+                  if (days <= 0) return <span className="text-red-600">منتهي</span>
+                  if (days <= 3) return <span className="text-red-600">متبقي {days} أيام</span>
+                  if (days <= 7) return <span className="text-yellow-600">متبقي {days} أيام</span>
+                  return <span className="text-primary-600">متبقي {days} يوم</span>
+                })()}
+              </div>
+            </div>
+            <div className="text-xs text-gray-400">
+              {profile.subscription_status === 'trial' ? '🎁 تجريبي' : '✓ مفعل'}
+            </div>
+          </div>
+        )}
+
         {/* Quick Links */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3">
           <Link

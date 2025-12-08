@@ -11,6 +11,7 @@ import {
   ChevronLeft, ChevronRight, User, CreditCard
 } from 'lucide-react'
 import PINModal from '@/components/shared/PINModal'
+import WelcomePopup from '@/components/shared/WelcomePopup'
 
 type CartItem = {
   product: Product
@@ -857,6 +858,9 @@ export default function RetailPOSPage() {
         onSuccess={() => { setShowPinModal(false); router.push(pinDestination || '/dashboard/retail'); setPinDestination(null) }} 
         onCancel={() => { setShowPinModal(false); setPinDestination(null) }} 
       />
+      
+      {/* Welcome Popup */}
+      <WelcomePopup trialDays={15} />
 
       {/* Low Stock Modal - View Only */}
       {showLowStock && (

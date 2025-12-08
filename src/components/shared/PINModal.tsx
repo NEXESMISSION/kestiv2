@@ -25,7 +25,7 @@ export default function PINModal({
   const [lockedUntil, setLockedUntil] = useState<number | null>(null)
   const [lockoutRemaining, setLockoutRemaining] = useState(0)
 
-  const pinLength = correctPin?.length || 4
+  const pinLength = 6 // Always show 6 PIN dots
   const isLocked = lockedUntil !== null && Date.now() < lockedUntil
 
   // Load lockout state from localStorage
