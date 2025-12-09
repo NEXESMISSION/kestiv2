@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { 
   Plus, TrendingUp, TrendingDown, Clock, Calendar, 
-  DollarSign, AlertCircle, ChevronLeft, X, Loader2, Check
+  AlertCircle, ChevronLeft, X, Loader2, Check
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { FreelancerProject, FreelancerClient, FreelancerService, FreelancerPayment, FreelancerExpense } from '@/types/database'
@@ -280,7 +280,7 @@ export default function HomeTab({ stats, projects, clients, services, payments, 
             <p className="text-xs text-gray-500">المصاريف</p>
           </div>
           <div className={`p-3 rounded-xl ${filteredStats.profit >= 0 ? 'bg-primary-50' : 'bg-orange-50'}`}>
-            <DollarSign className={`w-5 h-5 mx-auto mb-1 ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`} />
+            <span className={`text-sm font-bold mx-auto mb-1 ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`}>DT</span>
             <p className={`text-lg font-bold ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`}>
               {filteredStats.profit.toFixed(0)}
             </p>

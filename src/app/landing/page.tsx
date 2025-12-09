@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { 
   Zap, Package, BarChart3, Calculator, Globe, Smartphone, 
   MessageCircle, Check, ChevronDown, ChevronUp, Menu, X,
-  Clock, AlertTriangle, DollarSign, Lock, Ban, Rocket,
+  Clock, AlertTriangle, Lock, Ban, Rocket,
   Play, Mail, Phone, Send, Star, Shield, Users, Copy,
   CreditCard, Building2, Wallet, Instagram, ArrowLeft,
   Store, Scissors, Coffee, Dumbbell, Wrench, ShoppingBag,
@@ -92,7 +92,7 @@ export default function LandingPage() {
   const problems = [
     { icon: Clock, title: 'تسجيل المبيعات يدوياً', desc: 'تضييع الوقت كل ليلة في الحسابات والتصحيح', color: 'bg-red-50 text-red-600 border-red-200' },
     { icon: Package, title: 'مخزون غير واضح', desc: 'لا تعرف بالضبط ما تبقى من كل صنف ومتى ينفد', color: 'bg-orange-50 text-orange-600 border-orange-200' },
-    { icon: DollarSign, title: 'مبيعات كثيرة لكن الربح مجهول', desc: 'بعد خصم الإيجار والكهرباء والمصروفات لا تعرف كم بقي', color: 'bg-yellow-50 text-yellow-600 border-yellow-200' },
+    { icon: () => <span className="text-base font-bold">DT</span>, title: 'مبيعات كثيرة لكن الربح مجهول', desc: 'بعد خصم الإيجار والكهرباء والمصروفات لا تعرف كم بقي', color: 'bg-yellow-50 text-yellow-600 border-yellow-200' },
     { icon: Lock, title: 'لا تستطيع ترك المحل', desc: 'يجب أن تكون موجوداً دائماً لرؤية ما يحدث', color: 'bg-purple-50 text-purple-600 border-purple-200' },
     { icon: Ban, title: 'كاشير تقليدي غالي جداً', desc: 'تكلفة كبيرة مقدماً + صيانة سنوية + جهاز خاص', color: 'bg-gray-50 text-gray-600 border-gray-200' },
   ]

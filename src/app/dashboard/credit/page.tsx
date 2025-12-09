@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Member } from '@/types/database'
 import { 
-  ArrowLeft, CreditCard, User, Search, DollarSign, Check, X, RefreshCw
+  ArrowLeft, CreditCard, User, Search, Check, X, RefreshCw
 } from 'lucide-react'
 
 export default function CreditPage() {
@@ -205,7 +205,7 @@ export default function CreditPage() {
                     onClick={() => openPayment(member, 'partial')}
                     className="flex-1 py-2 bg-orange-100 hover:bg-orange-200 text-orange-700 rounded-lg text-sm font-medium flex items-center justify-center gap-1"
                   >
-                    <DollarSign className="w-4 h-4" />
+                    <span className="text-xs font-bold">DT</span>
                     تسديد جزئي
                   </button>
                 </div>

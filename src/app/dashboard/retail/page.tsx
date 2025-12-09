@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Product, Category, Transaction, TransactionItem } from '@/types/database'
 import { 
   Package, Tags, Warehouse, History, ArrowLeft, Plus, Edit2, Trash2, Minus,
-  Search, RefreshCw, TrendingUp, ShoppingBag, DollarSign, AlertTriangle,
+  Search, RefreshCw, TrendingUp, ShoppingBag, AlertTriangle,
   ToggleLeft, ToggleRight, X, Save, CreditCard, Receipt, BarChart3, Settings, Download, Calendar, Camera
 } from 'lucide-react'
 import { Profile } from '@/types/database'
@@ -210,7 +210,7 @@ export default function RetailDashboardPage() {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
               <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-3 sm:p-4 text-white">
                 <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <DollarSign className="w-4 h-4" />مبيعات اليوم
+                  <span className="font-bold">DT</span>مبيعات اليوم
                 </div>
                 <div className="text-xl sm:text-2xl font-bold">{todaySales.toFixed(3)}</div>
                 <div className="text-xs opacity-80">دينار</div>

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   ArrowLeft, Plus, Edit2, Trash2, Save, X,
-  RefreshCw, Scissors, DollarSign, ToggleLeft, ToggleRight
+  RefreshCw, Scissors, ToggleLeft, ToggleRight
 } from 'lucide-react'
 import { Service } from '@/types/database'
 
@@ -221,8 +221,8 @@ export default function ServicesPage() {
                     )}
 
                     <div className="flex items-center gap-2 text-primary-600 font-bold">
-                      <DollarSign className="w-4 h-4" />
-                      <span>{service.price.toFixed(3)} DT</span>
+                      <span className="text-xs font-bold">DT</span>
+                      <span>{service.price.toFixed(3)}</span>
                     </div>
                   </div>
 

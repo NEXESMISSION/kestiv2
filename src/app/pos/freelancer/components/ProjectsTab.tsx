@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { 
   Plus, Clock, CheckCircle, AlertCircle, Video, X, Loader2, 
-  Check, DollarSign, Edit3, ChevronDown, Calendar
+  Check, Edit3, ChevronDown, Calendar
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { FreelancerProject, FreelancerClient, ProjectStatus } from '@/types/database'
@@ -272,7 +272,7 @@ export default function ProjectsTab({ projects, clients, userId, onRefresh }: Pr
                       onClick={() => openPaymentModal(project)}
                       className="flex-1 flex items-center justify-center gap-2 py-2 bg-green-500 hover:bg-green-600 text-white text-sm font-medium rounded-lg transition-colors"
                     >
-                      <DollarSign className="w-4 h-4" />
+                      <span className="text-xs font-bold">DT</span>
                       تسجيل دفعة
                     </button>
                   )}

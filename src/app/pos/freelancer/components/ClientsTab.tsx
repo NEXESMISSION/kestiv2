@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { 
-  Plus, User, Phone, DollarSign, FolderKanban, X, Loader2, 
+  Plus, User, Phone, FolderKanban, X, Loader2, 
   Check, ChevronLeft, AlertCircle, Search
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
@@ -291,7 +291,7 @@ export default function ClientsTab({ clients, projects, userId, onRefresh }: Cli
                   onClick={() => setShowPaymentModal(true)}
                   className="w-full flex items-center justify-center gap-2 py-3 bg-green-500 hover:bg-green-600 text-white font-medium rounded-xl transition-colors"
                 >
-                  <DollarSign className="w-5 h-5" />
+                  <span className="text-sm font-bold">DT</span>
                   تسجيل سداد دين
                 </button>
               </div>

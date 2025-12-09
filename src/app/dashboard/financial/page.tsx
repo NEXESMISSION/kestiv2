@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Transaction, Expense, Member } from '@/types/database'
 import { 
-  ArrowLeft, TrendingUp, RefreshCw, DollarSign, Package, 
+  ArrowLeft, TrendingUp, RefreshCw, Package, 
   Receipt, BarChart3, Users, CreditCard, Calendar,
   ArrowUpRight, ArrowDownRight, ChevronDown, ChevronUp,
   TrendingDown, Wallet, PiggyBank, ShoppingCart
