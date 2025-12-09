@@ -4,14 +4,13 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { 
-  Zap, Package, BarChart3, Calculator, Globe, Smartphone, 
+  Zap, Package, BarChart3, Globe, Smartphone, 
   MessageCircle, Check, ChevronDown, ChevronUp, Menu, X,
-  Clock, AlertTriangle, DollarSign, Lock, Ban, Rocket,
+  AlertTriangle, DollarSign, Rocket,
   Play, Mail, Phone, Send, Star, Shield, Users, Copy,
-  CreditCard, Building2, Wallet, Instagram, ArrowLeft,
-  Store, Scissors, Coffee, Dumbbell, Wrench, ShoppingBag,
-  TrendingUp, Bell, RefreshCw, Cloud, HeadphonesIcon, ServerIcon,
-  Sparkles, HandCoins, Receipt, UserCheck, Quote
+  CreditCard, Wallet, Instagram,
+  Store, Dumbbell, TrendingUp,
+  HandCoins, UserCheck
 } from 'lucide-react'
 
 // CSS Animations
@@ -88,14 +87,6 @@ export default function LandingPage() {
     setCopied(type)
     setTimeout(() => setCopied(null), 2000)
   }
-
-  const problems = [
-    { icon: Clock, title: 'تسجيل المبيعات يدوياً', desc: 'تضييع الوقت كل ليلة في الحسابات والتصحيح', color: 'bg-red-50 text-red-600 border-red-200' },
-    { icon: Package, title: 'مخزون غير واضح', desc: 'لا تعرف بالضبط ما تبقى من كل صنف ومتى ينفد', color: 'bg-orange-50 text-orange-600 border-orange-200' },
-    { icon: DollarSign, title: 'مبيعات كثيرة لكن الربح مجهول', desc: 'بعد خصم الإيجار والكهرباء والمصروفات لا تعرف كم بقي', color: 'bg-yellow-50 text-yellow-600 border-yellow-200' },
-    { icon: Lock, title: 'لا تستطيع ترك المحل', desc: 'يجب أن تكون موجوداً دائماً لرؤية ما يحدث', color: 'bg-purple-50 text-purple-600 border-purple-200' },
-    { icon: Ban, title: 'كاشير تقليدي غالي جداً', desc: 'تكلفة كبيرة مقدماً + صيانة سنوية + جهاز خاص', color: 'bg-gray-50 text-gray-600 border-gray-200' },
-  ]
 
   const pricing: PricingPlan[] = [
     { name: 'شهري', subtitle: 'مرونة كاملة', price: 19, period: '/شهر', total: null, totalAmount: 19, popular: false, save: null },
@@ -296,41 +287,157 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Problems Section */}
-      <section className="py-16 sm:py-20 px-4 bg-gray-50">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">هل تعاني من هذه المشاكل؟</h2>
-            <p className="text-gray-600 text-base sm:text-lg">مشاكل يومية تواجه كل صاحب محل</p>
+      {/* Value Props - Problem → Solution Format */}
+      <section id="features" className="py-16 sm:py-20 px-4 bg-gray-50">
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">ليش Kesti Pro؟</h2>
+            <p className="text-gray-600 text-lg">مشاكل حقيقية وحلول فورية</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
-            {problems.map((problem, i) => (
-              <div 
-                key={i} 
-                className={`p-4 sm:p-6 rounded-2xl border-2 ${problem.color} transition-all hover:-translate-y-1 hover:shadow-lg`}
-                style={{ animationDelay: `${i * 0.1}s` }}
-              >
-                <problem.icon className="w-8 h-8 sm:w-10 sm:h-10 mb-3 sm:mb-4" />
-                <h3 className="text-base sm:text-lg font-bold mb-2">{problem.title}</h3>
-                <p className="opacity-80 text-sm sm:text-base">{problem.desc}</p>
+          <div className="space-y-6">
+            {/* Value 1: Real Profit */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
+                  <TrendingUp className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
+                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
+                    <span className="text-gray-600">مبيعات كثيرة لكن ما تعرف ربحك الحقيقي</span>
+                  </div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
+                    <span className="text-gray-900 font-bold">ربحك الصافي بعد كل المصاريف — إيجار، كهرباء، ماء، بضاعة</span>
+                  </div>
+                </div>
               </div>
-            ))}
+            </div>
+
+            {/* Value 2: Credit Tracking */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center">
+                  <HandCoins className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
+                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
+                    <span className="text-gray-600">كم واحد عليه فلوسك ونسيت؟</span>
+                  </div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
+                    <span className="text-gray-900 font-bold">نظام كريديات متكامل — سجل، تابع، وذكّر</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Value 3: Stock */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                  <Package className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
+                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
+                    <span className="text-gray-600">المخزون ينفد وما تنتبه</span>
+                  </div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
+                    <span className="text-gray-900 font-bold">تنبيهات تلقائية قبل النفاد + تحديث آلي مع كل بيع</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Value 4: Remote Control */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center">
+                  <Globe className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
+                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
+                    <span className="text-gray-600">لازم تكون في المحل باش تعرف شنوة صاير</span>
+                  </div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
+                    <span className="text-gray-900 font-bold">تحكم من أي مكان — من البيت، من الكافيه، من أي بلاصة</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Value 5: Cost Savings */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                  <DollarSign className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
+                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
+                    <span className="text-gray-600">كاشير تقليدي = 3,000+ د.ت + صيانة</span>
+                  </div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
+                    <span className="text-gray-900 font-bold">Kesti Pro = 15 د.ت/شهر فقط — وفّر أكثر من 2,500 د.ت</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Value 6: Subscriptions */}
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center">
+                  <Users className="w-7 h-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
+                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
+                    <span className="text-gray-600">اشتراكات الجيم تنتهي وما تذكر</span>
+                  </div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-2">
+                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
+                    <span className="text-gray-900 font-bold">تنبيهات انتهاء تلقائية + تجميد + أنواع اشتراكات متعددة</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div className="text-center space-y-4">
-            <div className="inline-flex items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-2xl text-lg sm:text-xl font-bold shadow-lg shadow-green-500/30 animate-bounce-subtle">
-              <Check className="w-5 h-5 sm:w-6 sm:h-6" />
-              Kesti Pro يحل كل هذه المشاكل
+          {/* Extra Features Grid */}
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
+              <Zap className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
+              <span className="text-sm font-medium text-gray-700">بيع سريع</span>
             </div>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4">
-              <Link href="/register" className="px-6 py-3 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold rounded-xl hover:shadow-lg transition-all">
-                ابدأ الآن مجاناً
-              </Link>
-              <Link href="/login" className="px-6 py-3 border-2 border-primary-300 text-primary-700 font-bold rounded-xl hover:bg-primary-50 transition-all">
-                لديك حساب؟ سجل دخول
-              </Link>
+            <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
+              <Smartphone className="w-6 h-6 text-blue-500 mx-auto mb-2" />
+              <span className="text-sm font-medium text-gray-700">موبايل + تابلت</span>
             </div>
+            <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
+              <BarChart3 className="w-6 h-6 text-green-500 mx-auto mb-2" />
+              <span className="text-sm font-medium text-gray-700">تقارير يومية</span>
+            </div>
+            <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
+              <MessageCircle className="w-6 h-6 text-teal-500 mx-auto mb-2" />
+              <span className="text-sm font-medium text-gray-700">دعم واتساب</span>
+            </div>
+          </div>
+
+          {/* CTA */}
+          <div className="text-center mt-10">
+            <Link href="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-green-500/25 hover:shadow-xl transition-all">
+              <Rocket className="w-5 h-5" />
+              جرب كل هذا مجاناً 15 يوم
+            </Link>
+            <p className="text-gray-500 text-sm mt-3">بدون بطاقة بنكية • إلغاء أي وقت</p>
           </div>
         </div>
       </section>
@@ -393,143 +500,6 @@ export default function LandingPage() {
               </ul>
               <Link href="/register" className="block mt-4 text-green-600 font-medium text-sm hover:underline">جرّبها بنفسك →</Link>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* All Features Section - Clean & Comprehensive */}
-      <section id="features" className="py-16 sm:py-20 px-4 bg-gray-50">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">كل شي تحتاجه في نظام واحد</h2>
-            <p className="text-gray-600 text-base sm:text-lg">من البيع للمخزون للأرباح — الكل بضغطة زر</p>
-          </div>
-
-          {/* Main Features Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-            {/* POS */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-              <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center mb-4">
-                <Zap className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">بيع سريع</h3>
-              <p className="text-gray-600 text-sm mb-3">ضغطتين والبيع يحفظ تلقائياً</p>
-              <ul className="space-y-1 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />واجهة بسيطة</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />بدون تعقيد</li>
-              </ul>
-            </div>
-
-            {/* Stock */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
-                <Package className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">متابعة المخزون</h3>
-              <p className="text-gray-600 text-sm mb-3">كل بيع ينقص من المخزون آلياً</p>
-              <ul className="space-y-1 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />تنبيه قبل النفاد</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />بيع بدون مخزون (اختياري)</li>
-              </ul>
-            </div>
-
-            {/* Profits */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
-                <TrendingUp className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">ربحك الصافي</h3>
-              <p className="text-gray-600 text-sm mb-3">بعد كل المصاريف — إيجار، كهرباء، ماء</p>
-              <ul className="space-y-1 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />حسابات تلقائية</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />تقارير يومية</li>
-              </ul>
-            </div>
-
-            {/* Credits */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-              <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mb-4">
-                <HandCoins className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">نظام الكريديات</h3>
-              <p className="text-gray-600 text-sm mb-3">سجل الديون وتابع مين خلص</p>
-              <ul className="space-y-1 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />دفع جزئي أو كامل</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />تذكير بالعملاء</li>
-              </ul>
-            </div>
-
-            {/* Remote Access */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-              <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-xl flex items-center justify-center mb-4">
-                <Globe className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">تحكم من أي مكان</h3>
-              <p className="text-gray-600 text-sm mb-3">تابع محلك من البيت أو أي مكان</p>
-              <ul className="space-y-1 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />من الموبايل أو الكمبيوتر</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />بدون جهاز كاشير</li>
-              </ul>
-            </div>
-
-            {/* Support */}
-            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
-              <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-green-500 rounded-xl flex items-center justify-center mb-4">
-                <MessageCircle className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">دعم واتساب</h3>
-              <p className="text-gray-600 text-sm mb-3">سؤال؟ نرد عليك في دقائق</p>
-              <ul className="space-y-1 text-sm text-gray-500">
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />دعم فني سريع</li>
-                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />بياناتك آمنة</li>
-              </ul>
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="text-center mt-12">
-            <Link href="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold text-lg rounded-2xl hover:shadow-xl hover:shadow-primary-500/30 transition-all transform hover:-translate-y-1">
-              <Rocket className="w-5 h-5" />
-              جرب مجاناً لـ 15 يوم
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Video Section */}
-      <section className="py-16 sm:py-20 px-4 bg-gradient-to-br from-primary-900 via-primary-800 to-blue-900 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4">اكتشف المزيد</h2>
-          <p className="text-primary-200 text-base sm:text-lg mb-6 sm:mb-8">شاهد كيف يعمل Kesti Pro في دقيقتين فقط</p>
-          
-          <div className="relative bg-white/10 backdrop-blur rounded-3xl p-4 sm:p-8 border border-white/20">
-            <div className="aspect-video bg-black/30 rounded-2xl flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto cursor-pointer hover:bg-white/30 transition-colors animate-pulse-glow">
-                  <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white mr-[-4px]" />
-                </div>
-                <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-yellow-500/20 text-yellow-300 rounded-full text-xs sm:text-sm">
-                  <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
-                  قريباً - Coming Soon
-                </div>
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-4 sm:mt-6 text-xs sm:text-sm">
-              <span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />شرح مبسط</span>
-              <span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />خطوات واضحة</span>
-              <span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />بالعربية</span>
-            </div>
-          </div>
-
-          {/* CTA after video */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
-            <Link href="/register" className="px-8 py-4 bg-white text-primary-700 font-bold rounded-2xl hover:bg-gray-100 transition-all shadow-lg">
-              سجل الآن واحصل على تجربة مجانية
-            </Link>
-            <a href="#pricing" className="px-8 py-4 border-2 border-white/50 text-white font-bold rounded-2xl hover:bg-white/10 transition-all">
-              شاهد الأسعار
-            </a>
           </div>
         </div>
       </section>
@@ -611,11 +581,11 @@ export default function LandingPage() {
               <span>يعمل من الهاتف</span>
             </div>
             <div className="flex items-center gap-2">
-              <Cloud className="w-5 h-5 text-primary-500" />
-              <span>نسخ احتياطي</span>
+              <Shield className="w-5 h-5 text-primary-500" />
+              <span>بيانات محمية</span>
             </div>
             <div className="flex items-center gap-2">
-              <HeadphonesIcon className="w-5 h-5 text-primary-500" />
+              <MessageCircle className="w-5 h-5 text-primary-500" />
               <span>دعم فني</span>
             </div>
           </div>
