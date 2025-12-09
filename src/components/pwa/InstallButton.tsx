@@ -1,6 +1,6 @@
 'use client'
 
-import { Download, Smartphone, ExternalLink } from 'lucide-react'
+import { Download, Smartphone, ExternalLink, Plus } from 'lucide-react'
 import { useInstall } from '@/lib/pwa/useInstall'
 import SafariInstallModal from './SafariInstallModal'
 
@@ -17,7 +17,6 @@ export default function InstallButton({
 }: InstallButtonProps) {
   const {
     platform,
-    isInstallable,
     isInstalled,
     showSafariModal,
     installApp,
@@ -29,8 +28,8 @@ export default function InstallButton({
     return null
   }
 
-  // Don't render if not installable (desktop without prompt)
-  if (!isInstallable && platform.platform === 'desktop') {
+  // Don't render on desktop (only show on mobile)
+  if (platform.platform === 'desktop' || platform.platform === 'unknown') {
     return null
   }
 
