@@ -125,9 +125,9 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 bg-white/80 backdrop-blur-lg z-50 border-b border-gray-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
-            <div className="flex items-center">
-              <Image src="/kesti.png" alt="Kesti Pro" width={56} height={56} className="w-14 h-14 rounded-xl shadow-md" />
-            </div>
+            <Link href="/landing" className="flex items-center cursor-pointer">
+              <Image src="/kesti.png" alt="Kesti Pro" width={56} height={56} className="w-14 h-14 rounded-xl shadow-md hover:shadow-lg transition-shadow" />
+            </Link>
             
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8">
@@ -572,10 +572,6 @@ export default function LandingPage() {
                     </div>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      <span>أجهزة غير محدودة</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
                       <span>دعم فني</span>
                     </div>
                   </div>
@@ -605,10 +601,6 @@ export default function LandingPage() {
             <div className="flex items-center gap-2">
               <HeadphonesIcon className="w-5 h-5 text-primary-500" />
               <span>دعم فني</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-primary-500" />
-              <span>أجهزة غير محدودة</span>
             </div>
           </div>
 
@@ -753,9 +745,9 @@ export default function LandingPage() {
       <footer className="py-8 sm:py-12 px-4 bg-gray-900 text-gray-400">
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 sm:gap-6">
-            <div className="flex items-center">
-              <Image src="/kesti.png" alt="Kesti Pro" width={48} height={48} className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl" />
-            </div>
+            <Link href="/landing" className="flex items-center cursor-pointer">
+              <Image src="/kesti.png" alt="Kesti Pro" width={48} height={48} className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl hover:shadow-md transition-shadow" />
+            </Link>
             
             <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6 text-xs sm:text-sm">
               <a href="mailto:support@kestipro.com" className="flex items-center gap-2 hover:text-white transition-colors">

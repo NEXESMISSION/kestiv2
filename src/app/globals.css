@@ -75,6 +75,27 @@ body {
   font-size: 16px;
 }
 
+/* Clear placeholder on focus for smooth UX */
+.input-field:focus::placeholder,
+input:focus::placeholder,
+textarea:focus::placeholder {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.input-field::placeholder,
+input::placeholder,
+textarea::placeholder {
+  transition: opacity 0.2s ease;
+}
+
+/* Auto-select text on focus for easy editing */
+.input-field:focus,
+input:focus,
+textarea:focus {
+  caret-color: #3b82f6;
+}
+
 .input-field:disabled {
   @apply bg-gray-100 cursor-not-allowed;
 }

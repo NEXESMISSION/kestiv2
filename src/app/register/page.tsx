@@ -250,7 +250,9 @@ export default function RegisterPage() {
 
         {/* Logo/Brand */}
         <div className="text-center mb-6 sm:mb-8">
-          <Image src="/kesti.png" alt="Kesti Pro" width={100} height={100} className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 rounded-2xl shadow-lg" />
+          <Link href="/landing">
+            <Image src="/kesti.png" alt="Kesti Pro" width={100} height={100} className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 rounded-2xl shadow-lg cursor-pointer hover:shadow-xl transition-shadow" />
+          </Link>
           <p className="text-gray-500 text-sm sm:text-base">نظام إدارة الأعمال المتكامل</p>
         </div>
 
