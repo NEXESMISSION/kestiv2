@@ -190,7 +190,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   return (
     <div 
       ref={containerRef}
-      className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pb-20 overflow-y-auto"
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 overflow-y-auto"
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
@@ -229,6 +229,32 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
           </div>
         </div>
       </header>
+
+      {/* Top Navigation Tabs */}
+      <nav className="bg-white border-b border-gray-200 sticky top-[60px] z-30">
+        <div className="max-w-lg mx-auto px-2">
+          <div className="flex items-center justify-around py-1">
+            {tabs.map((tab) => {
+              const Icon = tab.icon
+              const isActive = activeTab === tab.id
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center gap-0.5 px-3 py-2 rounded-xl transition-colors ${
+                    isActive 
+                      ? 'text-primary-600 bg-primary-50' 
+                      : 'text-gray-400 hover:text-gray-600'
+                  }`}
+                >
+                  <Icon className="w-5 h-5" />
+                  <span className="text-[10px] font-medium">{tab.label}</span>
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      </nav>
 
       {/* Main Content */}
       <main className="max-w-lg mx-auto px-4 py-4">
@@ -283,32 +309,6 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
           </>
         )}
       </main>
-
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50">
-        <div className="max-w-lg mx-auto px-4">
-          <div className="flex items-center justify-around py-2">
-            {tabs.map((tab) => {
-              const Icon = tab.icon
-              const isActive = activeTab === tab.id
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-colors ${
-                    isActive 
-                      ? 'text-primary-600 bg-primary-50' 
-                      : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-xs font-medium">{tab.label}</span>
-                </button>
-              )
-            })}
-          </div>
-        </div>
-      </nav>
     </div>
   )
 }
