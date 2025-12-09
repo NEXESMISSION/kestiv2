@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { 
-  Eye, EyeOff, ArrowLeft, ChevronLeft, Loader2, 
+  Eye, EyeOff, ArrowLeft, ArrowRight, ChevronLeft, Loader2, 
   Dumbbell, ShoppingBag,
   Info, Check, CheckCircle2, AlertCircle, XCircle
 } from 'lucide-react'
@@ -203,11 +203,29 @@ export default function RegisterPage() {
         showNotification('warning', 'تم إنشاء الحساب ولكن قد تكون هناك مشكلة في الملف الشخصي')
       }
 
-      // Success! Account created - redirect to login
-      showNotification('success', 'تم إنشاء حسابك بنجاح! سيتم تحويلك لتسجيل الدخول...')
+      // Success! Account created - auto login
+      showNotification('success', 'تم إنشاء حسابك بنجاح! جاري تسجيل الدخول...')
+      
+      // Auto login the user
+      const { error: loginError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password
+      })
+      
+      if (loginError) {
+        // If auto-login fails, redirect to login page
+        console.error('Auto-login failed:', loginError)
+        setTimeout(() => {
+          router.push('/login')
+        }, 2000)
+        return
+      }
+      
+      // Redirect to POS after successful auto-login
       setTimeout(() => {
-        router.push('/login')
-      }, 2000)
+        router.push('/pos')
+        router.refresh()
+      }, 1500)
     } catch (err) {
       console.error('Unexpected error:', err)
       showNotification('error', 'حدث خطأ غير متوقع. حاول مرة أخرى لاحقاً.')
@@ -219,6 +237,17 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen min-h-[100dvh] flex items-center justify-center px-4 py-6 sm:p-6 bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="w-full max-w-lg">
+        {/* Back Button */}
+        <div className="mb-4">
+          <Link
+            href="/landing"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <ArrowRight size={18} />
+            <span>العودة للصفحة الرئيسية</span>
+          </Link>
+        </div>
+
         {/* Logo/Brand */}
         <div className="text-center mb-6 sm:mb-8">
           <Image src="/kesti.png" alt="Kesti Pro" width={100} height={100} className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 rounded-2xl shadow-lg" />

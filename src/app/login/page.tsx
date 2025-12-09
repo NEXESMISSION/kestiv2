@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Eye, EyeOff, LogIn, Loader2, XCircle, CheckCircle2 } from 'lucide-react'
+import { Eye, EyeOff, LogIn, Loader2, XCircle, CheckCircle2, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginData } from '@/lib/validations/auth'
 
@@ -107,6 +107,17 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen min-h-[100dvh] flex items-center justify-center px-4 py-6 sm:p-6 bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="w-full max-w-md">
+        {/* Back Button */}
+        <div className="mb-4">
+          <Link
+            href="/landing"
+            className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            <ArrowRight size={18} />
+            <span>العودة للصفحة الرئيسية</span>
+          </Link>
+        </div>
+
         {/* Logo/Brand */}
         <div className="text-center mb-6 sm:mb-8">
           <Image src="/kesti.png" alt="Kesti Pro" width={100} height={100} className="w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3 rounded-2xl shadow-lg" />

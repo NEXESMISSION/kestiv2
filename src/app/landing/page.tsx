@@ -8,7 +8,10 @@ import {
   MessageCircle, Check, ChevronDown, ChevronUp, Menu, X,
   Clock, AlertTriangle, DollarSign, Lock, Ban, Rocket,
   Play, Mail, Phone, Send, Star, Shield, Users, Copy,
-  CreditCard, Building2, Wallet, Instagram, ArrowLeft
+  CreditCard, Building2, Wallet, Instagram, ArrowLeft,
+  Store, Scissors, Coffee, Dumbbell, Wrench, ShoppingBag,
+  TrendingUp, Bell, RefreshCw, Cloud, HeadphonesIcon, ServerIcon,
+  Sparkles, HandCoins, Receipt, UserCheck, Quote
 } from 'lucide-react'
 
 // CSS Animations
@@ -86,17 +89,6 @@ export default function LandingPage() {
     setTimeout(() => setCopied(null), 2000)
   }
 
-  const features = [
-    { icon: Zap, title: 'بيع في ثانيتين', desc: 'ضغطتين والمبيع يحفظ تلقائياً', color: 'from-yellow-400 to-orange-500' },
-    { icon: Package, title: 'مخزونك تحت عينيك', desc: 'تعرف كم بقى من كل صنف مع تنبيه قبل النفاد', color: 'from-blue-400 to-cyan-500' },
-    { icon: BarChart3, title: 'ربحك الصافي كل يوم', desc: 'بعد الإيجار والكهرباء والمصاريف كلها', color: 'from-green-400 to-emerald-500' },
-    { icon: Calculator, title: 'حسابات تلقائية', desc: 'لا تقعد تحسب للفجر، النظام يحسب لك كل شيء', color: 'from-purple-400 to-pink-500' },
-    { icon: Globe, title: 'تحكم من أي مكان', desc: 'من البيت أو القهوة، من أي تليفون أو كمبيوتر', color: 'from-indigo-400 to-blue-500' },
-    { icon: Smartphone, title: 'يعمل على تليفونك', desc: 'لا تشتري جهاز كاشير غالي', color: 'from-pink-400 to-rose-500' },
-    { icon: MessageCircle, title: 'دعم واتساب فوري', desc: 'سؤال؟ نرد عليك في دقائق', color: 'from-teal-400 to-green-500' },
-    { icon: Shield, title: 'بياناتك آمنة', desc: 'حماية كاملة وتشفير متقدم', color: 'from-slate-400 to-gray-500' },
-  ]
-
   const problems = [
     { icon: Clock, title: 'تسجيل المبيعات يدوياً', desc: 'تضييع الوقت كل ليلة في الحسابات والتصحيح', color: 'bg-red-50 text-red-600 border-red-200' },
     { icon: Package, title: 'مخزون غير واضح', desc: 'لا تعرف بالضبط ما تبقى من كل صنف ومتى ينفد', color: 'bg-orange-50 text-orange-600 border-orange-200' },
@@ -115,7 +107,6 @@ export default function LandingPage() {
     { q: 'هل يعمل على الحاسوب والتابلت؟', a: 'نعم، يعمل على كل الأجهزة بنفس الحساب. يمكنك البدء من الهاتف ثم الانتقال للحاسوب بدون أي إعدادات إضافية.' },
     { q: 'هل أحتاج إنترنت؟', a: 'نعم، اتصال إنترنت بسيط يكفي. حتى اتصال 3G يعمل بشكل ممتاز.' },
     { q: 'كيف أدفع؟', a: 'عبر D17 أو Flouci أو تحويل بنكي. نوفر طرق دفع متعددة لراحتك.' },
-    { q: 'هل يمكنني إضافة موظفين؟', a: 'نعم، يمكنك إضافة موظفين مع صلاحيات مختلفة. كل موظف له حسابه الخاص.' },
     { q: 'ماذا لو واجهت مشكلة؟', a: 'فريق الدعم متاح على واتساب للرد على أسئلتك. نرد خلال دقائق في أوقات العمل.' },
   ]
 
@@ -187,24 +178,23 @@ export default function LandingPage() {
 
               {/* Main Headline */}
               <h1 className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold text-gray-900 leading-tight mb-4 sm:mb-6">
-                وداعاً للدفاتر
+                إدارة البيع والمخزون
                 <br />
                 <span className="bg-gradient-to-r from-primary-600 via-primary-500 to-blue-500 bg-clip-text text-transparent">
-                  والحسابات اليدوية
+                  والكريديات والمصاريف
                 </span>
                 <br />
-                <span className="text-2xl sm:text-3xl lg:text-4xl">والمتريال الغالي</span>
+                <span className="text-2xl sm:text-3xl lg:text-4xl">الكلّ من تليفونك</span>
               </h1>
 
               {/* Subheadline */}
               <div className="space-y-2 mb-6 sm:mb-8">
-                <p className="flex items-center justify-center lg:justify-start gap-2 text-green-600 font-medium text-base sm:text-lg">
-                  <Check className="w-5 h-5" />
-                  مرحباً بالتحكم الكامل والربح الواضح
+                <p className="flex items-center justify-center lg:justify-start gap-2 text-gray-600 font-medium text-base sm:text-lg">
+                  بدون كاشير غالي. بدون أوراق. بدون صداع.
                 </p>
-                <p className="flex items-center justify-center lg:justify-start gap-2 text-primary-600 font-medium">
+                <p className="flex items-center justify-center lg:justify-start gap-2 text-primary-600 font-bold text-lg">
                   <Smartphone className="w-5 h-5" />
-                  تليفونك يكفي
+                  يكفي تليفون. تخدم وتبيع في ثواني.
                 </p>
               </div>
 
@@ -325,34 +315,166 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Features Section */}
-      <section id="features" className="py-16 sm:py-20 px-4">
-        <div className="max-w-7xl mx-auto">
+      {/* Two Business Types Section */}
+      <section className="py-16 sm:py-20 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">كل ما تحتاجه لإدارة محلك</h2>
-            <p className="text-gray-600 text-base sm:text-lg">نظام متكامل يوفر وقتك ويزيد أرباحك</p>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">نظام واحد لكل أنواع الأعمال</h2>
+            <p className="text-gray-600 text-base sm:text-lg">سواء تبيع منتجات أو اشتراكات، Kesti Pro يناسبك</p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {features.map((feature, i) => (
-              <div 
-                key={i} 
-                className="group p-4 sm:p-6 bg-white rounded-2xl border border-gray-100 hover:border-transparent hover:shadow-xl transition-all duration-300 hover:-translate-y-2"
-              >
-                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}>
-                  <feature.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
-                </div>
-                <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm sm:text-base">{feature.desc}</p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            {/* Retail/Products */}
+            <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-6 sm:p-8 border-2 border-blue-100 hover:border-blue-300 transition-all">
+              <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                <Store className="w-7 h-7 text-white" />
               </div>
-            ))}
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">بيع المنتجات</h3>
+              <p className="text-gray-600 mb-4">للمحلات والبقالات ومحلات الملابس</p>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <span>نقطة بيع سريعة</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <span>متابعة المخزون آلياً</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <span>تنبيهات نفاد البضاعة</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-blue-500 flex-shrink-0" />
+                  <span>حساب الربح لكل منتج</span>
+                </li>
+              </ul>
+            </div>
+
+            {/* Subscriptions/Services */}
+            <div className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-6 sm:p-8 border-2 border-purple-100 hover:border-purple-300 transition-all">
+              <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+                <Users className="w-7 h-7 text-white" />
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-3">الاشتراكات والخدمات</h3>
+              <p className="text-gray-600 mb-4">للجيم والكوافير والخدمات الشهرية</p>
+              <ul className="space-y-3">
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                  <span>إدارة المشتركين</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                  <span>تتبع تواريخ الاشتراك</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                  <span>تنبيهات انتهاء الاشتراك</span>
+                </li>
+                <li className="flex items-center gap-3 text-gray-700">
+                  <Check className="w-5 h-5 text-purple-500 flex-shrink-0" />
+                  <span>سجل كامل لكل عميل</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* All Features Section - Clean & Comprehensive */}
+      <section id="features" className="py-16 sm:py-20 px-4 bg-gray-50">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-12 sm:mb-16">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">كل شي تحتاجه في نظام واحد</h2>
+            <p className="text-gray-600 text-base sm:text-lg">من البيع للمخزون للأرباح — الكل بضغطة زر</p>
           </div>
 
-          {/* CTA after features */}
+          {/* Main Features Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {/* POS */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl flex items-center justify-center mb-4">
+                <Zap className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">بيع سريع</h3>
+              <p className="text-gray-600 text-sm mb-3">ضغطتين والبيع يحفظ تلقائياً</p>
+              <ul className="space-y-1 text-sm text-gray-500">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />واجهة بسيطة</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />بدون تعقيد</li>
+              </ul>
+            </div>
+
+            {/* Stock */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">متابعة المخزون</h3>
+              <p className="text-gray-600 text-sm mb-3">كل بيع ينقص من المخزون آلياً</p>
+              <ul className="space-y-1 text-sm text-gray-500">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />تنبيه قبل النفاد</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />بيع بدون مخزون (اختياري)</li>
+              </ul>
+            </div>
+
+            {/* Profits */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">ربحك الصافي</h3>
+              <p className="text-gray-600 text-sm mb-3">بعد كل المصاريف — إيجار، كهرباء، ماء</p>
+              <ul className="space-y-1 text-sm text-gray-500">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />حسابات تلقائية</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />تقارير يومية</li>
+              </ul>
+            </div>
+
+            {/* Credits */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-red-500 rounded-xl flex items-center justify-center mb-4">
+                <HandCoins className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">نظام الكريديات</h3>
+              <p className="text-gray-600 text-sm mb-3">سجل الديون وتابع مين خلص</p>
+              <ul className="space-y-1 text-sm text-gray-500">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />دفع جزئي أو كامل</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />تذكير بالعملاء</li>
+              </ul>
+            </div>
+
+            {/* Remote Access */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-indigo-400 to-blue-500 rounded-xl flex items-center justify-center mb-4">
+                <Globe className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">تحكم من أي مكان</h3>
+              <p className="text-gray-600 text-sm mb-3">تابع محلك من البيت أو أي مكان</p>
+              <ul className="space-y-1 text-sm text-gray-500">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />من الموبايل أو الكمبيوتر</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />بدون جهاز كاشير</li>
+              </ul>
+            </div>
+
+            {/* Support */}
+            <div className="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-teal-400 to-green-500 rounded-xl flex items-center justify-center mb-4">
+                <MessageCircle className="w-6 h-6 text-white" />
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">دعم واتساب</h3>
+              <p className="text-gray-600 text-sm mb-3">سؤال؟ نرد عليك في دقائق</p>
+              <ul className="space-y-1 text-sm text-gray-500">
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />دعم فني سريع</li>
+                <li className="flex items-center gap-2"><Check className="w-4 h-4 text-green-500" />بياناتك آمنة</li>
+              </ul>
+            </div>
+          </div>
+
+          {/* CTA */}
           <div className="text-center mt-12">
             <Link href="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold text-lg rounded-2xl hover:shadow-xl hover:shadow-primary-500/30 transition-all transform hover:-translate-y-1">
-              <Zap className="w-5 h-5" />
-              جرب كل هذه المميزات مجاناً
+              <Rocket className="w-5 h-5" />
+              جرب مجاناً لـ 15 يوم
             </Link>
           </div>
         </div>
@@ -420,6 +542,11 @@ export default function LandingPage() {
                     الأكثر طلباً
                   </div>
                 )}
+                {plan.name === 'سنوي' && (
+                  <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs sm:text-sm font-bold rounded-full">
+                    + شهر هدية
+                  </div>
+                )}
                 
                 <div className="text-center">
                   <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{plan.name}</h3>
@@ -431,8 +558,27 @@ export default function LandingPage() {
                   </div>
                   
                   {plan.total && (
-                    <p className="text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6">{plan.total}</p>
+                    <p className="text-xs sm:text-sm text-gray-500 mb-2">{plan.total}</p>
                   )}
+
+                  {/* No hardware text */}
+                  <p className="text-xs text-primary-600 font-medium mb-4">بدون جهاز كاشير</p>
+                  
+                  {/* Features included */}
+                  <div className="space-y-2 mb-6 text-right">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span>كل المميزات</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span>أجهزة غير محدودة</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                      <span>دعم فني</span>
+                    </div>
+                  </div>
                   
                   <button className={`w-full py-3 sm:py-4 rounded-xl font-bold transition-all ${
                     plan.popular
@@ -444,6 +590,26 @@ export default function LandingPage() {
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Plan icons */}
+          <div className="flex flex-wrap items-center justify-center gap-6 mb-8 text-gray-500 text-sm">
+            <div className="flex items-center gap-2">
+              <Smartphone className="w-5 h-5 text-primary-500" />
+              <span>يعمل من الهاتف</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Cloud className="w-5 h-5 text-primary-500" />
+              <span>نسخ احتياطي</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <HeadphonesIcon className="w-5 h-5 text-primary-500" />
+              <span>دعم فني</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-primary-500" />
+              <span>أجهزة غير محدودة</span>
+            </div>
           </div>
 
           <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
@@ -573,14 +739,13 @@ export default function LandingPage() {
           <p className="text-primary-100 text-base sm:text-lg mb-6 sm:mb-8">انضم لمئات التجار الذين يديرون أعمالهم بذكاء مع Kesti Pro</p>
           
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <Link href="/register" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-white text-primary-700 text-base sm:text-lg font-bold rounded-2xl hover:shadow-xl transition-all hover:-translate-y-1">
-              ابدأ مجاناً الآن
+            <Link href="/register" className="w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-white text-primary-700 text-lg sm:text-xl font-bold rounded-2xl hover:shadow-xl transition-all hover:-translate-y-1 flex items-center justify-center gap-2">
+              <Rocket className="w-5 h-5 sm:w-6 sm:h-6" />
+              ابدأ الآن — مجانا لـ 15 يوم بدون بطاقة بنكية
             </Link>
-            <a href="https://wa.me/21653518337" target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-white/30 text-white text-base sm:text-lg font-bold rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-2">
-              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-              تواصل عبر واتساب
-            </a>
           </div>
+          
+          <p className="text-white/70 text-sm mt-4">بدون التزام • إلغاء في أي وقت</p>
         </div>
       </section>
 
@@ -734,6 +899,17 @@ export default function LandingPage() {
           </div>
         </div>
       )}
+
+      {/* Floating WhatsApp Button */}
+      <a
+        href="https://wa.me/21653518337"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 left-6 z-50 w-14 h-14 sm:w-16 sm:h-16 bg-green-500 hover:bg-green-600 rounded-full shadow-lg shadow-green-500/30 flex items-center justify-center transition-all hover:scale-110 animate-bounce-subtle"
+        aria-label="تواصل عبر واتساب"
+      >
+        <MessageCircle className="w-7 h-7 sm:w-8 sm:h-8 text-white" />
+      </a>
     </div>
   )
 }
