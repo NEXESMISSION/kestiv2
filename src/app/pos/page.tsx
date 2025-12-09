@@ -20,6 +20,8 @@ export default async function POSPage() {
   // Redirect based on business type
   if (profile?.business_mode === 'retail') {
     redirect('/pos/retail')
+  } else if (profile?.business_mode === 'freelancer') {
+    redirect('/pos/freelancer')
   } else {
     redirect('/pos/subscription')
   }

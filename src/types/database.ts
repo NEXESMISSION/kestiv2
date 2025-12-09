@@ -1,4 +1,4 @@
-export type BusinessMode = 'subscription' | 'retail'
+export type BusinessMode = 'subscription' | 'retail' | 'freelancer'
 export type UserRole = 'user' | 'super_admin'
 export type SubscriptionStatus = 'active' | 'expired' | 'trial' | 'cancelled'
 export type TransactionType = 'subscription' | 'retail' | 'service' | 'debt_payment' | 'sale'
@@ -15,6 +15,7 @@ export type MemberStatus = 'active' | 'expiring_soon' | 'expired' | 'frozen'
 
 export type Profile = {
   id: string
+  email: string | null
   full_name: string
   phone_number: string | null
   business_mode: BusinessMode
@@ -216,6 +217,90 @@ export type CartItem = {
   price: number
   quantity: number
   stock?: number
+}
+
+// =====================================================
+// FREELANCER TYPES
+// =====================================================
+
+export type ProjectStatus = 'pending' | 'in_progress' | 'delivered' | 'completed' | 'cancelled'
+
+export type FreelancerClient = {
+  id: string
+  business_id: string
+  name: string
+  phone: string | null
+  email: string | null
+  notes: string | null
+  total_spent: number
+  total_credit: number
+  projects_count: number
+  created_at: string
+  updated_at: string
+}
+
+export type FreelancerService = {
+  id: string
+  business_id: string
+  name: string
+  price: number
+  description: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export type FreelancerProject = {
+  id: string
+  business_id: string
+  client_id: string
+  service_id: string | null
+  title: string
+  description: string | null
+  total_price: number
+  deposit: number
+  paid_amount: number
+  remaining: number
+  status: ProjectStatus
+  deadline: string | null
+  notes: string | null
+  created_at: string
+  updated_at: string
+  // Joined fields
+  client_name?: string
+  service_name?: string
+}
+
+export type FreelancerPayment = {
+  id: string
+  business_id: string
+  client_id: string | null
+  project_id: string | null
+  amount: number
+  payment_type: 'full' | 'partial' | 'deposit' | 'general'
+  notes: string | null
+  created_at: string
+}
+
+export type FreelancerExpense = {
+  id: string
+  business_id: string
+  amount: number
+  category: string
+  description: string | null
+  date: string
+  created_at: string
+}
+
+export type FreelancerReminder = {
+  id: string
+  business_id: string
+  project_id: string | null
+  title: string
+  type: 'shoot' | 'edit' | 'delivery' | 'meeting' | 'other'
+  date: string
+  is_done: boolean
+  notes: string | null
+  created_at: string
 }
 
 export type Database = {

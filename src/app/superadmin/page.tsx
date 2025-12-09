@@ -37,6 +37,7 @@ export default async function SuperAdminPage() {
   // Create profile from user metadata
   const currentProfile: Profile = {
     id: user.id,
+    email: user.email || null,
     full_name: user.user_metadata?.full_name || user.email || 'Admin',
     phone_number: user.user_metadata?.phone_number || null,
     business_mode: user.user_metadata?.business_mode || 'subscription',

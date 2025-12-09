@@ -8,14 +8,14 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { 
   Eye, EyeOff, ArrowLeft, ArrowRight, ChevronLeft, Loader2, 
-  Dumbbell, ShoppingBag,
+  Dumbbell, ShoppingBag, Camera,
   Info, Check, CheckCircle2, AlertCircle, XCircle
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { registerStep1Schema, type RegisterStep1Data } from '@/lib/validations/auth'
 import type { BusinessMode } from '@/types/database'
 
-// Business category configuration - Only Subscription and Retail
+// Business category configuration
 const businessCategories: {
   id: BusinessMode
   title: string
@@ -36,6 +36,13 @@ const businessCategories: {
     description: 'بيع المنتجات بالقطعة أو الوزن مع تتبع المخزون',
     icon: <ShoppingBag className="w-8 h-8" />,
     examples: 'متاجر، بقالات، مشاريع صغيرة'
+  },
+  {
+    id: 'freelancer',
+    title: 'مستقل',
+    description: 'إدارة العملاء والمشاريع والمدفوعات بكل بساطة',
+    icon: <Camera className="w-8 h-8" />,
+    examples: 'مصورين، مونتاج، مصممين، مستقلين'
   }
 ]
 
@@ -159,6 +166,7 @@ export default function RegisterPage() {
           .from('profiles')
           .insert({
             id: authData.user.id,
+            email: formData.email,
             full_name: formData.fullName,
             phone_number: formData.phone || null,
             pin_code: formData.pinCode, // This is important for the PIN verification
@@ -179,6 +187,7 @@ export default function RegisterPage() {
           const { error: updateError } = await supabase
             .from('profiles')
             .update({
+              email: formData.email,
               full_name: formData.fullName,
               phone_number: formData.phone || null,
               pin_code: formData.pinCode,

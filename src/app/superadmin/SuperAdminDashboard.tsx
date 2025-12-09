@@ -278,7 +278,8 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
 
   const filteredProfiles = profiles.filter(profile => 
     profile.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    profile.phone_number?.includes(searchQuery)
+    profile.phone_number?.includes(searchQuery) ||
+    profile.email?.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
   const stats = {
@@ -399,6 +400,7 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
                       {/* Info */}
                       <div>
                         <p className="font-medium text-gray-800">{profile.full_name}</p>
+                        <p className="text-xs text-primary-600 font-mono">{profile.email || 'بدون بريد'}</p>
                         <p className="text-sm text-gray-500">{profile.phone_number || 'بدون رقم'}</p>
                       </div>
                     </div>
@@ -453,6 +455,7 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
                   {selectedUser.full_name.charAt(0)}
                 </div>
                 <h3 className="text-xl font-bold">{selectedUser.full_name}</h3>
+                <p className="text-white/90 text-xs font-mono">{selectedUser.email || 'بدون بريد'}</p>
                 <p className="text-white/80 text-sm">{selectedUser.phone_number || 'بدون رقم'}</p>
               </div>
             </div>
