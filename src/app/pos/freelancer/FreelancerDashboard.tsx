@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
   Home, Users, FolderKanban, Plus, Minus, Settings, LogOut,
   TrendingUp, TrendingDown, Clock, Calendar, ChevronLeft,
-  Loader2, DollarSign, Camera, Video, X, Check
+  Loader2, DollarSign, Camera, Video, X, Check, RefreshCw
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, FreelancerClient, FreelancerProject, FreelancerExpense, FreelancerService, ProjectStatus } from '@/types/database'
@@ -29,6 +29,14 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   const [activeTab, setActiveTab] = useState<TabType>('home')
   const [isLoading, setIsLoading] = useState(true)
   
+  // Pull to refresh
+  const [isPulling, setIsPulling] = useState(false)
+  const [pullDistance, setPullDistance] = useState(0)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const startY = useRef(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const PULL_THRESHOLD = 80
+  
   // Data states
   const [clients, setClients] = useState<FreelancerClient[]>([])
   const [projects, setProjects] = useState<FreelancerProject[]>([])
@@ -45,9 +53,42 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
     activeProjects: 0
   })
 
+  // Pull to refresh handlers
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    if (containerRef.current?.scrollTop === 0) {
+      startY.current = e.touches[0].clientY
+      setIsPulling(true)
+    }
+  }, [])
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling || isRefreshing) return
+    
+    const currentY = e.touches[0].clientY
+    const diff = currentY - startY.current
+    
+    if (diff > 0 && containerRef.current?.scrollTop === 0) {
+      setPullDistance(Math.min(diff * 0.5, 120))
+    }
+  }, [isPulling, isRefreshing])
+
+  const handleTouchEnd = useCallback(async () => {
+    if (!isPulling) return
+    
+    if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
+      setIsRefreshing(true)
+      setPullDistance(60)
+      await fetchData()
+      setIsRefreshing(false)
+    }
+    
+    setPullDistance(0)
+    setIsPulling(false)
+  }, [isPulling, pullDistance, isRefreshing])
+
   // Fetch all data
   const fetchData = async () => {
-    setIsLoading(true)
+    if (!isRefreshing) setIsLoading(true)
     const supabase = createClient()
     
     try {
@@ -147,7 +188,25 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pb-20">
+    <div 
+      ref={containerRef}
+      className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 pb-20 overflow-y-auto"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull to Refresh Indicator */}
+      <div 
+        className="flex items-center justify-center overflow-hidden transition-all duration-200"
+        style={{ height: pullDistance }}
+      >
+        <div className={`flex items-center gap-2 text-primary-600 ${isRefreshing ? 'animate-pulse' : ''}`}>
+          <RefreshCw className={`w-5 h-5 ${isRefreshing ? 'animate-spin' : ''} ${pullDistance >= PULL_THRESHOLD ? 'text-primary-600' : 'text-gray-400'}`} />
+          <span className="text-sm font-medium">
+            {isRefreshing ? 'جاري التحديث...' : pullDistance >= PULL_THRESHOLD ? 'أفلت للتحديث' : 'اسحب للتحديث'}
+          </span>
+        </div>
+      </div>
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-lg mx-auto px-4 py-3">
