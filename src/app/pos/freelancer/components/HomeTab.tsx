@@ -313,8 +313,8 @@ export default function HomeTab({ stats, projects, clients, services, userId, on
 
       {/* Income Modal */}
       {showIncomeModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50" onClick={() => setShowIncomeModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowIncomeModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="sticky top-0 bg-gradient-to-r from-green-500 to-green-600 p-5 text-white rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">تسجيل دخل</h3>
@@ -415,8 +415,8 @@ export default function HomeTab({ stats, projects, clients, services, userId, on
 
       {/* Expense Modal */}
       {showExpenseModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50" onClick={() => setShowExpenseModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowExpenseModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-red-500 to-red-600 p-5 text-white rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">تسجيل مصروف</h3>
@@ -463,8 +463,8 @@ export default function HomeTab({ stats, projects, clients, services, userId, on
 
       {/* Project Modal */}
       {showProjectModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50" onClick={() => setShowProjectModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowProjectModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="sticky top-0 bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">مشروع جديد</h3>

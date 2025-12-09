@@ -189,8 +189,8 @@ export default function SettingsTab({ services, userId, onRefresh }: SettingsTab
 
       {/* Add/Edit Modal */}
       {(showAddModal || editingService) && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/50" onClick={closeModal}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={closeModal}>
+          <div className="w-full max-w-md bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">
