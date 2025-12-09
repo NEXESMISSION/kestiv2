@@ -2,21 +2,34 @@
   "name": "Kesti Pro - كاستي برو | نظام إدارة المبيعات",
   "short_name": "Kesti Pro",
   "description": "نظام إدارة المبيعات والمخزون الذكي - Smart POS & Inventory Management System",
-  "start_url": "/",
+  "start_url": "/login",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#3b82f6",
   "orientation": "portrait-primary",
   "scope": "/",
+  "id": "/login",
   "lang": "ar",
   "dir": "rtl",
   "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "/kesti.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/kesti.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/kesti.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon.svg",

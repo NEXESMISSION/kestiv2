@@ -1,7 +1,7 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect, useCallback, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useForm } from 'react-hook-form'
@@ -30,8 +30,25 @@ interface Notification {
   message: string
 }
 
+// Wrapper component for Suspense
 export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="text-center">
+          <Loader2 className="w-10 h-10 text-primary-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-500">جاري التحميل...</p>
+        </div>
+      </div>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
+  )
+}
+
+function ResetPasswordContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [notification, setNotification] = useState<Notification | null>(null)
@@ -52,10 +69,59 @@ export default function ResetPasswordPage() {
     resolver: zodResolver(resetPasswordSchema)
   })
 
+  // Handle URL hash tokens (for mobile/PWA compatibility)
+  const handleHashToken = useCallback(async () => {
+    const supabase = createClient()
+    
+    // Check URL hash for tokens (Supabase sends tokens in hash for recovery)
+    if (typeof window !== 'undefined' && window.location.hash) {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1))
+      const accessToken = hashParams.get('access_token')
+      const refreshToken = hashParams.get('refresh_token')
+      const type = hashParams.get('type')
+      
+      if (accessToken && type === 'recovery') {
+        // Set the session using the tokens from URL hash
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || ''
+        })
+        
+        if (!error) {
+          // Clear the hash from URL for security
+          window.history.replaceState(null, '', window.location.pathname)
+          return true
+        }
+      }
+    }
+    
+    // Also check for code in search params (PKCE flow)
+    const code = searchParams.get('code')
+    if (code) {
+      const { error } = await supabase.auth.exchangeCodeForSession(code)
+      if (!error) {
+        return true
+      }
+    }
+    
+    return false
+  }, [searchParams])
+
   // Check if user has a valid reset session
   useEffect(() => {
     const checkSession = async () => {
       const supabase = createClient()
+      
+      // First try to handle hash tokens (for mobile/browser transitions)
+      const hashedSession = await handleHashToken()
+      
+      if (hashedSession) {
+        setIsValidSession(true)
+        setCheckingSession(false)
+        return
+      }
+      
+      // Check existing session
       const { data: { session } } = await supabase.auth.getSession()
       
       // User should have a session from the reset link
@@ -66,7 +132,7 @@ export default function ResetPasswordPage() {
     }
     
     checkSession()
-  }, [])
+  }, [handleHashToken])
 
   const onSubmit = async (data: ResetPasswordData) => {
     setIsLoading(true)

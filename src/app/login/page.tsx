@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, LogIn, Loader2, XCircle, CheckCircle2, ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginData } from '@/lib/validations/auth'
+import { InstallButton } from '@/components/pwa'
 
 type NotificationType = 'success' | 'error'
 
@@ -230,6 +231,14 @@ export default function LoginPage() {
               </Link>
             </p>
           </div>
+        </div>
+
+        {/* PWA Install Section */}
+        <div className="mt-6 text-center">
+          <InstallButton variant="primary" className="w-full" />
+          <p className="mt-2 text-xs text-gray-400">
+            ثبّت التطبيق للوصول السريع وتجربة أفضل
+          </p>
         </div>
       </div>
     </div>

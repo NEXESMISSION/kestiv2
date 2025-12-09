@@ -46,11 +46,14 @@ export async function middleware(request: NextRequest) {
     pathname === '/register' ||
     pathname === '/forgot-password' ||
     pathname === '/reset-password' ||
+    pathname === '/install' ||
     pathname === '/' ||
     pathname === '/landing' ||
     pathname.startsWith('/auth/callback') ||
     pathname === '/sitemap.xml' ||
     pathname === '/robots.txt' ||
+    pathname === '/sw.js' ||
+    pathname === '/manifest.json' ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next')
   ) {

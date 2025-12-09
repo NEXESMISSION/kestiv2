@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Analytics } from '@vercel/analytics/next'
 import SplashScreen from '@/components/SplashScreen'
+import { PWAProvider } from '@/components/pwa'
 import './globals.css'
 
 // ============================================
@@ -251,9 +252,11 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen bg-slate-50 touch-manipulation">
-        <SplashScreen />
-        {children}
-        <Analytics />
+        <PWAProvider>
+          <SplashScreen />
+          {children}
+          <Analytics />
+        </PWAProvider>
       </body>
     </html>
   )
