@@ -6,12 +6,11 @@ import {
   Check, DollarSign, Edit3, ChevronDown, Calendar
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import type { FreelancerProject, FreelancerClient, FreelancerService, ProjectStatus } from '@/types/database'
+import type { FreelancerProject, FreelancerClient, ProjectStatus } from '@/types/database'
 
 interface ProjectsTabProps {
   projects: FreelancerProject[]
   clients: FreelancerClient[]
-  services: FreelancerService[]
   userId: string
   onRefresh: () => void
 }
@@ -24,7 +23,7 @@ const STATUS_CONFIG = {
   cancelled: { label: 'ملغي', color: 'bg-gray-100 text-gray-500', icon: AlertCircle },
 }
 
-export default function ProjectsTab({ projects, clients, services, userId, onRefresh }: ProjectsTabProps) {
+export default function ProjectsTab({ projects, clients, userId, onRefresh }: ProjectsTabProps) {
   const [filter, setFilter] = useState<ProjectStatus | 'all'>('all')
   const [selectedProject, setSelectedProject] = useState<FreelancerProject | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)

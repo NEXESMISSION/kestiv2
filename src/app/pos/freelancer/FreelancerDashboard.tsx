@@ -7,7 +7,7 @@ import {
   Loader2, Camera, RefreshCw
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile, FreelancerClient, FreelancerProject, FreelancerExpense, FreelancerService, FreelancerPayment, ProjectStatus } from '@/types/database'
+import type { Profile, FreelancerClient, FreelancerProject, FreelancerExpense, FreelancerService, FreelancerPayment } from '@/types/database'
 
 // Components
 import HomeTab from './components/HomeTab'
@@ -286,7 +286,6 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
               <ProjectsTab 
                 projects={projects}
                 clients={clients}
-                services={services}
                 userId={userId}
                 onRefresh={fetchData}
               />
