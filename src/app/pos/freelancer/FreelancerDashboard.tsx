@@ -3,26 +3,25 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { 
-  Home, Users, FolderKanban, Plus, Minus, Settings, LogOut,
-  TrendingUp, TrendingDown, Clock, Calendar, ChevronLeft,
-  Loader2, DollarSign, Camera, Video, X, Check, RefreshCw
+  Home, Users, FolderKanban, LogOut, Calendar, History,
+  Loader2, Camera, RefreshCw
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile, FreelancerClient, FreelancerProject, FreelancerExpense, FreelancerService, ProjectStatus } from '@/types/database'
+import type { Profile, FreelancerClient, FreelancerProject, FreelancerExpense, FreelancerService, FreelancerPayment, ProjectStatus } from '@/types/database'
 
 // Components
 import HomeTab from './components/HomeTab'
 import ProjectsTab from './components/ProjectsTab'
 import ClientsTab from './components/ClientsTab'
-import SettingsTab from './components/SettingsTab'
 import CalendarTab from './components/CalendarTab'
+import HistoryTab from './components/HistoryTab'
 
 interface FreelancerDashboardProps {
   userId: string
   profile: Profile
 }
 
-type TabType = 'home' | 'projects' | 'clients' | 'calendar' | 'settings'
+type TabType = 'home' | 'projects' | 'clients' | 'calendar' | 'history'
 
 export default function FreelancerDashboard({ userId, profile }: FreelancerDashboardProps) {
   const router = useRouter()
@@ -41,6 +40,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   const [clients, setClients] = useState<FreelancerClient[]>([])
   const [projects, setProjects] = useState<FreelancerProject[]>([])
   const [expenses, setExpenses] = useState<FreelancerExpense[]>([])
+  const [payments, setPayments] = useState<FreelancerPayment[]>([])
   const [services, setServices] = useState<FreelancerService[]>([])
   
   // Stats
@@ -106,16 +106,11 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
         .eq('business_id', userId)
         .order('created_at', { ascending: false })
       
-      // Fetch expenses for this month
-      const startOfMonth = new Date()
-      startOfMonth.setDate(1)
-      startOfMonth.setHours(0, 0, 0, 0)
-      
+      // Fetch all expenses (for filtering)
       const { data: expensesData } = await supabase
         .from('freelancer_expenses')
         .select('*')
         .eq('business_id', userId)
-        .gte('date', startOfMonth.toISOString().split('T')[0])
         .order('date', { ascending: false })
       
       // Fetch services
@@ -126,12 +121,12 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
         .eq('is_active', true)
         .order('name')
       
-      // Fetch payments for stats
+      // Fetch all payments (for filtering)
       const { data: paymentsData } = await supabase
         .from('freelancer_payments')
-        .select('amount, created_at')
+        .select('*')
         .eq('business_id', userId)
-        .gte('created_at', startOfMonth.toISOString())
+        .order('created_at', { ascending: false })
       
       // Process data
       const processedProjects = (projectsData || []).map(p => ({
@@ -142,20 +137,31 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       setClients(clientsData || [])
       setProjects(processedProjects)
       setExpenses(expensesData || [])
+      setPayments(paymentsData || [])
       setServices(servicesData || [])
       
-      // Calculate stats
+      // Calculate basic stats (filtered stats calculated in HomeTab)
       const today = new Date().toISOString().split('T')[0]
+      const startOfMonth = new Date()
+      startOfMonth.setDate(1)
+      startOfMonth.setHours(0, 0, 0, 0)
+      
       const todayPayments = (paymentsData || []).filter(p => 
         p.created_at.startsWith(today)
       )
+      const monthPayments = (paymentsData || []).filter(p => 
+        new Date(p.created_at) >= startOfMonth
+      )
       const todayExpensesList = (expensesData || []).filter(e => e.date === today)
+      const monthExpensesList = (expensesData || []).filter(e => 
+        new Date(e.date) >= startOfMonth
+      )
       
       setStats({
         todayIncome: todayPayments.reduce((sum, p) => sum + Number(p.amount), 0),
         todayExpenses: todayExpensesList.reduce((sum, e) => sum + Number(e.amount), 0),
-        monthIncome: (paymentsData || []).reduce((sum, p) => sum + Number(p.amount), 0),
-        monthExpenses: (expensesData || []).reduce((sum, e) => sum + Number(e.amount), 0),
+        monthIncome: monthPayments.reduce((sum, p) => sum + Number(p.amount), 0),
+        monthExpenses: monthExpensesList.reduce((sum, e) => sum + Number(e.amount), 0),
         totalCredit: (clientsData || []).reduce((sum, c) => sum + Number(c.total_credit), 0),
         activeProjects: processedProjects.filter(p => 
           p.status === 'in_progress' || p.status === 'pending'
@@ -184,7 +190,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
     { id: 'projects' as TabType, label: 'المشاريع', icon: FolderKanban },
     { id: 'clients' as TabType, label: 'العملاء', icon: Users },
     { id: 'calendar' as TabType, label: 'التقويم', icon: Calendar },
-    { id: 'settings' as TabType, label: 'الخدمات', icon: Settings },
+    { id: 'history' as TabType, label: 'السجل', icon: History },
   ]
 
   return (
@@ -270,6 +276,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                 projects={projects}
                 clients={clients}
                 services={services}
+                payments={payments}
+                expenses={expenses}
                 userId={userId}
                 onRefresh={fetchData}
               />
@@ -299,11 +307,10 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                 onRefresh={fetchData}
               />
             )}
-            {activeTab === 'settings' && (
-              <SettingsTab 
-                services={services}
-                userId={userId}
-                onRefresh={fetchData}
+            {activeTab === 'history' && (
+              <HistoryTab 
+                payments={payments}
+                expenses={expenses}
               />
             )}
           </>

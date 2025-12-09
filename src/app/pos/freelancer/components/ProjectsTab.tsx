@@ -29,12 +29,21 @@ export default function ProjectsTab({ projects, clients, services, userId, onRef
   const [selectedProject, setSelectedProject] = useState<FreelancerProject | null>(null)
   const [showPaymentModal, setShowPaymentModal] = useState(false)
   const [showStatusModal, setShowStatusModal] = useState(false)
+  const [showAddModal, setShowAddModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   
   // Payment form
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentType, setPaymentType] = useState<'partial' | 'full'>('partial')
   const [paymentNotes, setPaymentNotes] = useState('')
+  
+  // New project form
+  const [projectTitle, setProjectTitle] = useState('')
+  const [projectClientId, setProjectClientId] = useState('')
+  const [projectPrice, setProjectPrice] = useState('')
+  const [projectDeposit, setProjectDeposit] = useState('')
+  const [projectDeadline, setProjectDeadline] = useState('')
+  const [projectNotes, setProjectNotes] = useState('')
 
   const filteredProjects = filter === 'all' 
     ? projects 
@@ -108,8 +117,67 @@ export default function ProjectsTab({ projects, clients, services, userId, onRef
     setShowStatusModal(true)
   }
 
+  const handleAddProject = async () => {
+    if (!projectTitle || !projectClientId || !projectPrice) return
+    setIsSubmitting(true)
+    
+    try {
+      const supabase = createClient()
+      const deposit = parseFloat(projectDeposit) || 0
+      
+      await supabase.from('freelancer_projects').insert({
+        business_id: userId,
+        client_id: projectClientId,
+        title: projectTitle,
+        total_price: parseFloat(projectPrice),
+        deposit: deposit,
+        paid_amount: deposit,
+        status: 'pending',
+        deadline: projectDeadline || null,
+        notes: projectNotes || null
+      })
+      
+      // Record deposit as payment if exists
+      if (deposit > 0) {
+        await supabase.from('freelancer_payments').insert({
+          business_id: userId,
+          client_id: projectClientId,
+          amount: deposit,
+          payment_type: 'deposit',
+          notes: `عربون: ${projectTitle}`
+        })
+      }
+      
+      setShowAddModal(false)
+      resetProjectForm()
+      onRefresh()
+    } catch (error) {
+      console.error('Error adding project:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const resetProjectForm = () => {
+    setProjectTitle('')
+    setProjectClientId('')
+    setProjectPrice('')
+    setProjectDeposit('')
+    setProjectDeadline('')
+    setProjectNotes('')
+  }
+
   return (
     <div className="space-y-4">
+      {/* Add Project Button */}
+      <button
+        onClick={() => setShowAddModal(true)}
+        className="w-full card !p-4 flex items-center justify-center gap-2 text-primary-600 hover:bg-primary-50 transition-colors border-2 border-dashed border-primary-200"
+      >
+        <Plus className="w-5 h-5" />
+        <span className="font-medium">مشروع جديد</span>
+      </button>
+
       {/* Filter Tabs */}
       <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
         <button
@@ -184,13 +252,18 @@ export default function ProjectsTab({ projects, clients, services, userId, onRef
                 
                 {/* Deadline */}
                 {project.deadline && (
-                  <div className={`flex items-center gap-2 text-xs mb-3 ${isOverdue ? 'text-red-500' : 'text-gray-500'}`}>
+                  <div className={`flex items-center gap-2 text-xs mb-2 ${isOverdue ? 'text-red-500' : 'text-gray-500'}`}>
                     <Calendar className="w-3 h-3" />
                     <span>
-                      {isOverdue ? 'متأخر - ' : 'موعد التسليم: '}
-                      {new Date(project.deadline).toLocaleDateString('ar-TN', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      {isOverdue ? 'متأخر - ' : 'التسليم: '}
+                      {new Date(project.deadline).toLocaleDateString('ar-TN', { day: 'numeric', month: 'short' })}
                     </span>
                   </div>
+                )}
+
+                {/* Notes */}
+                {project.notes && (
+                  <p className="text-xs text-gray-400 mb-3 line-clamp-2">{project.notes}</p>
                 )}
                 
                 {/* Actions */}
@@ -342,6 +415,114 @@ export default function ProjectsTab({ projects, clients, services, userId, onRef
                   </button>
                 )
               })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Project Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowAddModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">مشروع جديد</h3>
+                <button onClick={() => setShowAddModal(false)} className="p-1 hover:bg-white/20 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              {clients.length === 0 ? (
+                <div className="text-center py-4">
+                  <p className="text-gray-500 mb-2">أضف عميل أولاً</p>
+                  <button
+                    onClick={() => setShowAddModal(false)}
+                    className="text-primary-600 font-medium"
+                  >
+                    إغلاق
+                  </button>
+                </div>
+              ) : (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">العميل *</label>
+                    <select
+                      value={projectClientId}
+                      onChange={(e) => setProjectClientId(e.target.value)}
+                      className="input-field"
+                    >
+                      <option value="">اختر العميل</option>
+                      {clients.map(c => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">عنوان المشروع *</label>
+                    <input
+                      type="text"
+                      value={projectTitle}
+                      onChange={(e) => setProjectTitle(e.target.value)}
+                      className="input-field"
+                      placeholder="مثال: تصميم شعار، موقع ويب..."
+                    />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">السعر *</label>
+                      <input
+                        type="number"
+                        value={projectPrice}
+                        onChange={(e) => setProjectPrice(e.target.value)}
+                        className="input-field"
+                        placeholder="0 DT"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">العربون</label>
+                      <input
+                        type="number"
+                        value={projectDeposit}
+                        onChange={(e) => setProjectDeposit(e.target.value)}
+                        className="input-field"
+                        placeholder="0 DT"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">موعد التسليم</label>
+                    <input
+                      type="date"
+                      value={projectDeadline}
+                      onChange={(e) => setProjectDeadline(e.target.value)}
+                      className="input-field"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">ملاحظات</label>
+                    <textarea
+                      value={projectNotes}
+                      onChange={(e) => setProjectNotes(e.target.value)}
+                      className="input-field min-h-[60px]"
+                      placeholder="اختياري"
+                    />
+                  </div>
+                  
+                  <button
+                    onClick={handleAddProject}
+                    disabled={!projectTitle || !projectClientId || !projectPrice || isSubmitting}
+                    className="w-full btn-primary flex items-center justify-center gap-2"
+                  >
+                    {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                    إنشاء المشروع
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>

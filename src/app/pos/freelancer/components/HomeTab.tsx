@@ -6,7 +6,9 @@ import {
   DollarSign, AlertCircle, ChevronLeft, X, Loader2, Check
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import type { FreelancerProject, FreelancerClient, FreelancerService } from '@/types/database'
+import type { FreelancerProject, FreelancerClient, FreelancerService, FreelancerPayment, FreelancerExpense } from '@/types/database'
+
+type FinancePeriod = 'today' | 'week' | 'month' | 'all'
 
 interface HomeTabProps {
   stats: {
@@ -20,16 +22,73 @@ interface HomeTabProps {
   projects: FreelancerProject[]
   clients: FreelancerClient[]
   services: FreelancerService[]
+  payments: FreelancerPayment[]
+  expenses: FreelancerExpense[]
   userId: string
   onRefresh: () => void
 }
 
 
-export default function HomeTab({ stats, projects, clients, services, userId, onRefresh }: HomeTabProps) {
+export default function HomeTab({ stats, projects, clients, services, payments, expenses, userId, onRefresh }: HomeTabProps) {
   const [showIncomeModal, setShowIncomeModal] = useState(false)
   const [showExpenseModal, setShowExpenseModal] = useState(false)
   const [showProjectModal, setShowProjectModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [financePeriod, setFinancePeriod] = useState<FinancePeriod>('month')
+
+  // Calculate filtered stats based on period
+  const getFilteredStats = () => {
+    const now = new Date()
+    const today = now.toISOString().split('T')[0]
+    
+    // Start of week (Sunday)
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - now.getDay())
+    startOfWeek.setHours(0, 0, 0, 0)
+    
+    // Start of month
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    startOfMonth.setHours(0, 0, 0, 0)
+    
+    let filteredPayments = payments
+    let filteredExpenses = expenses
+    
+    switch (financePeriod) {
+      case 'today':
+        filteredPayments = payments.filter(p => p.created_at.startsWith(today))
+        filteredExpenses = expenses.filter(e => e.date === today)
+        break
+      case 'week':
+        filteredPayments = payments.filter(p => new Date(p.created_at) >= startOfWeek)
+        filteredExpenses = expenses.filter(e => new Date(e.date) >= startOfWeek)
+        break
+      case 'month':
+        filteredPayments = payments.filter(p => new Date(p.created_at) >= startOfMonth)
+        filteredExpenses = expenses.filter(e => new Date(e.date) >= startOfMonth)
+        break
+      case 'all':
+        // Use all data
+        break
+    }
+    
+    const income = filteredPayments.reduce((sum, p) => sum + Number(p.amount), 0)
+    const expensesTotal = filteredExpenses.reduce((sum, e) => sum + Number(e.amount), 0)
+    
+    return {
+      income,
+      expenses: expensesTotal,
+      profit: income - expensesTotal
+    }
+  }
+  
+  const filteredStats = getFilteredStats()
+  
+  const periodLabels: Record<FinancePeriod, string> = {
+    today: 'اليوم',
+    week: 'هذا الأسبوع',
+    month: 'هذا الشهر',
+    all: 'الكل'
+  }
   
   // Income form
   const [incomeAmount, setIncomeAmount] = useState('')
@@ -189,39 +248,41 @@ export default function HomeTab({ stats, projects, clients, services, userId, on
 
   return (
     <div className="space-y-4">
-      {/* Quick Stats */}
-      <div className="grid grid-cols-2 gap-3">
-        <div className="card !p-4">
-          <div className="flex items-center gap-2 text-green-600 mb-1">
-            <TrendingUp className="w-4 h-4" />
-            <span className="text-xs">دخل اليوم</span>
-          </div>
-          <p className="text-xl font-bold text-gray-800">{stats.todayIncome.toFixed(0)} DT</p>
-        </div>
-        <div className="card !p-4">
-          <div className="flex items-center gap-2 text-red-500 mb-1">
-            <TrendingDown className="w-4 h-4" />
-            <span className="text-xs">مصاريف اليوم</span>
-          </div>
-          <p className="text-xl font-bold text-gray-800">{stats.todayExpenses.toFixed(0)} DT</p>
-        </div>
-      </div>
-
-      {/* Monthly Stats */}
+      {/* Finance Stats with Filter */}
       <div className="card !p-4">
-        <h3 className="text-sm font-medium text-gray-500 mb-3">هذا الشهر</h3>
+        {/* Period Filter */}
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
+          {(['today', 'week', 'month', 'all'] as FinancePeriod[]).map(period => (
+            <button
+              key={period}
+              onClick={() => setFinancePeriod(period)}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                financePeriod === period
+                  ? 'bg-primary-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              {periodLabels[period]}
+            </button>
+          ))}
+        </div>
+        
+        {/* Filtered Stats */}
         <div className="grid grid-cols-3 gap-4 text-center">
-          <div>
-            <p className="text-lg font-bold text-green-600">{stats.monthIncome.toFixed(0)}</p>
+          <div className="p-3 bg-green-50 rounded-xl">
+            <TrendingUp className="w-5 h-5 text-green-600 mx-auto mb-1" />
+            <p className="text-lg font-bold text-green-600">{filteredStats.income.toFixed(0)}</p>
             <p className="text-xs text-gray-500">الدخل</p>
           </div>
-          <div>
-            <p className="text-lg font-bold text-red-500">{stats.monthExpenses.toFixed(0)}</p>
+          <div className="p-3 bg-red-50 rounded-xl">
+            <TrendingDown className="w-5 h-5 text-red-500 mx-auto mb-1" />
+            <p className="text-lg font-bold text-red-500">{filteredStats.expenses.toFixed(0)}</p>
             <p className="text-xs text-gray-500">المصاريف</p>
           </div>
-          <div>
-            <p className={`text-lg font-bold ${stats.monthIncome - stats.monthExpenses >= 0 ? 'text-primary-600' : 'text-red-600'}`}>
-              {(stats.monthIncome - stats.monthExpenses).toFixed(0)}
+          <div className={`p-3 rounded-xl ${filteredStats.profit >= 0 ? 'bg-primary-50' : 'bg-orange-50'}`}>
+            <DollarSign className={`w-5 h-5 mx-auto mb-1 ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`} />
+            <p className={`text-lg font-bold ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`}>
+              {filteredStats.profit.toFixed(0)}
             </p>
             <p className="text-xs text-gray-500">الربح</p>
           </div>
