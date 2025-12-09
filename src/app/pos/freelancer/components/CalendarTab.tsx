@@ -2,11 +2,23 @@
 
 import { useState, useEffect } from 'react'
 import { 
-  Plus, Calendar, Video, Edit3, Truck, Users, Star,
-  X, Loader2, Check, ChevronLeft, ChevronRight, Trash2
+  Plus, Calendar, Star, Tag,
+  X, Loader2, Check, ChevronLeft, ChevronRight, Trash2, Settings
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import type { FreelancerReminder, FreelancerProject, FreelancerClient } from '@/types/database'
+import type { FreelancerReminder, FreelancerProject, FreelancerClient, FreelancerEventType } from '@/types/database'
+
+// Color options for event types
+const COLOR_OPTIONS = [
+  { id: 'blue', bg: 'bg-blue-500', text: 'أزرق' },
+  { id: 'green', bg: 'bg-green-500', text: 'أخضر' },
+  { id: 'red', bg: 'bg-red-500', text: 'أحمر' },
+  { id: 'orange', bg: 'bg-orange-500', text: 'برتقالي' },
+  { id: 'purple', bg: 'bg-purple-500', text: 'بنفسجي' },
+  { id: 'pink', bg: 'bg-pink-500', text: 'وردي' },
+  { id: 'yellow', bg: 'bg-yellow-500', text: 'أصفر' },
+  { id: 'gray', bg: 'bg-gray-500', text: 'رمادي' },
+]
 
 interface CalendarTabProps {
   userId: string
@@ -15,58 +27,70 @@ interface CalendarTabProps {
   onRefresh: () => void
 }
 
-type ReminderType = 'shoot' | 'edit' | 'delivery' | 'meeting' | 'other'
-
-const REMINDER_TYPES: { id: ReminderType; label: string; icon: typeof Video; color: string }[] = [
-  { id: 'shoot', label: 'تصوير', icon: Video, color: 'bg-blue-500' },
-  { id: 'edit', label: 'مونتاج', icon: Edit3, color: 'bg-purple-500' },
-  { id: 'delivery', label: 'تسليم', icon: Truck, color: 'bg-green-500' },
-  { id: 'meeting', label: 'اجتماع', icon: Users, color: 'bg-orange-500' },
-  { id: 'other', label: 'أخرى', icon: Star, color: 'bg-gray-500' },
-]
+const getColorClass = (color: string) => {
+  return COLOR_OPTIONS.find(c => c.id === color)?.bg || 'bg-gray-500'
+}
 
 export default function CalendarTab({ userId, projects, clients, onRefresh }: CalendarTabProps) {
   const [reminders, setReminders] = useState<FreelancerReminder[]>([])
+  const [eventTypes, setEventTypes] = useState<FreelancerEventType[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
+  const [showTypeModal, setShowTypeModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState(new Date())
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   
-  // Form
+  // Event Form
   const [eventTitle, setEventTitle] = useState('')
-  const [eventType, setEventType] = useState<ReminderType>('other')
+  const [eventTypeId, setEventTypeId] = useState('')
   const [eventDate, setEventDate] = useState('')
   const [eventTime, setEventTime] = useState('')
   const [eventNotes, setEventNotes] = useState('')
   const [eventClientId, setEventClientId] = useState('')
   const [eventProjectId, setEventProjectId] = useState('')
+  
+  // New Type Form
+  const [newTypeName, setNewTypeName] = useState('')
+  const [newTypeColor, setNewTypeColor] = useState('blue')
 
   // Filter projects by selected client
   const filteredProjects = eventClientId 
     ? projects.filter(p => p.client_id === eventClientId && p.status !== 'completed')
     : projects.filter(p => p.status !== 'completed')
 
-  const fetchReminders = async () => {
+  const fetchData = async () => {
     setIsLoading(true)
     try {
       const supabase = createClient()
-      const { data } = await supabase
+      
+      // Fetch event types
+      const { data: typesData } = await supabase
+        .from('freelancer_event_types')
+        .select('*')
+        .eq('business_id', userId)
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true })
+      
+      setEventTypes(typesData || [])
+      
+      // Fetch reminders
+      const { data: remindersData } = await supabase
         .from('freelancer_reminders')
         .select('*')
         .eq('business_id', userId)
         .order('date', { ascending: true })
       
-      setReminders(data || [])
+      setReminders(remindersData || [])
     } catch (error) {
-      console.error('Error fetching reminders:', error)
+      console.error('Error fetching data:', error)
     } finally {
       setIsLoading(false)
     }
   }
 
   useEffect(() => {
-    fetchReminders()
+    fetchData()
   }, [userId])
 
   const handleAddEvent = async () => {
@@ -81,20 +105,57 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
       
       await supabase.from('freelancer_reminders').insert({
         business_id: userId,
+        client_id: eventClientId || null,
         project_id: eventProjectId || null,
+        type_id: eventTypeId || null,
         title: eventTitle,
-        type: eventType,
+        type: 'other', // Legacy field
         date: dateTime,
         notes: eventNotes || null
       })
       
       setShowAddModal(false)
       resetForm()
-      fetchReminders()
+      fetchData()
     } catch (error) {
       console.error('Error adding event:', error)
     } finally {
       setIsSubmitting(false)
+    }
+  }
+
+  const handleAddEventType = async () => {
+    if (!newTypeName.trim()) return
+    setIsSubmitting(true)
+    
+    try {
+      const supabase = createClient()
+      await supabase.from('freelancer_event_types').insert({
+        business_id: userId,
+        name: newTypeName.trim(),
+        color: newTypeColor,
+        sort_order: eventTypes.length
+      })
+      
+      setNewTypeName('')
+      setNewTypeColor('blue')
+      fetchData()
+    } catch (error) {
+      console.error('Error adding event type:', error)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleDeleteEventType = async (id: string) => {
+    if (!confirm('هل تريد حذف هذا النوع؟')) return
+    
+    try {
+      const supabase = createClient()
+      await supabase.from('freelancer_event_types').delete().eq('id', id)
+      fetchData()
+    } catch (error) {
+      console.error('Error deleting event type:', error)
     }
   }
 
@@ -104,7 +165,7 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
       await supabase.from('freelancer_reminders')
         .update({ is_done: !reminder.is_done })
         .eq('id', reminder.id)
-      fetchReminders()
+      fetchData()
     } catch (error) {
       console.error('Error toggling reminder:', error)
     }
@@ -116,7 +177,7 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
     try {
       const supabase = createClient()
       await supabase.from('freelancer_reminders').delete().eq('id', id)
-      fetchReminders()
+      fetchData()
     } catch (error) {
       console.error('Error deleting reminder:', error)
     }
@@ -124,12 +185,19 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
 
   const resetForm = () => {
     setEventTitle('')
-    setEventType('other')
+    setEventTypeId('')
     setEventDate('')
     setEventTime('')
     setEventNotes('')
     setEventClientId('')
     setEventProjectId('')
+  }
+
+  const getEventTypeForReminder = (reminder: FreelancerReminder) => {
+    if (reminder.type_id) {
+      return eventTypes.find(t => t.id === reminder.type_id)
+    }
+    return null
   }
 
   const handleClientChange = (clientId: string) => {
@@ -288,11 +356,11 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
                 {dayReminders.length > 0 && (
                   <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5">
                     {dayReminders.slice(0, 3).map((r, i) => {
-                      const typeConfig = REMINDER_TYPES.find(t => t.id === r.type)
+                      const eventType = getEventTypeForReminder(r)
                       return (
                         <div
                           key={i}
-                          className={`w-1.5 h-1.5 rounded-full ${typeConfig?.color || 'bg-gray-400'}`}
+                          className={`w-1.5 h-1.5 rounded-full ${eventType ? getColorClass(eventType.color) : 'bg-gray-400'}`}
                         />
                       )
                     })}
@@ -323,14 +391,13 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
           ) : (
             <div className="space-y-2">
               {selectedDateReminders.map(reminder => {
-                const typeConfig = REMINDER_TYPES.find(t => t.id === reminder.type)
-                const Icon = typeConfig?.icon || Star
+                const eventType = getEventTypeForReminder(reminder)
                 const reminderDate = new Date(reminder.date)
                 
                 return (
                   <div key={reminder.id} className="flex items-center gap-3 p-2 bg-white rounded-lg">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${typeConfig?.color || 'bg-gray-500'}`}>
-                      <Icon className="w-4 h-4" />
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${eventType ? getColorClass(eventType.color) : 'bg-gray-500'}`}>
+                      <Tag className="w-4 h-4" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className={`font-medium text-gray-800 text-sm truncate ${reminder.is_done ? 'line-through opacity-50' : ''}`}>
@@ -373,8 +440,7 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
         ) : (
           <div className="space-y-2">
             {upcomingReminders.map(reminder => {
-              const typeConfig = REMINDER_TYPES.find(t => t.id === reminder.type)
-              const Icon = typeConfig?.icon || Star
+              const eventType = getEventTypeForReminder(reminder)
               const reminderDate = new Date(reminder.date)
               const isToday = reminderDate.toDateString() === new Date().toDateString()
               
@@ -383,9 +449,12 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
                   key={reminder.id} 
                   className={`card !p-3 flex items-center gap-3 ${isToday ? 'border-primary-300 bg-primary-50' : ''}`}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${typeConfig?.color || 'bg-gray-500'}`}>
-                    <Icon className="w-5 h-5" />
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white ${eventType ? getColorClass(eventType.color) : 'bg-gray-500'}`}>
+                    <Tag className="w-5 h-5" />
                   </div>
+                  {eventType && (
+                    <span className="text-xs text-gray-400">{eventType.name}</span>
+                  )}
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-gray-800 truncate">{reminder.title}</p>
                     <p className="text-xs text-gray-500">
@@ -421,13 +490,12 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
           <h3 className="text-sm font-medium text-gray-500 mb-3">منتهية</h3>
           <div className="space-y-2 opacity-60">
             {pastReminders.slice(0, 5).map(reminder => {
-              const typeConfig = REMINDER_TYPES.find(t => t.id === reminder.type)
               const reminderDate = new Date(reminder.date)
               
               return (
                 <div key={reminder.id} className="card !p-3 flex items-center gap-3">
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center bg-gray-200 text-gray-500`}>
-                    {reminder.is_done ? <Check className="w-4 h-4" /> : typeConfig ? <typeConfig.icon className="w-4 h-4" /> : <Star className="w-4 h-4" />}
+                    {reminder.is_done ? <Check className="w-4 h-4" /> : <Tag className="w-4 h-4" />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className={`font-medium text-gray-600 truncate ${reminder.is_done ? 'line-through' : ''}`}>
@@ -469,27 +537,50 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">النوع</label>
-                <div className="flex flex-wrap gap-2">
-                  {REMINDER_TYPES.map(type => {
-                    const Icon = type.icon
-                    return (
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-sm font-medium text-gray-700">النوع (اختياري)</label>
+                  <button
+                    type="button"
+                    onClick={() => setShowTypeModal(true)}
+                    className="text-xs text-primary-600 hover:text-primary-800 flex items-center gap-1"
+                  >
+                    <Settings className="w-3 h-3" />
+                    إدارة الأنواع
+                  </button>
+                </div>
+                {eventTypes.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-2 bg-gray-50 rounded-lg">
+                    لا توجد أنواع - أضف أنواع الأحداث من "إدارة الأنواع"
+                  </p>
+                ) : (
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setEventTypeId('')}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                        !eventTypeId 
+                          ? 'bg-gray-500 text-white' 
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      بدون نوع
+                    </button>
+                    {eventTypes.map(type => (
                       <button
                         key={type.id}
                         type="button"
-                        onClick={() => setEventType(type.id)}
+                        onClick={() => setEventTypeId(type.id)}
                         className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
-                          eventType === type.id 
-                            ? `${type.color} text-white` 
+                          eventTypeId === type.id 
+                            ? `${getColorClass(type.color)} text-white` 
                             : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
                       >
-                        <Icon className="w-3.5 h-3.5" />
-                        {type.label}
+                        {type.name}
                       </button>
-                    )
-                  })}
-                </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="grid grid-cols-2 gap-3">
@@ -563,6 +654,83 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                 إضافة الحدث
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Manage Event Types Modal */}
+      {showTypeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowTypeModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+            <div className="sticky top-0 bg-gradient-to-r from-gray-700 to-gray-800 p-5 text-white rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">إدارة أنواع الأحداث</h3>
+                <button onClick={() => setShowTypeModal(false)} className="p-1 hover:bg-white/20 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              {/* Add New Type */}
+              <div className="p-4 bg-gray-50 rounded-xl space-y-3">
+                <h4 className="font-medium text-gray-700">إضافة نوع جديد</h4>
+                <input
+                  type="text"
+                  value={newTypeName}
+                  onChange={(e) => setNewTypeName(e.target.value)}
+                  className="input-field"
+                  placeholder="اسم النوع (مثال: اجتماع، تسليم، تصميم...)"
+                />
+                <div>
+                  <label className="block text-xs text-gray-500 mb-2">اللون</label>
+                  <div className="flex flex-wrap gap-2">
+                    {COLOR_OPTIONS.map(color => (
+                      <button
+                        key={color.id}
+                        type="button"
+                        onClick={() => setNewTypeColor(color.id)}
+                        className={`w-8 h-8 rounded-full ${color.bg} ${
+                          newTypeColor === color.id ? 'ring-2 ring-offset-2 ring-gray-400' : ''
+                        }`}
+                        title={color.text}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <button
+                  onClick={handleAddEventType}
+                  disabled={!newTypeName.trim() || isSubmitting}
+                  className="w-full py-2 bg-gray-700 hover:bg-gray-800 text-white rounded-lg text-sm font-medium disabled:opacity-50"
+                >
+                  إضافة النوع
+                </button>
+              </div>
+
+              {/* Existing Types */}
+              <div>
+                <h4 className="font-medium text-gray-700 mb-3">الأنواع الحالية</h4>
+                {eventTypes.length === 0 ? (
+                  <p className="text-sm text-gray-500 text-center py-4">لا توجد أنواع بعد</p>
+                ) : (
+                  <div className="space-y-2">
+                    {eventTypes.map(type => (
+                      <div key={type.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center gap-3">
+                          <div className={`w-6 h-6 rounded-full ${getColorClass(type.color)}`} />
+                          <span className="font-medium text-gray-700">{type.name}</span>
+                        </div>
+                        <button
+                          onClick={() => handleDeleteEventType(type.id)}
+                          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>

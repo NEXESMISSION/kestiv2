@@ -294,12 +294,27 @@ export type FreelancerExpense = {
 export type FreelancerReminder = {
   id: string
   business_id: string
+  client_id: string | null
   project_id: string | null
+  type_id: string | null
   title: string
-  type: 'shoot' | 'edit' | 'delivery' | 'meeting' | 'other'
+  type: string // Legacy field, now uses type_id
   date: string
   is_done: boolean
   notes: string | null
+  created_at: string
+  // Joined
+  event_type?: FreelancerEventType
+}
+
+export type FreelancerEventType = {
+  id: string
+  business_id: string
+  name: string
+  color: 'blue' | 'green' | 'red' | 'orange' | 'purple' | 'pink' | 'yellow' | 'gray'
+  icon: string
+  is_active: boolean
+  sort_order: number
   created_at: string
 }
 
