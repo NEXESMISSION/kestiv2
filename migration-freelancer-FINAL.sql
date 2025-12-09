@@ -92,7 +92,7 @@ CREATE INDEX IF NOT EXISTS idx_freelancer_expenses_date
 
 -- Index for reminders by date
 CREATE INDEX IF NOT EXISTS idx_freelancer_reminders_date 
-  ON public.freelancer_reminders(reminder_date);
+  ON public.freelancer_reminders(date);
 
 -- Index for projects by status
 CREATE INDEX IF NOT EXISTS idx_freelancer_projects_status 
