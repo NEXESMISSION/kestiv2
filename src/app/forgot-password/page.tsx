@@ -49,9 +49,10 @@ export default function ForgotPasswordPage() {
       const supabase = createClient()
       const email = data.email.toLowerCase().trim()
       
-      // Try to send reset email
+      // Try to send reset email - redirect directly to reset-password page
+      // This allows the page to handle both hash tokens and PKCE codes
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/auth/callback?type=recovery`
+        redirectTo: `${window.location.origin}/reset-password`
       })
 
       if (error) {

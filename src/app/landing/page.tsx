@@ -188,22 +188,25 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              {/* CTA Buttons - Updated */}
+              {/* CTA Buttons - Optimized for Conversion */}
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4">
-                <Link href="/register" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-base sm:text-lg font-bold rounded-2xl hover:shadow-xl hover:shadow-green-500/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
-                  <Rocket className="w-5 h-5" />
-                  ابدأ تجربتك المجانية
+                <Link href="/register" className="group w-full sm:w-auto px-8 sm:px-10 py-4 sm:py-5 bg-gradient-to-r from-green-500 via-emerald-500 to-green-600 text-white text-lg sm:text-xl font-bold rounded-2xl shadow-xl shadow-green-500/30 hover:shadow-2xl hover:shadow-green-500/40 transition-all transform hover:-translate-y-1 hover:scale-[1.02] flex items-center justify-center gap-3 relative overflow-hidden">
+                  <span className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                  <span className="relative flex items-center gap-2">
+                    <Rocket className="w-6 h-6" />
+                    جرب مجاناً 15 يوم
+                  </span>
                 </Link>
-                <Link href="/login" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-primary-300 text-primary-700 text-base sm:text-lg font-bold rounded-2xl hover:bg-primary-50 transition-all flex items-center justify-center gap-2">
-                  لوحة التحكم
+                <Link href="/login" className="w-full sm:w-auto px-6 sm:px-8 py-4 sm:py-5 bg-white border-2 border-gray-200 text-gray-700 text-base sm:text-lg font-bold rounded-2xl hover:border-primary-400 hover:bg-primary-50 hover:text-primary-700 transition-all flex items-center justify-center gap-2">
+                  عندي حساب
                 </Link>
               </div>
 
-              {/* Trust Indicators */}
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mt-6 text-sm text-gray-500">
-                <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" />15 يوم مجاناً</span>
-                <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" />بدون بطاقة بنكية</span>
-                <span className="flex items-center gap-1"><Check className="w-4 h-4 text-green-500" />إلغاء في أي وقت</span>
+              {/* Trust Indicators - More Prominent */}
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3 mt-6">
+                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-700 rounded-full text-sm font-medium"><Check className="w-4 h-4" />15 يوم مجاناً</span>
+                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full text-sm font-medium"><Check className="w-4 h-4" />بدون بطاقة</span>
+                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-purple-50 text-purple-700 rounded-full text-sm font-medium"><Check className="w-4 h-4" />إلغاء أي وقت</span>
               </div>
             </div>
 
@@ -584,9 +587,14 @@ export default function LandingPage() {
             ))}
           </div>
 
-          <div className="text-center p-4 sm:p-6 bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl border border-green-200">
-            <p className="text-lg font-bold text-green-800 mb-1">🎁 ابدأ تجربتك المجانية - 15 يوم</p>
-            <p className="text-green-600 text-sm">بدون بطاقة بنكية • إلغاء في أي وقت</p>
+          {/* Big CTA After Pricing */}
+          <div className="text-center p-6 sm:p-8 bg-gradient-to-r from-green-500 to-emerald-600 rounded-3xl shadow-xl shadow-green-500/20">
+            <p className="text-2xl sm:text-3xl font-bold text-white mb-2">🎁 جرب 15 يوم مجاناً</p>
+            <p className="text-green-100 mb-6">بدون بطاقة بنكية • بدون التزام • إلغاء في أي وقت</p>
+            <Link href="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-white text-green-700 text-lg font-bold rounded-xl hover:bg-green-50 transition-all hover:shadow-lg">
+              <Rocket className="w-5 h-5" />
+              سجل الآن وابدأ فوراً
+            </Link>
           </div>
         </div>
       </section>
@@ -686,18 +694,45 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="py-16 sm:py-20 px-4 bg-gradient-to-br from-primary-600 via-primary-700 to-blue-800 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4">جاهز تبدأ؟</h2>
-          <p className="text-primary-100 text-lg mb-8">انضم لمئات التجار الذين يديرون أعمالهم بذكاء</p>
+      {/* Final CTA - Urgency & Value */}
+      <section className="py-20 sm:py-24 px-4 bg-gradient-to-br from-gray-900 via-primary-900 to-gray-900 text-white relative overflow-hidden">
+        {/* Background decoration */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-green-500/10 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div className="max-w-4xl mx-auto text-center relative">
+          {/* Urgency Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-yellow-500/20 text-yellow-300 rounded-full text-sm font-bold mb-6 animate-bounce-subtle">
+            <Sparkles className="w-4 h-4" />
+            عرض محدود: 15 يوم تجربة مجانية
+          </div>
           
-          <Link href="/register" className="inline-flex items-center gap-2 px-10 py-5 bg-white text-primary-700 text-xl font-bold rounded-2xl hover:shadow-xl transition-all hover:-translate-y-1">
-            <Rocket className="w-6 h-6" />
-            ابدأ الآن — مجاناً لـ 15 يوم
-          </Link>
+          <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4">
+            وفر <span className="text-green-400">3,000+ د.ت</span> وابدأ اليوم
+          </h2>
+          <p className="text-gray-300 text-lg sm:text-xl mb-8 max-w-2xl mx-auto">
+            كل يوم بدون Kesti Pro = فرصة ضائعة لتتبع أرباحك الحقيقية
+          </p>
           
-          <p className="text-white/70 text-sm mt-4">بدون بطاقة بنكية • بدون التزام</p>
+          {/* Big CTA Button */}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-6">
+            <Link href="/register" className="group w-full sm:w-auto px-10 py-5 bg-gradient-to-r from-green-400 via-emerald-500 to-green-500 text-gray-900 text-xl font-bold rounded-2xl shadow-2xl shadow-green-500/30 hover:shadow-green-500/50 transition-all transform hover:-translate-y-1 hover:scale-[1.02] flex items-center justify-center gap-3">
+              <Rocket className="w-6 h-6" />
+              سجل الآن — مجاني تماماً
+            </Link>
+            <Link href="/login" className="w-full sm:w-auto px-8 py-5 border-2 border-white/30 text-white text-lg font-bold rounded-2xl hover:bg-white/10 transition-all flex items-center justify-center gap-2">
+              دخول حسابي
+            </Link>
+          </div>
+          
+          {/* Trust badges */}
+          <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-gray-400">
+            <span className="flex items-center gap-2"><Shield className="w-4 h-4 text-green-400" />بياناتك محمية 100%</span>
+            <span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />بدون بطاقة بنكية</span>
+            <span className="flex items-center gap-2"><Check className="w-4 h-4 text-green-400" />إلغاء في أي وقت</span>
+          </div>
         </div>
       </section>
 

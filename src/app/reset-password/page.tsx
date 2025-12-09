@@ -79,8 +79,15 @@ function ResetPasswordContent() {
       const accessToken = hashParams.get('access_token')
       const refreshToken = hashParams.get('refresh_token')
       const type = hashParams.get('type')
+      const errorDesc = hashParams.get('error_description')
       
-      if (accessToken && type === 'recovery') {
+      // Check for errors in hash
+      if (errorDesc) {
+        console.error('Auth error:', errorDesc)
+        return false
+      }
+      
+      if (accessToken) {
         // Set the session using the tokens from URL hash
         const { error } = await supabase.auth.setSession({
           access_token: accessToken,
@@ -92,6 +99,20 @@ function ResetPasswordContent() {
           window.history.replaceState(null, '', window.location.pathname)
           return true
         }
+        console.error('Session error:', error)
+      }
+      
+      // Also try recovery type without explicit check
+      if (type === 'recovery' && accessToken) {
+        const { error } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: refreshToken || ''
+        })
+        
+        if (!error) {
+          window.history.replaceState(null, '', window.location.pathname)
+          return true
+        }
       }
     }
     
@@ -100,6 +121,23 @@ function ResetPasswordContent() {
     if (code) {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (!error) {
+        // Clear URL params for security
+        window.history.replaceState(null, '', window.location.pathname)
+        return true
+      }
+      console.error('Code exchange error:', error)
+    }
+    
+    // Check for token in query params (alternative format)
+    const token = searchParams.get('token')
+    const tokenType = searchParams.get('type')
+    if (token && tokenType === 'recovery') {
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: 'recovery'
+      })
+      if (!error) {
+        window.history.replaceState(null, '', window.location.pathname)
         return true
       }
     }
