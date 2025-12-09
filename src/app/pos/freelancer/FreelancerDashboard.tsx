@@ -210,6 +210,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
               <CalendarTab 
                 userId={userId}
                 projects={projects}
+                clients={clients}
                 onRefresh={fetchData}
               />
             )}

@@ -6,11 +6,12 @@ import {
   X, Loader2, Check, ChevronLeft, ChevronRight, Trash2
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import type { FreelancerReminder, FreelancerProject } from '@/types/database'
+import type { FreelancerReminder, FreelancerProject, FreelancerClient } from '@/types/database'
 
 interface CalendarTabProps {
   userId: string
   projects: FreelancerProject[]
+  clients: FreelancerClient[]
   onRefresh: () => void
 }
 
@@ -24,7 +25,7 @@ const REMINDER_TYPES: { id: ReminderType; label: string; icon: typeof Video; col
   { id: 'other', label: 'أخرى', icon: Star, color: 'bg-gray-500' },
 ]
 
-export default function CalendarTab({ userId, projects, onRefresh }: CalendarTabProps) {
+export default function CalendarTab({ userId, projects, clients, onRefresh }: CalendarTabProps) {
   const [reminders, setReminders] = useState<FreelancerReminder[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [showAddModal, setShowAddModal] = useState(false)
@@ -37,7 +38,13 @@ export default function CalendarTab({ userId, projects, onRefresh }: CalendarTab
   const [eventDate, setEventDate] = useState('')
   const [eventTime, setEventTime] = useState('')
   const [eventNotes, setEventNotes] = useState('')
+  const [eventClientId, setEventClientId] = useState('')
   const [eventProjectId, setEventProjectId] = useState('')
+
+  // Filter projects by selected client
+  const filteredProjects = eventClientId 
+    ? projects.filter(p => p.client_id === eventClientId && p.status !== 'completed')
+    : projects.filter(p => p.status !== 'completed')
 
   const fetchReminders = async () => {
     setIsLoading(true)
@@ -120,7 +127,13 @@ export default function CalendarTab({ userId, projects, onRefresh }: CalendarTab
     setEventDate('')
     setEventTime('')
     setEventNotes('')
+    setEventClientId('')
     setEventProjectId('')
+  }
+
+  const handleClientChange = (clientId: string) => {
+    setEventClientId(clientId)
+    setEventProjectId('') // Reset project when client changes
   }
 
   // Group reminders by date
@@ -416,7 +429,23 @@ export default function CalendarTab({ userId, projects, onRefresh }: CalendarTab
                 </div>
               </div>
               
-              {projects.length > 0 && (
+              {clients.length > 0 && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">العميل (اختياري)</label>
+                  <select
+                    value={eventClientId}
+                    onChange={(e) => handleClientChange(e.target.value)}
+                    className="input-field"
+                  >
+                    <option value="">بدون عميل</option>
+                    {clients.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
+              {filteredProjects.length > 0 && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">ربط بمشروع (اختياري)</label>
                   <select
@@ -425,8 +454,8 @@ export default function CalendarTab({ userId, projects, onRefresh }: CalendarTab
                     className="input-field"
                   >
                     <option value="">بدون مشروع</option>
-                    {projects.filter(p => p.status !== 'completed').map(p => (
-                      <option key={p.id} value={p.id}>{p.title}</option>
+                    {filteredProjects.map(p => (
+                      <option key={p.id} value={p.id}>{p.title} {p.client_name ? `- ${p.client_name}` : ''}</option>
                     ))}
                   </select>
                 </div>
