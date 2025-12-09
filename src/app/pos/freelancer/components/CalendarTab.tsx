@@ -31,6 +31,7 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
   const [showAddModal, setShowAddModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [selectedMonth, setSelectedMonth] = useState(new Date())
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null)
   
   // Form
   const [eventTitle, setEventTitle] = useState('')
@@ -136,10 +137,25 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
     setEventProjectId('') // Reset project when client changes
   }
 
+  // Get reminders for a specific date
+  const getRemindersForDate = (date: Date) => {
+    return reminders.filter(r => {
+      const rDate = new Date(r.date)
+      return rDate.getDate() === date.getDate() &&
+             rDate.getMonth() === date.getMonth() &&
+             rDate.getFullYear() === date.getFullYear()
+    })
+  }
+
   // Group reminders by date
   const today = new Date()
   today.setHours(0, 0, 0, 0)
   
+  // Get reminders for selected date
+  const selectedDateReminders = selectedDate 
+    ? getRemindersForDate(selectedDate)
+    : []
+
   const upcomingReminders = reminders.filter(r => {
     const reminderDate = new Date(r.date)
     reminderDate.setHours(0, 0, 0, 0)
@@ -151,6 +167,20 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
     reminderDate.setHours(0, 0, 0, 0)
     return reminderDate < today || r.is_done
   })
+
+  const handleDayClick = (day: Date, isCurrentMonth: boolean) => {
+    if (!isCurrentMonth) return
+    if (selectedDate && day.toDateString() === selectedDate.toDateString()) {
+      setSelectedDate(null) // Deselect if clicking same day
+    } else {
+      setSelectedDate(day)
+    }
+  }
+
+  const formatSelectedDate = (date: Date) => {
+    const options: Intl.DateTimeFormatOptions = { weekday: 'long', day: 'numeric', month: 'long' }
+    return date.toLocaleDateString('ar-TN', options)
+  }
 
   // Get calendar days for the selected month
   const getCalendarDays = () => {
@@ -173,15 +203,6 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
     }
     
     return days
-  }
-
-  const getRemindersForDate = (date: Date) => {
-    return reminders.filter(r => {
-      const rDate = new Date(r.date)
-      return rDate.getDate() === date.getDate() &&
-             rDate.getMonth() === date.getMonth() &&
-             rDate.getFullYear() === date.getFullYear()
-    })
   }
 
   const calendarDays = getCalendarDays()
@@ -247,15 +268,20 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
           {calendarDays.map((day, index) => {
             const isCurrentMonth = day.getMonth() === selectedMonth.getMonth()
             const isToday = day.toDateString() === new Date().toDateString()
+            const isSelected = selectedDate && day.toDateString() === selectedDate.toDateString()
             const dayReminders = getRemindersForDate(day)
             
             return (
-              <div
+              <button
                 key={index}
-                className={`relative p-2 text-center rounded-lg text-sm ${
-                  !isCurrentMonth ? 'text-gray-300' :
+                onClick={() => handleDayClick(day, isCurrentMonth)}
+                disabled={!isCurrentMonth}
+                className={`relative p-2 text-center rounded-lg text-sm transition-all ${
+                  !isCurrentMonth ? 'text-gray-300 cursor-default' :
+                  isSelected ? 'bg-primary-600 text-white font-bold ring-2 ring-primary-300' :
                   isToday ? 'bg-primary-500 text-white font-bold' :
-                  'text-gray-700'
+                  dayReminders.length > 0 ? 'text-gray-700 hover:bg-primary-50' :
+                  'text-gray-700 hover:bg-gray-100'
                 }`}
               >
                 {day.getDate()}
@@ -272,11 +298,69 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
                     })}
                   </div>
                 )}
-              </div>
+              </button>
             )
           })}
         </div>
       </div>
+
+      {/* Selected Day Events */}
+      {selectedDate && (
+        <div className="card !p-4 border-primary-200 bg-primary-50/50">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-bold text-primary-700">
+              {formatSelectedDate(selectedDate)}
+            </h3>
+            <button 
+              onClick={() => setSelectedDate(null)}
+              className="text-xs text-primary-600 hover:text-primary-800"
+            >
+              إغلاق
+            </button>
+          </div>
+          {selectedDateReminders.length === 0 ? (
+            <p className="text-sm text-gray-500 text-center py-2">لا توجد أحداث في هذا اليوم</p>
+          ) : (
+            <div className="space-y-2">
+              {selectedDateReminders.map(reminder => {
+                const typeConfig = REMINDER_TYPES.find(t => t.id === reminder.type)
+                const Icon = typeConfig?.icon || Star
+                const reminderDate = new Date(reminder.date)
+                
+                return (
+                  <div key={reminder.id} className="flex items-center gap-3 p-2 bg-white rounded-lg">
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white ${typeConfig?.color || 'bg-gray-500'}`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className={`font-medium text-gray-800 text-sm truncate ${reminder.is_done ? 'line-through opacity-50' : ''}`}>
+                        {reminder.title}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {reminderDate.toLocaleTimeString('ar-TN', { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => handleToggleDone(reminder)}
+                        className={`p-1.5 rounded-lg transition-colors ${reminder.is_done ? 'text-green-500 bg-green-50' : 'text-gray-400 hover:text-green-500 hover:bg-green-50'}`}
+                      >
+                        <Check className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(reminder.id)}
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Upcoming Events */}
       <div>
