@@ -8,7 +8,7 @@ import {
   MessageCircle, Check, ChevronDown, ChevronUp, Menu, X,
   AlertTriangle, DollarSign, Rocket,
   Play, Mail, Phone, Send, Star, Shield, Users, Copy,
-  CreditCard, Wallet, Instagram,
+  CreditCard, Wallet, Instagram, Building2,
   Store, Dumbbell, TrendingUp,
   HandCoins, UserCheck
 } from 'lucide-react'
