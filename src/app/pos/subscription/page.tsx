@@ -360,13 +360,48 @@ export default function SubscriptionPOSPage() {
           onSubmit={async (data) => {
             const { data: { user } } = await supabase.auth.getUser()
             if (!user) return
-            let memberData: any = { business_id: user.id, name: data.name, phone: data.phone, email: data.email || null, notes: data.notes || null }
+            
+            // Properly typed member data
+            type NewMemberData = {
+              business_id: string
+              name: string
+              phone: string
+              email: string | null
+              notes: string | null
+              plan_id?: string
+              plan_name?: string
+              plan_type?: 'subscription' | 'package' | 'single'
+              plan_start_at?: string
+              expires_at?: string | null
+              sessions_total?: number
+              sessions_used?: number
+              debt?: number
+            }
+            
+            let memberData: NewMemberData = { 
+              business_id: user.id, 
+              name: data.name, 
+              phone: data.phone, 
+              email: data.email || null, 
+              notes: data.notes || null 
+            }
+            
             const plan = data.plan_id ? plans.find(p => p.id === data.plan_id) : null
             if (plan) {
               const pt = plan.plan_type || (plan.duration_days === 0 ? (plan.sessions === 1 ? 'single' : 'package') : 'subscription')
               // If duration_days < 1, treat as fraction of a day (e.g., 0.0007 = ~1 minute)
               const expiresMs = plan.duration_days > 0 ? plan.duration_days * 86400000 : null
-              memberData = { ...memberData, plan_id: plan.id, plan_name: plan.name, plan_type: pt, plan_start_at: new Date().toISOString(), expires_at: expiresMs ? new Date(Date.now() + expiresMs).toISOString() : null, sessions_total: plan.duration_days > 0 ? 0 : plan.sessions, sessions_used: pt === 'single' ? 1 : 0, debt: data.paymentMethod === 'debt' ? plan.price : 0 }
+              memberData = { 
+                ...memberData, 
+                plan_id: plan.id, 
+                plan_name: plan.name, 
+                plan_type: pt as 'subscription' | 'package' | 'single', 
+                plan_start_at: new Date().toISOString(), 
+                expires_at: expiresMs ? new Date(Date.now() + expiresMs).toISOString() : null, 
+                sessions_total: plan.duration_days > 0 ? 0 : plan.sessions, 
+                sessions_used: pt === 'single' ? 1 : 0, 
+                debt: data.paymentMethod === 'debt' ? plan.price : 0 
+              }
             }
             const { data: newMember } = await supabase.from('members').insert(memberData).select().single()
             

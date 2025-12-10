@@ -1,12 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Mail, Loader2, XCircle, CheckCircle2, ArrowRight, KeyRound, MessageCircle, Phone } from 'lucide-react'
+import { Mail, Loader2, XCircle, CheckCircle2, ArrowRight, KeyRound, MessageCircle, Phone, Timer } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 
 const forgotPasswordSchema = z.object({
@@ -22,11 +22,73 @@ interface Notification {
   message: string
 }
 
+// Client-side rate limiting
+const RATE_LIMIT_KEY = 'forgot_password_attempts'
+const MAX_ATTEMPTS = 3
+const COOLDOWN_SECONDS = 60
+
+function getRateLimitState(): { attempts: number; cooldownUntil: number | null } {
+  if (typeof window === 'undefined') return { attempts: 0, cooldownUntil: null }
+  try {
+    const stored = localStorage.getItem(RATE_LIMIT_KEY)
+    if (!stored) return { attempts: 0, cooldownUntil: null }
+    const data = JSON.parse(stored)
+    // Reset if cooldown expired
+    if (data.cooldownUntil && Date.now() > data.cooldownUntil) {
+      localStorage.removeItem(RATE_LIMIT_KEY)
+      return { attempts: 0, cooldownUntil: null }
+    }
+    return data
+  } catch {
+    return { attempts: 0, cooldownUntil: null }
+  }
+}
+
+function incrementAttempts(): { blocked: boolean; cooldownSeconds: number } {
+  const state = getRateLimitState()
+  const newAttempts = state.attempts + 1
+  
+  if (newAttempts >= MAX_ATTEMPTS) {
+    const cooldownUntil = Date.now() + (COOLDOWN_SECONDS * 1000)
+    localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify({ attempts: 0, cooldownUntil }))
+    return { blocked: true, cooldownSeconds: COOLDOWN_SECONDS }
+  }
+  
+  localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify({ attempts: newAttempts, cooldownUntil: null }))
+  return { blocked: false, cooldownSeconds: 0 }
+}
+
 export default function ForgotPasswordPage() {
   const [notification, setNotification] = useState<Notification | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [smtpError, setSmtpError] = useState(false)
+  const [cooldownRemaining, setCooldownRemaining] = useState(0)
+  
+  // Check for existing cooldown on mount
+  useEffect(() => {
+    const checkCooldown = () => {
+      const state = getRateLimitState()
+      if (state.cooldownUntil) {
+        const remaining = Math.ceil((state.cooldownUntil - Date.now()) / 1000)
+        setCooldownRemaining(remaining > 0 ? remaining : 0)
+      }
+    }
+    checkCooldown()
+    
+    // Update cooldown countdown
+    const interval = setInterval(() => {
+      setCooldownRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(interval)
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1000)
+    
+    return () => clearInterval(interval)
+  }, [])
 
   const showNotification = (type: NotificationType, message: string) => {
     setNotification({ type, message })
@@ -42,6 +104,12 @@ export default function ForgotPasswordPage() {
   })
 
   const onSubmit = async (data: ForgotPasswordData) => {
+    // Check client-side rate limit first
+    if (cooldownRemaining > 0) {
+      showNotification('error', `انتظر ${cooldownRemaining} ثانية قبل المحاولة مرة أخرى`)
+      return
+    }
+    
     setIsLoading(true)
     setNotification(null)
 
@@ -55,10 +123,16 @@ export default function ForgotPasswordPage() {
         redirectTo: `${window.location.origin}/reset-password`
       })
 
+      // Increment rate limit attempts
+      const rateLimitResult = incrementAttempts()
+      if (rateLimitResult.blocked) {
+        setCooldownRemaining(rateLimitResult.cooldownSeconds)
+      }
+
       if (error) {
-        console.error('Reset password error:', error)
         if (error.message.includes('rate limit') || error.status === 429) {
           showNotification('error', 'محاولات كثيرة. انتظر دقيقة ثم حاول مرة أخرى.')
+          setCooldownRemaining(60)
         } else if (error.message.includes('User not found') || error.message.includes('not found')) {
           showNotification('error', 'هذا البريد الإلكتروني غير مسجل. تأكد من البريد أو أنشئ حساب جديد.')
         } else {
@@ -71,8 +145,7 @@ export default function ForgotPasswordPage() {
 
       setEmailSent(true)
       showNotification('success', 'تم إرسال رابط إعادة تعيين كلمة المرور إلى بريدك الإلكتروني')
-    } catch (err) {
-      console.error('Unexpected error:', err)
+    } catch {
       showNotification('error', 'حدث خطأ غير متوقع. حاول مرة أخرى.')
     } finally {
       setIsLoading(false)
@@ -140,16 +213,29 @@ export default function ForgotPasswordPage() {
                   )}
                 </div>
 
+                {/* Rate Limit Warning */}
+                {cooldownRemaining > 0 && (
+                  <div className="flex items-center justify-center gap-2 p-3 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-700">
+                    <Timer className="w-4 h-4" />
+                    <span className="text-sm">انتظر {cooldownRemaining} ثانية قبل المحاولة مرة أخرى</span>
+                  </div>
+                )}
+
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  disabled={isLoading}
-                  className="btn-primary flex items-center justify-center gap-2"
+                  disabled={isLoading || cooldownRemaining > 0}
+                  className="btn-primary flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>
                       <Loader2 className="animate-spin" size={20} />
                       جاري الإرسال...
+                    </>
+                  ) : cooldownRemaining > 0 ? (
+                    <>
+                      <Timer size={20} />
+                      انتظر {cooldownRemaining}s
                     </>
                   ) : (
                     <>

@@ -89,7 +89,7 @@ export default function LoginPage() {
         const userRole = profile?.role || user.user_metadata?.role || 'user'
         const isPaused = profile?.is_paused || false
         
-        console.log('User already logged in, redirecting...', { userRole, isPaused })
+        // User already logged in - redirect to appropriate page
         
         // Redirect based on role
         if (isPaused) {
@@ -136,13 +136,10 @@ export default function LoginPage() {
 
     try {
       const supabase = createClient()
-      console.log('Calling signInWithPassword...')
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password
       })
-      
-      console.log('Auth result:', authData ? 'Success' : 'No data', authError ? `Error: ${authError.message}` : 'No error')
 
       if (authError) {
         console.error('Login error:', authError)
@@ -162,7 +159,6 @@ export default function LoginPage() {
       }
 
       // Get the logged in user to check role and pause status
-      console.log('Getting user data...')
       const { data: userData, error: userError } = await supabase.auth.getUser()
       
       if (userError) {
@@ -180,18 +176,13 @@ export default function LoginPage() {
       const user = userData.user
       
       // Check profile for pause status and role
-      console.log('Getting profile data for user:', user.id)
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('role, is_paused, pause_reason, subscription_status, subscription_end_date')
         .eq('id', user.id)
         .maybeSingle()
         
-      if (profileError) {
-        console.error('Error fetching profile:', profileError)
-      } else {
-        console.log('Profile retrieved:', profile ? 'Success' : 'Not found')
-      }
+      // Profile error is not critical - user metadata serves as fallback
       
       // Use profile data if available, otherwise fall back to metadata
       const userRole = profile?.role || user.user_metadata?.role || 'user'
@@ -202,9 +193,6 @@ export default function LoginPage() {
       showNotification('success', 'تم تسجيل الدخول بنجاح! جاري التحويل...')
       
       // The session is now stored in cookies by Supabase automatically
-      // Use router.refresh() to update server components, then redirect
-      console.log('Preparing redirect for role:', userRole, 'paused:', isPaused)
-      
       // Clear any redirection flags
       sessionStorage.removeItem('redirect_attempted')
       
@@ -216,13 +204,10 @@ export default function LoginPage() {
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('pauseReason', pauseReason)
           }
-          console.log('Redirecting to paused page')
           window.location.href = '/paused'
         } else if (userRole === 'super_admin') {
-          console.log('Redirecting to superadmin')
           window.location.href = '/superadmin'
         } else {
-          console.log('Redirecting to POS')
           window.location.href = '/pos'
         }
       }, 500)

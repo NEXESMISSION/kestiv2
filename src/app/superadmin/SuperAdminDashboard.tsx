@@ -87,25 +87,20 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
     if (!pauseUserId || !pauseReason.trim()) return
     setActionLoading(pauseUserId)
     try {
-      const supabase = createClient()
-      console.log('Pausing user:', pauseUserId)
+      // Use secure server-side API instead of direct DB access
+      const response = await fetch(`/api/admin/users/${pauseUserId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'pause', 
+          pause_reason: pauseReason.trim() 
+        })
+      })
       
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ is_paused: true, pause_reason: pauseReason.trim(), updated_at: new Date().toISOString() })
-        .eq('id', pauseUserId)
-        .select()
+      const result = await response.json()
       
-      console.log('Pause result:', { data, error })
-      
-      if (error) {
-        console.error('Pause error:', error)
-        alert('خطأ: ' + error.message + '\n\nتأكد من تشغيل fix-superadmin.sql في Supabase')
-        return
-      }
-      
-      if (!data || data.length === 0) {
-        alert('لم يتم تحديث أي سجل - تحقق من صلاحيات RLS')
+      if (!response.ok) {
+        alert('خطأ: ' + (result.error || 'فشل في إيقاف الحساب'))
         return
       }
       
@@ -116,7 +111,6 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
         setSelectedUser({ ...selectedUser, is_paused: true, pause_reason: pauseReason.trim() })
       }
     } catch (err) {
-      console.error('Pause exception:', err)
       alert('حدث خطأ أثناء إيقاف الحساب')
     } finally {
       setActionLoading(null)
@@ -129,15 +123,17 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
   const handleUnpauseUser = async (profileId: string) => {
     setActionLoading(profileId)
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('profiles')
-        .update({ is_paused: false, pause_reason: null, updated_at: new Date().toISOString() })
-        .eq('id', profileId)
+      // Use secure server-side API instead of direct DB access
+      const response = await fetch(`/api/admin/users/${profileId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'unpause' })
+      })
       
-      if (error) {
-        console.error('Unpause error:', error)
-        alert('خطأ: ' + error.message)
+      const result = await response.json()
+      
+      if (!response.ok) {
+        alert('خطأ: ' + (result.error || 'فشل في إلغاء الإيقاف'))
         return
       }
       
@@ -148,7 +144,6 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
         setSelectedUser({ ...selectedUser, is_paused: false, pause_reason: null })
       }
     } catch (err) {
-      console.error('Unpause exception:', err)
       alert('حدث خطأ أثناء إلغاء الإيقاف')
     } finally {
       setActionLoading(null)
@@ -167,37 +162,27 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
     if (!subscriptionUserId) return
     setActionLoading(subscriptionUserId)
     try {
-      const supabase = createClient()
+      // Use secure server-side API instead of direct DB access
+      const response = await fetch(`/api/admin/users/${subscriptionUserId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          action: 'set_subscription',
+          days: subscriptionDays,
+          minutes: subscriptionMinutes
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok) {
+        alert('خطأ: ' + (result.error || 'فشل في تعيين الاشتراك'))
+        return
+      }
+      
       const endDate = new Date()
       endDate.setDate(endDate.getDate() + subscriptionDays)
       endDate.setMinutes(endDate.getMinutes() + subscriptionMinutes)
-      
-      console.log('Setting subscription for:', subscriptionUserId)
-      console.log('End date:', endDate.toISOString())
-      
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ 
-          subscription_status: 'active',
-          subscription_end_date: endDate.toISOString(),
-          subscription_days: subscriptionDays,
-          updated_at: new Date().toISOString() 
-        })
-        .eq('id', subscriptionUserId)
-        .select()
-      
-      console.log('Update result:', { data, error })
-      
-      if (error) {
-        console.error('Subscription error:', error)
-        alert('خطأ: ' + error.message + '\n\nتأكد من تشغيل fix-superadmin.sql في Supabase')
-        return
-      }
-      
-      if (!data || data.length === 0) {
-        alert('لم يتم تحديث أي سجل - تحقق من صلاحيات RLS')
-        return
-      }
       
       setProfiles(prev => prev.map(p => 
         p.id === subscriptionUserId ? { 
@@ -216,7 +201,6 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
         })
       }
     } catch (err) {
-      console.error('Subscription exception:', err)
       alert('حدث خطأ أثناء تعيين الاشتراك')
     } finally {
       setActionLoading(null)
@@ -231,15 +215,17 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
     if (!confirm('هل أنت متأكد من إلغاء الاشتراك؟')) return
     setActionLoading(profileId)
     try {
-      const supabase = createClient()
-      const { error } = await supabase
-        .from('profiles')
-        .update({ subscription_status: 'cancelled', updated_at: new Date().toISOString() })
-        .eq('id', profileId)
+      // Use secure server-side API instead of direct DB access
+      const response = await fetch(`/api/admin/users/${profileId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cancel_subscription' })
+      })
       
-      if (error) {
-        console.error('Cancel error:', error)
-        alert('خطأ: ' + error.message)
+      const result = await response.json()
+      
+      if (!response.ok) {
+        alert('خطأ: ' + (result.error || 'فشل في إلغاء الاشتراك'))
         return
       }
       
@@ -250,7 +236,6 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
         setSelectedUser({ ...selectedUser, subscription_status: 'cancelled' })
       }
     } catch (err) {
-      console.error('Cancel exception:', err)
       alert('حدث خطأ أثناء إلغاء الاشتراك')
     } finally {
       setActionLoading(null)

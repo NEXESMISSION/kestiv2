@@ -5,11 +5,15 @@ import { Camera, X, Loader2, Upload } from 'lucide-react'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
+// SECURITY: Only allow specific folder names to prevent path traversal
+const ALLOWED_FOLDERS = ['products', 'categories', 'avatars', 'members'] as const
+type AllowedFolder = typeof ALLOWED_FOLDERS[number]
+
 interface ImageUploadProps {
   currentImage?: string | null
   onImageChange: (url: string | null) => void
   userId: string
-  folder?: string // 'products' | 'categories' etc
+  folder?: AllowedFolder // Restricted to allowed folders only
   size?: 'sm' | 'md' | 'lg'
   maxSizeMB?: number
   compressQuality?: number // 0.1 to 1.0
@@ -77,9 +81,10 @@ export default function ImageUpload({
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
-      alert('يرجى اختيار صورة فقط')
+    // Validate file type - only allow specific image types
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      alert('يرجى اختيار صورة فقط (JPEG, PNG, GIF, WebP)')
       return
     }
 
@@ -89,26 +94,30 @@ export default function ImageUpload({
       return
     }
 
+    // SECURITY: Validate folder is in allowed list
+    const safeFolder = ALLOWED_FOLDERS.includes(folder as AllowedFolder) ? folder : 'products'
+
     setUploading(true)
 
     try {
       // Compress image before upload
       let fileToUpload: Blob | File = file
-      const originalSize = file.size
       
       // Only compress if larger than 200KB
       if (file.size > 200 * 1024) {
         try {
           fileToUpload = await compressImage(file, 800, compressQuality)
-          console.log(`Compressed: ${(originalSize / 1024).toFixed(0)}KB → ${(fileToUpload.size / 1024).toFixed(0)}KB`)
         } catch {
           // If compression fails, use original
           fileToUpload = file
         }
       }
 
-      // Create unique filename
-      const fileName = `${userId}/${folder}/${Date.now()}.jpg`
+      // SECURITY: Sanitize userId to prevent path traversal
+      const safeUserId = userId.replace(/[^a-zA-Z0-9-]/g, '')
+      
+      // Create unique filename with sanitized path
+      const fileName = `${safeUserId}/${safeFolder}/${Date.now()}.jpg`
 
       // Delete old image if exists
       if (currentImage) {

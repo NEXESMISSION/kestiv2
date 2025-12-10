@@ -148,14 +148,6 @@ export default function RegisterPage() {
         return
       }
       
-      console.log('Auth data:', authData)
-      console.log('Form data:', {
-        ...formData,
-        password: '***', // Don't log the actual password
-        confirmPassword: '***'
-      })
-      console.log('Selected category:', selectedCategory)
-
       try {
         // Calculate trial end date (15 days from now)
         const trialEndDate = new Date()
@@ -182,8 +174,6 @@ export default function RegisterPage() {
         
         if (profileError) {
           // Profile already exists (created by trigger) - update it with full data
-          console.log('Profile exists, updating with full data...')
-          
           const { error: updateError } = await supabase
             .from('profiles')
             .update({
@@ -199,13 +189,7 @@ export default function RegisterPage() {
             })
             .eq('id', authData.user.id)
           
-          if (updateError) {
-            console.error('Profile update error:', updateError)
-          } else {
-            console.log('Profile successfully updated')
-          }
-        } else {
-          console.log('Profile successfully created')
+          // Update error is not critical - profile was created by trigger
         }
       } catch (profileErr) {
         console.error('Unexpected error during profile creation:', profileErr)
