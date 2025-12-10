@@ -102,6 +102,38 @@ export async function PATCH(
         updateData.subscription_status = 'cancelled'
         break
 
+      case 'cleanup':
+        // Clean up all user data from various tables
+        // This keeps the user account but removes all their business data
+        const tablesToClean = [
+          'members',
+          'products',
+          'services',
+          'subscription_plans',
+          'subscription_history',
+          'transactions',
+          'freelancer_clients',
+          'freelancer_projects',
+          'freelancer_services',
+          'freelancer_expenses',
+          'freelancer_payments',
+          'expenses'
+        ]
+        
+        for (const table of tablesToClean) {
+          try {
+            await supabase.from(table).delete().eq('business_id', targetUserId)
+          } catch {
+            // Table might not exist, continue
+          }
+        }
+        
+        // Reset profile counters/stats if any
+        updateData = {
+          updated_at: new Date().toISOString()
+        }
+        break
+
       default:
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }

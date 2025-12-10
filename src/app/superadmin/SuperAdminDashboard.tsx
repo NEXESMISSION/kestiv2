@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { 
   Users, LogOut, Search, Loader2, X, RefreshCw,
   PauseCircle, PlayCircle, Timer, Plus, Minus,
-  Calendar, Clock, CheckCircle, XCircle, ChevronLeft
+  Calendar, Clock, CheckCircle, XCircle, ChevronLeft, Trash2, AlertTriangle
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { Profile, UserRole } from '@/types/database'
@@ -42,6 +42,11 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
   const [subscriptionDays, setSubscriptionDays] = useState(30)
   const [subscriptionMinutes, setSubscriptionMinutes] = useState(0)
   const [subscriptionUserId, setSubscriptionUserId] = useState<string | null>(null)
+  
+  // Cleanup Modal
+  const [showCleanupModal, setShowCleanupModal] = useState(false)
+  const [cleanupUserId, setCleanupUserId] = useState<string | null>(null)
+  const [cleanupConfirmText, setCleanupConfirmText] = useState('')
 
   // Fetch profiles
   const fetchProfiles = async () => {
@@ -239,6 +244,43 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
       alert('حدث خطأ أثناء إلغاء الاشتراك')
     } finally {
       setActionLoading(null)
+    }
+  }
+
+  // Cleanup handlers
+  const openCleanupModal = (userId: string) => {
+    setCleanupUserId(userId)
+    setCleanupConfirmText('')
+    setShowCleanupModal(true)
+  }
+
+  const handleCleanupUser = async () => {
+    if (!cleanupUserId || cleanupConfirmText !== 'تأكيد') return
+    setActionLoading(cleanupUserId)
+    try {
+      const response = await fetch(`/api/admin/users/${cleanupUserId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'cleanup' })
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok) {
+        alert('خطأ: ' + (result.error || 'فشل في مسح البيانات'))
+        return
+      }
+      
+      alert('تم مسح بيانات المستخدم بنجاح')
+      fetchProfiles()
+    } catch (err) {
+      alert('حدث خطأ أثناء مسح البيانات')
+    } finally {
+      setActionLoading(null)
+      setShowCleanupModal(false)
+      setCleanupUserId(null)
+      setCleanupConfirmText('')
+      setSelectedUser(null)
     }
   }
 
@@ -519,6 +561,16 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
                       إلغاء الاشتراك
                     </button>
                   )}
+                  
+                  {/* Cleanup User Data */}
+                  <button
+                    onClick={() => openCleanupModal(selectedUser.id)}
+                    disabled={actionLoading === selectedUser.id}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl transition-colors border border-red-200"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                    مسح بيانات المستخدم
+                  </button>
                 </div>
               )}
 
@@ -639,6 +691,62 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
                   className="flex-1 px-4 py-3 bg-primary-500 hover:bg-primary-600 text-white rounded-xl flex items-center justify-center gap-2"
                 >
                   {actionLoading === subscriptionUserId ? <Loader2 className="w-5 h-5 animate-spin" /> : <><CheckCircle className="w-5 h-5" /> تأكيد</>}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Cleanup Modal */}
+      {showCleanupModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
+          <div className="w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-red-500 to-red-600 p-5 text-white">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-6 h-6" />
+                <h3 className="text-lg font-bold">مسح بيانات المستخدم</h3>
+              </div>
+            </div>
+            <div className="p-5">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl mb-4">
+                <p className="text-red-700 text-sm font-medium mb-2">⚠️ تحذير: هذا الإجراء لا يمكن التراجع عنه!</p>
+                <p className="text-red-600 text-xs">سيتم مسح جميع البيانات:</p>
+                <ul className="text-red-600 text-xs mt-1 mr-4 list-disc">
+                  <li>الأعضاء والعملاء</li>
+                  <li>المشاريع والمعاملات</li>
+                  <li>المنتجات والخدمات</li>
+                  <li>السجلات المالية</li>
+                </ul>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  للتأكيد، اكتب "تأكيد"
+                </label>
+                <input
+                  type="text"
+                  value={cleanupConfirmText}
+                  onChange={(e) => setCleanupConfirmText(e.target.value)}
+                  placeholder="تأكيد"
+                  className="input-field text-center"
+                  dir="rtl"
+                />
+              </div>
+              
+              <div className="flex gap-3 mt-4">
+                <button
+                  onClick={() => { setShowCleanupModal(false); setCleanupConfirmText(''); }}
+                  className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={handleCleanupUser}
+                  disabled={cleanupConfirmText !== 'تأكيد' || actionLoading === cleanupUserId}
+                  className="flex-1 px-4 py-3 bg-red-500 hover:bg-red-600 disabled:bg-gray-300 text-white rounded-xl flex items-center justify-center gap-2"
+                >
+                  {actionLoading === cleanupUserId ? <Loader2 className="w-5 h-5 animate-spin" /> : <><Trash2 className="w-5 h-5" /> مسح</>}
                 </button>
               </div>
             </div>
