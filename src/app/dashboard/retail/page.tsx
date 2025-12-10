@@ -70,7 +70,7 @@ export default function RetailDashboardPage() {
       console.error('Products error:', productsError)
     } else if (productsData) {
       // Add default for barcode (not in DB)
-      const normalizedProducts = productsData.map(p => ({
+      const normalizedProducts = productsData.map((p: any) => ({
         ...p,
         barcode: null
       }))
@@ -100,7 +100,7 @@ export default function RetailDashboardPage() {
     
     if (txData) {
       // Try to get items for each transaction
-      const txWithItems = await Promise.all(txData.map(async (tx) => {
+      const txWithItems = await Promise.all(txData.map(async (tx: Transaction) => {
         try {
           const { data: items } = await supabase
             .from('transaction_items')
@@ -125,14 +125,14 @@ export default function RetailDashboardPage() {
   const weekAgo = new Date(today.getTime() - 7 * 86400000)
   const monthAgo = new Date(today.getTime() - 30 * 86400000)
 
-  const todaySales = transactions.filter(t => new Date(t.created_at) >= today).reduce((sum, t) => sum + t.amount, 0)
-  const weekSales = transactions.filter(t => new Date(t.created_at) >= weekAgo).reduce((sum, t) => sum + t.amount, 0)
-  const monthSales = transactions.filter(t => new Date(t.created_at) >= monthAgo).reduce((sum, t) => sum + t.amount, 0)
+  const todaySales = transactions.filter((t: TransactionWithItems) => new Date(t.created_at) >= today).reduce((sum, t: TransactionWithItems) => sum + t.amount, 0)
+  const weekSales = transactions.filter((t: TransactionWithItems) => new Date(t.created_at) >= weekAgo).reduce((sum, t: TransactionWithItems) => sum + t.amount, 0)
+  const monthSales = transactions.filter((t: TransactionWithItems) => new Date(t.created_at) >= monthAgo).reduce((sum, t: TransactionWithItems) => sum + t.amount, 0)
   
-  const lowStockProducts = products.filter(p => p.track_stock && (p.stock ?? 0) <= p.reorder_level)
+  const lowStockProducts = products.filter((p: Product) => p.track_stock && (p.stock ?? 0) <= p.reorder_level)
 
   // Filter transactions by date
-  const filteredTransactions = transactions.filter(t => {
+  const filteredTransactions = transactions.filter((t: TransactionWithItems) => {
     const date = new Date(t.created_at)
     if (historyFilter === 'today') return date >= today
     if (historyFilter === 'week') return date >= weekAgo
@@ -141,7 +141,7 @@ export default function RetailDashboardPage() {
   })
 
   // Filter products by search
-  const filteredProducts = products.filter(p => 
+  const filteredProducts = products.filter((p: Product) => 
     p.name.toLowerCase().includes(search.toLowerCase())
   )
 
