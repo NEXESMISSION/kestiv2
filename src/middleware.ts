@@ -71,9 +71,23 @@ export async function middleware(request: NextRequest) {
         setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
           supabaseResponse = NextResponse.next({ request })
-          cookiesToSet.forEach(({ name, value, options }) => supabaseResponse.cookies.set(name, value, options))
+          cookiesToSet.forEach(({ name, value, options }) => {
+            // Ensure cookies are properly set with secure attributes for PWA
+            const cookieOptions = {
+              ...options,
+              httpOnly: true,
+              secure: process.env.NODE_ENV === 'production',
+              sameSite: 'lax' as const,
+              maxAge: 60 * 60 * 24 * 7 // 7 days
+            }
+            supabaseResponse.cookies.set(name, value, cookieOptions)
+          })
         },
       },
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true
+      }
     }
   )
 

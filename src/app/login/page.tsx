@@ -86,17 +86,20 @@ export default function LoginPage() {
       
       // Success - redirect based on role and pause status
       showNotification('success', 'تم تسجيل الدخول بنجاح! جاري التحويل...')
+      
+      // Force a full page refresh to ensure session is properly recognized
       setTimeout(() => {
         if (isPaused) {
           // Store pause reason in session for the paused page
-          sessionStorage.setItem('pauseReason', pauseReason)
-          router.push('/paused')
+          if (typeof window !== 'undefined') {
+            sessionStorage.setItem('pauseReason', pauseReason)
+          }
+          window.location.href = '/paused'
         } else if (userRole === 'super_admin') {
-          router.push('/superadmin')
+          window.location.href = '/superadmin'
         } else {
-          router.push('/pos')
+          window.location.href = '/pos'
         }
-        router.refresh()
       }, 1000)
     } catch {
       showNotification('error', 'حدث خطأ غير متوقع. حاول مرة أخرى لاحقاً.')
