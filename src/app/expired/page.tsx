@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Clock, LogOut, Loader2, Phone, Mail, CreditCard, AlertCircle, MessageCircle } from 'lucide-react'
+import { Clock, LogOut, Loader2, Phone, Mail, CreditCard, AlertCircle, MessageCircle, RefreshCw } from 'lucide-react'
 import { createClient, resetClient } from '@/lib/supabase/client'
+import { PullToRefresh } from '@/components/pwa'
 
 export default function ExpiredPage() {
   const router = useRouter()
@@ -11,69 +12,72 @@ export default function ExpiredPage() {
   const [expiredDate, setExpiredDate] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false)
 
-  useEffect(() => {
-    const checkSubscriptionStatus = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+  const checkSubscriptionStatus = useCallback(async () => {
+    setIsCheckingStatus(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-      if (!user) {
-        router.push('/login')
-        return
-      }
-
-      // Get profile data
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_status, subscription_end_date, full_name, role')
-        .eq('id', user.id)
-        .single()
-
-      const name = profile?.full_name || user.user_metadata?.full_name || user.email || 'المستخدم'
-      const role = profile?.role || user.user_metadata?.role || 'user'
-      const subscriptionStatus = profile?.subscription_status
-      const endDate = profile?.subscription_end_date
-
-      // Super admin always has access
-      if (role === 'super_admin') {
-        router.push('/superadmin')
-        return
-      }
-
-      // Check if subscription is truly active (status AND end date)
-      let isSubscriptionValid = false
-      if (subscriptionStatus === 'active' || subscriptionStatus === 'trial') {
-        if (endDate) {
-          const endDateTime = new Date(endDate)
-          isSubscriptionValid = endDateTime > new Date()
-        } else {
-          // No end date set, consider as valid
-          isSubscriptionValid = true
-        }
-      }
-
-      // If subscription is valid, redirect to app
-      if (isSubscriptionValid) {
-        router.push('/pos')
-        return
-      }
-
-      // User should stay on expired page
-      setUserName(name)
-      if (endDate) {
-        setExpiredDate(new Date(endDate).toLocaleDateString('ar-TN', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }))
-      }
-      setIsLoading(false)
+    if (!user) {
+      router.push('/login')
+      return
     }
 
-    checkSubscriptionStatus()
+    // Get profile data
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_status, subscription_end_date, full_name, role')
+      .eq('id', user.id)
+      .single()
+
+    const name = profile?.full_name || user.user_metadata?.full_name || user.email || 'المستخدم'
+    const role = profile?.role || user.user_metadata?.role || 'user'
+    const subscriptionStatus = profile?.subscription_status
+    const endDate = profile?.subscription_end_date
+
+    // Super admin always has access
+    if (role === 'super_admin') {
+      router.push('/superadmin')
+      return
+    }
+
+    // Check if subscription is truly active (status AND end date)
+    let isSubscriptionValid = false
+    if (subscriptionStatus === 'active' || subscriptionStatus === 'trial') {
+      if (endDate) {
+        const endDateTime = new Date(endDate)
+        isSubscriptionValid = endDateTime > new Date()
+      } else {
+        // No end date set, consider as valid
+        isSubscriptionValid = true
+      }
+    }
+
+    // If subscription is valid, redirect to app
+    if (isSubscriptionValid) {
+      router.push('/pos')
+      return
+    }
+
+    // User should stay on expired page
+    setUserName(name)
+    if (endDate) {
+      setExpiredDate(new Date(endDate).toLocaleDateString('ar-TN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }))
+    }
+    setIsLoading(false)
+    setIsCheckingStatus(false)
   }, [router])
+
+  useEffect(() => {
+    checkSubscriptionStatus()
+  }, [checkSubscriptionStatus])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -92,8 +96,12 @@ export default function ExpiredPage() {
   }
 
   return (
+    <PullToRefresh onRefresh={checkSubscriptionStatus}>
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-rose-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Pull down hint */}
+        <p className="text-center text-red-400 text-xs mb-2">⬇️ اسحب للأسفل للتحقق من حالة الاشتراك</p>
+        
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-red-100">
           {/* Header */}
@@ -163,6 +171,25 @@ export default function ExpiredPage() {
               </div>
             </div>
 
+            {/* Check Status Button */}
+            <button
+              onClick={checkSubscriptionStatus}
+              disabled={isCheckingStatus}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl transition-colors font-medium mb-3"
+            >
+              {isCheckingStatus ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  جاري التحقق...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-5 h-5" />
+                  تحقق من حالة الاشتراك
+                </>
+              )}
+            </button>
+
             {/* Logout Button */}
             <button
               onClick={handleLogout}
@@ -192,5 +219,6 @@ export default function ExpiredPage() {
         </div>
       </div>
     </div>
+    </PullToRefresh>
   )
 }

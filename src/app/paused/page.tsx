@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { PauseCircle, LogOut, Loader2, Phone, Mail, MessageCircle } from 'lucide-react'
+import { PauseCircle, LogOut, Loader2, Phone, Mail, MessageCircle, RefreshCw } from 'lucide-react'
 import { createClient, resetClient } from '@/lib/supabase/client'
+import { PullToRefresh } from '@/components/pwa'
 
 export default function PausedPage() {
   const router = useRouter()
@@ -11,50 +12,53 @@ export default function PausedPage() {
   const [userName, setUserName] = useState<string>('')
   const [isLoading, setIsLoading] = useState(true)
   const [isLoggingOut, setIsLoggingOut] = useState(false)
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false)
 
-  useEffect(() => {
-    const checkPauseStatus = async () => {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
+  const checkPauseStatus = useCallback(async () => {
+    setIsCheckingStatus(true)
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
 
-      if (!user) {
-        router.push('/login')
-        return
-      }
-
-      // Check session storage first (from login redirect)
-      const storedReason = sessionStorage.getItem('pauseReason')
-      
-      // Get profile data for pause status
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('is_paused, pause_reason, full_name, role')
-        .eq('id', user.id)
-        .single()
-
-      const isPaused = profile?.is_paused || false
-      const reason = storedReason || profile?.pause_reason || 'تم إيقاف حسابك مؤقتاً'
-      const name = profile?.full_name || user.user_metadata?.full_name || user.email || 'المستخدم'
-      const role = profile?.role || user.user_metadata?.role || 'user'
-
-      if (!isPaused) {
-        // Not paused, redirect to appropriate page
-        sessionStorage.removeItem('pauseReason')
-        if (role === 'super_admin') {
-          router.push('/superadmin')
-        } else {
-          router.push('/pos')
-        }
-        return
-      }
-
-      setPauseReason(reason)
-      setUserName(name)
-      setIsLoading(false)
+    if (!user) {
+      router.push('/login')
+      return
     }
 
-    checkPauseStatus()
+    // Check session storage first (from login redirect)
+    const storedReason = sessionStorage.getItem('pauseReason')
+    
+    // Get profile data for pause status
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('is_paused, pause_reason, full_name, role')
+      .eq('id', user.id)
+      .single()
+
+    const isPaused = profile?.is_paused || false
+    const reason = storedReason || profile?.pause_reason || 'تم إيقاف حسابك مؤقتاً'
+    const name = profile?.full_name || user.user_metadata?.full_name || user.email || 'المستخدم'
+    const role = profile?.role || user.user_metadata?.role || 'user'
+
+    if (!isPaused) {
+      // Not paused, redirect to appropriate page
+      sessionStorage.removeItem('pauseReason')
+      if (role === 'super_admin') {
+        router.push('/superadmin')
+      } else {
+        router.push('/pos')
+      }
+      return
+    }
+
+    setPauseReason(reason)
+    setUserName(name)
+    setIsLoading(false)
+    setIsCheckingStatus(false)
   }, [router])
+
+  useEffect(() => {
+    checkPauseStatus()
+  }, [checkPauseStatus])
 
   const handleLogout = async () => {
     setIsLoggingOut(true)
@@ -73,8 +77,12 @@ export default function PausedPage() {
   }
 
   return (
+    <PullToRefresh onRefresh={checkPauseStatus}>
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
+        {/* Pull down hint */}
+        <p className="text-center text-orange-400 text-xs mb-2">⬇️ اسحب للأسفل للتحقق من حالة الحساب</p>
+        
         {/* Card */}
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-orange-100">
           {/* Header */}
@@ -121,6 +129,25 @@ export default function PausedPage() {
               </div>
             </div>
 
+            {/* Check Status Button */}
+            <button
+              onClick={checkPauseStatus}
+              disabled={isCheckingStatus}
+              className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl transition-colors font-medium mb-3"
+            >
+              {isCheckingStatus ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  جاري التحقق...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="w-5 h-5" />
+                  تحقق من حالة الحساب
+                </>
+              )}
+            </button>
+
             {/* Logout Button */}
             <button
               onClick={handleLogout}
@@ -150,5 +177,6 @@ export default function PausedPage() {
         </div>
       </div>
     </div>
+    </PullToRefresh>
   )
 }
