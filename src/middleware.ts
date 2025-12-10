@@ -24,9 +24,18 @@ function checkRateLimit(ip: string): boolean {
   return true
 }
 
+// Debug function to log auth related information
+function logAuthDebug(msg: string, obj?: any) {
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`[Auth Debug] ${msg}`, obj || '')
+  }
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown'
+  
+  logAuthDebug(`Middleware running for path: ${pathname}`)
   
   // Rate limit API routes
   if (pathname.startsWith('/api')) {
@@ -53,10 +62,12 @@ export async function middleware(request: NextRequest) {
     pathname === '/sitemap.xml' ||
     pathname === '/robots.txt' ||
     pathname === '/sw.js' ||
+    pathname === '/login-sw.js' ||
     pathname === '/manifest.json' ||
     pathname.startsWith('/api') ||
     pathname.startsWith('/_next')
   ) {
+    logAuthDebug(`Skipping middleware for non-protected path: ${pathname}`)
     return NextResponse.next()
   }
 
@@ -96,26 +107,48 @@ export async function middleware(request: NextRequest) {
   const isProtected = protectedRoutes.some(route => pathname.startsWith(route))
   
   if (!isProtected) {
+    logAuthDebug(`Path not protected: ${pathname}`)
     return supabaseResponse
   }
+  
+  logAuthDebug(`Checking auth for protected path: ${pathname}`)
 
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data, error } = await supabase.auth.getUser()
+  const user = data?.user
+
+  if (error) {
+    logAuthDebug(`Auth error: ${error.message}`)
+  }
 
   // Not logged in -> login
   if (!user) {
-    return NextResponse.redirect(new URL('/login', request.url))
+    logAuthDebug(`No user found, redirecting to login`)
+    // Use replace instead of redirect to ensure cookies are properly handled
+    return NextResponse.redirect(new URL('/login', request.url), {
+      // Set the status to 302 to indicate a temporary redirect
+      status: 302,
+    })
   }
+  
+  logAuthDebug(`User authenticated: ${user.id}`)
 
   // Get profile with minimal fields
-  const { data: profile } = await supabase
+  const { data: profile, error: profileError } = await supabase
     .from('profiles')
     .select('role, is_paused, subscription_status, subscription_end_date')
     .eq('id', user.id)
     .maybeSingle()
 
+  if (profileError) {
+    logAuthDebug(`Error fetching profile: ${profileError.message}`)
+  }
+
   if (!profile) {
+    logAuthDebug(`No profile found for user: ${user.id}`)
     return supabaseResponse
   }
+  
+  logAuthDebug(`User profile found: role=${profile.role}, paused=${profile.is_paused}, status=${profile.subscription_status}`)
 
   const isSuperAdmin = profile.role === 'super_admin'
   

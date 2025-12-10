@@ -124,13 +124,20 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginData) => {
     setIsLoading(true)
     setNotification(null)
+    console.log('Starting login process...')
+    
+    // Clear any previous redirect flags
+    sessionStorage.removeItem('redirect_attempted')
 
     try {
       const supabase = createClient()
-      const { error: authError } = await supabase.auth.signInWithPassword({
+      console.log('Calling signInWithPassword...')
+      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password
       })
+      
+      console.log('Auth result:', authData ? 'Success' : 'No data', authError ? `Error: ${authError.message}` : 'No error')
 
       if (authError) {
         console.error('Login error:', authError)
@@ -150,19 +157,36 @@ export default function LoginPage() {
       }
 
       // Get the logged in user to check role and pause status
-      const { data: { user } } = await supabase.auth.getUser()
+      console.log('Getting user data...')
+      const { data: userData, error: userError } = await supabase.auth.getUser()
       
-      if (!user) {
+      if (userError) {
+        console.error('Error getting user:', userError)
+        showNotification('error', 'خطأ في جلب بيانات المستخدم. حاول مرة أخرى.')
+        return
+      }
+      
+      if (!userData || !userData.user) {
+        console.error('No user data returned after login')
         showNotification('error', 'حدث خطأ غير متوقع. حاول مرة أخرى.')
         return
       }
       
+      const user = userData.user
+      
       // Check profile for pause status and role
-      const { data: profile } = await supabase
+      console.log('Getting profile data for user:', user.id)
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('role, is_paused, pause_reason')
+        .select('role, is_paused, pause_reason, subscription_status, subscription_end_date')
         .eq('id', user.id)
         .maybeSingle()
+        
+      if (profileError) {
+        console.error('Error fetching profile:', profileError)
+      } else {
+        console.log('Profile retrieved:', profile ? 'Success' : 'Not found')
+      }
       
       // Use profile data if available, otherwise fall back to metadata
       const userRole = profile?.role || user.user_metadata?.role || 'user'
@@ -172,21 +196,32 @@ export default function LoginPage() {
       // Success - redirect based on role and pause status
       showNotification('success', 'تم تسجيل الدخول بنجاح! جاري التحويل...')
       
-      // Force a full page refresh to ensure session is properly recognized
+      // Store session in localStorage to ensure it persists
+      localStorage.setItem('sb-auth-token', JSON.stringify(authData.session))
+      
+      // Force a full page refresh with a direct URL navigation to bypass potential middleware issues
+      console.log('Preparing redirect for role:', userRole, 'paused:', isPaused)
       setTimeout(() => {
+        // Clear any redirection flags
+        sessionStorage.removeItem('redirect_attempted')
+        
         if (isPaused) {
           // Store pause reason in session for the paused page
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('pauseReason', pauseReason)
           }
-          window.location.href = '/paused'
+          console.log('Redirecting to paused page')
+          window.location.replace('/paused')
         } else if (userRole === 'super_admin') {
-          window.location.href = '/superadmin'
+          console.log('Redirecting to superadmin')
+          window.location.replace('/superadmin')
         } else {
-          window.location.href = '/pos'
+          console.log('Redirecting to POS')
+          window.location.replace('/pos')
         }
-      }, 1000)
-    } catch {
+      }, 1500)
+    } catch (error) {
+      console.error('Unexpected error during login:', error)
       showNotification('error', 'حدث خطأ غير متوقع. حاول مرة أخرى لاحقاً.')
     } finally {
       setIsLoading(false)
