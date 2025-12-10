@@ -247,9 +247,9 @@ export default function HomeTab({ stats, projects, clients, services, payments, 
     : []
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:space-y-6">
       {/* Finance Stats with Filter */}
-      <div className="card !p-4">
+      <div className="card !p-4 lg:!p-6">
         {/* Period Filter */}
         <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
           {(['today', 'week', 'month', 'all'] as FinancePeriod[]).map(period => (
@@ -268,106 +268,109 @@ export default function HomeTab({ stats, projects, clients, services, payments, 
         </div>
         
         {/* Filtered Stats */}
-        <div className="grid grid-cols-3 gap-4 text-center">
-          <div className="p-3 bg-green-50 rounded-xl">
-            <TrendingUp className="w-5 h-5 text-green-600 mx-auto mb-1" />
-            <p className="text-lg font-bold text-green-600">{filteredStats.income.toFixed(0)}</p>
-            <p className="text-xs text-gray-500">الدخل</p>
+        <div className="grid grid-cols-3 gap-3 lg:gap-6 text-center">
+          <div className="p-3 lg:p-5 bg-green-50 rounded-xl">
+            <TrendingUp className="w-5 h-5 lg:w-6 lg:h-6 text-green-600 mx-auto mb-1 lg:mb-2" />
+            <p className="text-lg lg:text-2xl font-bold text-green-600">{filteredStats.income.toFixed(0)}</p>
+            <p className="text-xs lg:text-sm text-gray-500">الدخل</p>
           </div>
-          <div className="p-3 bg-red-50 rounded-xl">
-            <TrendingDown className="w-5 h-5 text-red-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-red-500">{filteredStats.expenses.toFixed(0)}</p>
-            <p className="text-xs text-gray-500">المصاريف</p>
+          <div className="p-3 lg:p-5 bg-red-50 rounded-xl">
+            <TrendingDown className="w-5 h-5 lg:w-6 lg:h-6 text-red-500 mx-auto mb-1 lg:mb-2" />
+            <p className="text-lg lg:text-2xl font-bold text-red-500">{filteredStats.expenses.toFixed(0)}</p>
+            <p className="text-xs lg:text-sm text-gray-500">المصاريف</p>
           </div>
-          <div className={`p-3 rounded-xl ${filteredStats.profit >= 0 ? 'bg-primary-50' : 'bg-orange-50'}`}>
-            <span className={`text-sm font-bold mx-auto mb-1 ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`}>DT</span>
-            <p className={`text-lg font-bold ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`}>
+          <div className={`p-3 lg:p-5 rounded-xl ${filteredStats.profit >= 0 ? 'bg-primary-50' : 'bg-orange-50'}`}>
+            <span className={`text-sm lg:text-base font-bold mx-auto mb-1 lg:mb-2 ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`}>DT</span>
+            <p className={`text-lg lg:text-2xl font-bold ${filteredStats.profit >= 0 ? 'text-primary-600' : 'text-orange-600'}`}>
               {filteredStats.profit.toFixed(0)}
             </p>
-            <p className="text-xs text-gray-500">الربح</p>
+            <p className="text-xs lg:text-sm text-gray-500">الربح</p>
           </div>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-3 lg:gap-4">
         <button
           onClick={() => setShowProjectModal(true)}
-          className="card !p-4 flex flex-col items-center gap-2 hover:bg-primary-50 transition-colors"
+          className="card !p-4 lg:!p-6 flex flex-col items-center gap-2 hover:bg-primary-50 transition-colors"
         >
-          <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center">
-            <Plus className="w-5 h-5" />
+          <div className="w-10 h-10 lg:w-12 lg:h-12 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center">
+            <Plus className="w-5 h-5 lg:w-6 lg:h-6" />
           </div>
-          <span className="text-xs font-medium text-gray-700">مشروع</span>
+          <span className="text-xs lg:text-sm font-medium text-gray-700">مشروع</span>
         </button>
         <button
           onClick={() => setShowIncomeModal(true)}
-          className="card !p-4 flex flex-col items-center gap-2 hover:bg-green-50 transition-colors"
+          className="card !p-4 lg:!p-6 flex flex-col items-center gap-2 hover:bg-green-50 transition-colors"
         >
-          <div className="w-10 h-10 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
-            <TrendingUp className="w-5 h-5" />
+          <div className="w-10 h-10 lg:w-12 lg:h-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center">
+            <TrendingUp className="w-5 h-5 lg:w-6 lg:h-6" />
           </div>
-          <span className="text-xs font-medium text-gray-700">دخل</span>
+          <span className="text-xs lg:text-sm font-medium text-gray-700">دخل</span>
         </button>
         <button
           onClick={() => setShowExpenseModal(true)}
-          className="card !p-4 flex flex-col items-center gap-2 hover:bg-red-50 transition-colors"
+          className="card !p-4 lg:!p-6 flex flex-col items-center gap-2 hover:bg-red-50 transition-colors"
         >
-          <div className="w-10 h-10 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
-            <TrendingDown className="w-5 h-5" />
+          <div className="w-10 h-10 lg:w-12 lg:h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center">
+            <TrendingDown className="w-5 h-5 lg:w-6 lg:h-6" />
           </div>
-          <span className="text-xs font-medium text-gray-700">مصروف</span>
+          <span className="text-xs lg:text-sm font-medium text-gray-700">مصروف</span>
         </button>
       </div>
 
-      {/* Active Projects Count */}
-      <div className="card !p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
-            <Clock className="w-5 h-5" />
+      {/* Overview Grid - Desktop 2 columns, Mobile 1 column */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        {/* Active Projects Count */}
+        <div className="card !p-4 lg:!p-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 lg:w-12 lg:h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center">
+              <Clock className="w-5 h-5 lg:w-6 lg:h-6" />
+            </div>
+            <div>
+              <p className="font-medium text-gray-800 lg:text-lg">مشاريع قيد العمل</p>
+              <p className="text-sm lg:text-base text-gray-500">{stats.activeProjects} مشروع</p>
+            </div>
           </div>
-          <div>
-            <p className="font-medium text-gray-800">مشاريع قيد العمل</p>
-            <p className="text-sm text-gray-500">{stats.activeProjects} مشروع</p>
-          </div>
+          <ChevronLeft className="w-5 h-5 text-gray-400" />
         </div>
-        <ChevronLeft className="w-5 h-5 text-gray-400" />
+
+        {/* Credit Alert */}
+        {stats.totalCredit > 0 && (
+          <div className="card !p-4 lg:!p-5 bg-orange-50 border-orange-200">
+            <div className="flex items-center gap-2 mb-2">
+              <AlertCircle className="w-4 h-4 lg:w-5 lg:h-5 text-orange-500" />
+              <h3 className="text-sm lg:text-base font-medium text-orange-700">ديون مستحقة</h3>
+            </div>
+            <p className="text-lg lg:text-2xl font-bold text-orange-600 mb-2">{stats.totalCredit.toFixed(0)} DT</p>
+            <div className="text-xs lg:text-sm text-orange-600">
+              {clientsWithDebt.slice(0, 3).map(c => c.name).join('، ')}
+              {clientsWithDebt.length > 3 && ` +${clientsWithDebt.length - 3}`}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Upcoming Deadlines */}
       {upcomingProjects.length > 0 && (
-        <div className="card !p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <Calendar className="w-4 h-4 text-primary-500" />
-            <h3 className="text-sm font-medium text-gray-700">مواعيد قادمة</h3>
+        <div className="card !p-4 lg:!p-6">
+          <div className="flex items-center gap-2 mb-3 lg:mb-4">
+            <Calendar className="w-4 h-4 lg:w-5 lg:h-5 text-primary-500" />
+            <h3 className="text-sm lg:text-base font-medium text-gray-700">مواعيد قادمة</h3>
           </div>
-          <div className="space-y-2">
+          <div className="space-y-2 lg:space-y-3">
             {upcomingProjects.map(project => (
-              <div key={project.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+              <div key={project.id} className="flex items-center justify-between p-2 lg:p-3 bg-gray-50 rounded-lg">
                 <div>
-                  <p className="text-sm font-medium text-gray-800">{project.title}</p>
-                  <p className="text-xs text-gray-500">{project.client_name}</p>
+                  <p className="text-sm lg:text-base font-medium text-gray-800">{project.title}</p>
+                  <p className="text-xs lg:text-sm text-gray-500">{project.client_name}</p>
                 </div>
-                <span className="text-xs text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
+                <span className="text-xs lg:text-sm text-primary-600 bg-primary-50 px-2 py-1 rounded-full">
                   {new Date(project.deadline!).toLocaleDateString('ar-TN', { day: 'numeric', month: 'short' })}
                 </span>
               </div>
             ))}
-          </div>
-        </div>
-      )}
-
-      {/* Credit Alert */}
-      {stats.totalCredit > 0 && (
-        <div className="card !p-4 bg-orange-50 border-orange-200">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertCircle className="w-4 h-4 text-orange-500" />
-            <h3 className="text-sm font-medium text-orange-700">ديون مستحقة</h3>
-          </div>
-          <p className="text-lg font-bold text-orange-600 mb-2">{stats.totalCredit.toFixed(0)} DT</p>
-          <div className="text-xs text-orange-600">
-            {clientsWithDebt.slice(0, 3).map(c => c.name).join('، ')}
-            {clientsWithDebt.length > 3 && ` +${clientsWithDebt.length - 3}`}
           </div>
         </div>
       )}

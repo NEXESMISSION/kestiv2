@@ -167,18 +167,18 @@ export default function ProjectsTab({ projects, clients, userId, onRefresh }: Pr
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:space-y-6">
       {/* Add Project Button */}
       <button
         onClick={() => setShowAddModal(true)}
-        className="w-full card !p-4 flex items-center justify-center gap-2 text-primary-600 hover:bg-primary-50 transition-colors border-2 border-dashed border-primary-200"
+        className="w-full card !p-4 lg:!p-5 flex items-center justify-center gap-2 text-primary-600 hover:bg-primary-50 transition-colors border-2 border-dashed border-primary-200"
       >
-        <Plus className="w-5 h-5" />
-        <span className="font-medium">مشروع جديد</span>
+        <Plus className="w-5 h-5 lg:w-6 lg:h-6" />
+        <span className="font-medium lg:text-lg">مشروع جديد</span>
       </button>
 
       {/* Filter Tabs */}
-      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4">
+      <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 lg:mx-0 lg:px-0">
         <button
           onClick={() => setFilter('all')}
           className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
@@ -206,12 +206,12 @@ export default function ProjectsTab({ projects, clients, userId, onRefresh }: Pr
 
       {/* Projects List */}
       {filteredProjects.length === 0 ? (
-        <div className="card !p-8 text-center">
-          <Video className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">لا توجد مشاريع</p>
+        <div className="card !p-8 lg:!p-12 text-center">
+          <Video className="w-12 h-12 lg:w-16 lg:h-16 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 lg:text-lg">لا توجد مشاريع</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-4">
           {filteredProjects.map(project => {
             const statusConfig = STATUS_CONFIG[project.status]
             const StatusIcon = statusConfig.icon

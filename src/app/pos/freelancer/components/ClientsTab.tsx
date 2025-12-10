@@ -100,9 +100,9 @@ export default function ClientsTab({ clients, projects, userId, onRefresh }: Cli
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 lg:space-y-6">
       {/* Search & Add */}
-      <div className="flex gap-3">
+      <div className="flex gap-3 lg:gap-4">
         <div className="flex-1 relative">
           <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
@@ -123,18 +123,18 @@ export default function ClientsTab({ clients, projects, userId, onRefresh }: Cli
 
       {/* Clients List */}
       {filteredClients.length === 0 ? (
-        <div className="card !p-8 text-center">
-          <User className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">لا يوجد عملاء</p>
+        <div className="card !p-8 lg:!p-12 text-center">
+          <User className="w-12 h-12 lg:w-16 lg:h-16 text-gray-300 mx-auto mb-3" />
+          <p className="text-gray-500 lg:text-lg">لا يوجد عملاء</p>
           <button
             onClick={() => setShowAddModal(true)}
-            className="mt-4 text-primary-600 hover:text-primary-700 font-medium"
+            className="mt-4 text-primary-600 hover:text-primary-700 font-medium lg:text-lg"
           >
             + إضافة عميل جديد
           </button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-3 lg:gap-4">
           {filteredClients.map(client => {
             const clientProjects = getClientProjects(client.id)
             
