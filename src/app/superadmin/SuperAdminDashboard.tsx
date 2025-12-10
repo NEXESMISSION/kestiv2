@@ -8,6 +8,7 @@ import {
   Calendar, Clock, CheckCircle, XCircle, ChevronLeft, Trash2, AlertTriangle
 } from 'lucide-react'
 import { createClient, resetClient } from '@/lib/supabase/client'
+import { PullToRefresh } from '@/components/pwa'
 import type { Profile, UserRole } from '@/types/database'
 
 // Serialized user type for server-to-client transfer
@@ -319,6 +320,7 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
   }
 
   return (
+    <PullToRefresh onRefresh={fetchProfiles}>
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
       <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
@@ -757,5 +759,6 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
         </div>
       )}
     </div>
+    </PullToRefresh>
   )
 }

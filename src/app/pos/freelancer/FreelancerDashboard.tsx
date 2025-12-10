@@ -9,6 +9,7 @@ import {
   ChevronLeft, ChevronRight, Tag, Edit2, Trash2
 } from 'lucide-react'
 import { createClient, resetClient } from '@/lib/supabase/client'
+import { PullToRefresh } from '@/components/pwa'
 import type { Profile } from '@/types/database'
 
 interface FreelancerDashboardProps {
@@ -576,6 +577,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   }
 
   return (
+    <PullToRefresh onRefresh={fetchData}>
     <div className="min-h-screen bg-gray-50 flex" dir="rtl">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex lg:flex-col lg:w-64 bg-white border-l fixed right-0 top-0 h-full z-40">
@@ -1664,5 +1666,6 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       )}
 
     </div>
+    </PullToRefresh>
   )
 }

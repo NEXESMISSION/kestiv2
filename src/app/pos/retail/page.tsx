@@ -12,6 +12,7 @@ import {
 } from 'lucide-react'
 import PINModal from '@/components/shared/PINModal'
 import WelcomePopup from '@/components/shared/WelcomePopup'
+import { PullToRefresh } from '@/components/pwa'
 
 type CartItem = {
   product: Product
@@ -259,6 +260,7 @@ export default function RetailPOSPage() {
   }
 
   return (
+    <PullToRefresh onRefresh={fetchData}>
     <div className="min-h-screen bg-gray-100 flex flex-col" dir="rtl">
       {/* Header */}
       <header className="bg-white shadow-sm sticky top-0 z-40">
@@ -947,5 +949,6 @@ export default function RetailPOSPage() {
         </div>
       )}
     </div>
+    </PullToRefresh>
   )
 }

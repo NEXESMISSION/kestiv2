@@ -25,6 +25,9 @@ const siteTitle = 'Kesti Pro - كاستي برو | نظام إدارة المب�
 const siteDescription = 'كاستي برو - نظام نقاط البيع (POS) الأذكى في تونس. إدارة المبيعات، المخزون، والمحاسبة من هاتفك. بدون أجهزة غالية، بدون تعقيد. ابدأ مجاناً اليوم! | Kesti Pro - Smart POS & Inventory Management System'
 
 export const metadata: Metadata = {
+  // === Base URL for Open Graph images ===
+  metadataBase: new URL(siteUrl),
+  
   // === Basic Meta ===
   title: {
     default: siteTitle,
