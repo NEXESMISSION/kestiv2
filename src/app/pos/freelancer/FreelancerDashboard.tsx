@@ -118,12 +118,14 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   
   const [searchQuery, setSearchQuery] = useState('')
+  const [historyPeriod, setHistoryPeriod] = useState<'today' | 'week' | 'month' | 'all'>('month')
   
   // Edit/Delete transaction state
   const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
   const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null)
   const [editTransactionAmount, setEditTransactionAmount] = useState('')
   const [editTransactionDescription, setEditTransactionDescription] = useState('')
+  const [editTransactionCategoryId, setEditTransactionCategoryId] = useState('')
   
   // Stats
   const [stats, setStats] = useState({
@@ -562,11 +564,48 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
     c.phone?.includes(searchQuery)
   )
 
-  const filteredTransactions = transactions.filter(t => 
-    t.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.client_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    t.category_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  // Filter transactions by period and search
+  const filteredTransactions = transactions.filter(t => {
+    // Period filter
+    const txDate = new Date(t.created_at)
+    const now = new Date()
+    const today = now.toISOString().split('T')[0]
+    const startOfWeek = new Date(now)
+    startOfWeek.setDate(now.getDate() - now.getDay())
+    startOfWeek.setHours(0, 0, 0, 0)
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    
+    let inPeriod = true
+    if (historyPeriod === 'today') {
+      inPeriod = t.date === today || t.created_at.split('T')[0] === today
+    } else if (historyPeriod === 'week') {
+      inPeriod = txDate >= startOfWeek
+    } else if (historyPeriod === 'month') {
+      inPeriod = txDate >= startOfMonth
+    }
+    // 'all' shows everything
+    
+    // Search filter
+    const matchesSearch = !searchQuery.trim() || 
+      t.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.client_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      t.category_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    
+    return inPeriod && matchesSearch
+  })
+
+  // Calculate category breakdown for expenses in the filtered period
+  const categoryBreakdown = filteredTransactions
+    .filter(t => t.type === 'expense')
+    .reduce((acc, t) => {
+      const catName = t.category_name || 'بدون تصنيف'
+      if (!acc[catName]) acc[catName] = 0
+      acc[catName] += t.amount
+      return acc
+    }, {} as Record<string, number>)
+  
+  const totalExpensesInPeriod = Object.values(categoryBreakdown).reduce((a, b) => a + b, 0)
+  const categoryBreakdownSorted = Object.entries(categoryBreakdown).sort((a, b) => b[1] - a[1])
 
   if (isLoading) {
     return (
@@ -986,6 +1025,57 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
           {/* HISTORY VIEW */}
           {activeView === 'history' && (
             <div className="max-w-4xl mx-auto space-y-4">
+              {/* Period Filter */}
+              <div className="bg-white rounded-xl p-3 shadow-sm">
+                <div className="flex items-center gap-2">
+                  {(['today', 'week', 'month', 'all'] as const).map(p => (
+                    <button
+                      key={p}
+                      onClick={() => setHistoryPeriod(p)}
+                      className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        historyPeriod === p
+                          ? 'bg-primary-500 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {p === 'today' ? 'اليوم' : p === 'week' ? 'الأسبوع' : p === 'month' ? 'الشهر' : 'الكل'}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Category Breakdown Bars */}
+              {categoryBreakdownSorted.length > 0 && (
+                <div className="bg-white rounded-xl p-4 shadow-sm">
+                  <h3 className="text-sm font-medium text-gray-700 mb-3">توزيع المصاريف</h3>
+                  <div className="space-y-3">
+                    {categoryBreakdownSorted.map(([catName, amount], idx) => {
+                      const percentage = totalExpensesInPeriod > 0 ? (amount / totalExpensesInPeriod) * 100 : 0
+                      const colors = ['bg-red-500', 'bg-orange-500', 'bg-amber-500', 'bg-yellow-500', 'bg-lime-500', 'bg-green-500', 'bg-teal-500', 'bg-cyan-500']
+                      return (
+                        <div key={catName}>
+                          <div className="flex items-center justify-between text-sm mb-1">
+                            <span className="text-gray-600">{catName}</span>
+                            <span className="font-medium text-gray-800">{amount.toFixed(0)} DT ({percentage.toFixed(0)}%)</span>
+                          </div>
+                          <div className="h-3 bg-gray-100 rounded-full overflow-hidden">
+                            <div 
+                              className={`h-full ${colors[idx % colors.length]} rounded-full transition-all duration-500`}
+                              style={{ width: `${percentage}%` }}
+                            />
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="mt-3 pt-3 border-t flex justify-between text-sm">
+                    <span className="text-gray-500">إجمالي المصاريف</span>
+                    <span className="font-bold text-red-500">{totalExpensesInPeriod.toFixed(0)} DT</span>
+                  </div>
+                </div>
+              )}
+
+              {/* Search */}
               <div className="relative">
                 <Search className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -1009,6 +1099,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                         <div className="flex items-center gap-2 text-xs text-gray-400">
                           <span>{new Date(t.created_at).toLocaleDateString('ar-TN')}</span>
                           {t.category_name && <span className="px-1.5 py-0.5 bg-gray-100 rounded">{t.category_name}</span>}
+                          {t.type === 'expense' && !t.category_name && <span className="px-1.5 py-0.5 bg-orange-100 text-orange-600 rounded">بدون تصنيف</span>}
                         </div>
                       </div>
                     </div>
@@ -1026,6 +1117,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                           setEditingTransaction(t)
                           setEditTransactionAmount(t.amount.toString())
                           setEditTransactionDescription(t.description || '')
+                          setEditTransactionCategoryId(t.category_id || '')
                         }}
                         className="p-2 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-lg transition-colors"
                       >
@@ -1578,6 +1670,24 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                   placeholder="وصف العملية"
                 />
               </div>
+              {/* Category Selector for Expenses */}
+              {editingTransaction.type === 'expense' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    التصنيف {!editTransactionCategoryId && <span className="text-orange-500">(غير محدد)</span>}
+                  </label>
+                  <select
+                    value={editTransactionCategoryId}
+                    onChange={(e) => setEditTransactionCategoryId(e.target.value)}
+                    className="input-field"
+                  >
+                    <option value="">-- اختر تصنيف --</option>
+                    {expenseCategories.map(cat => (
+                      <option key={cat.id} value={cat.id}>{cat.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <button
                 onClick={async () => {
                   if (!editTransactionAmount) return
@@ -1588,8 +1698,15 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                         .update({ amount: parseFloat(editTransactionAmount), notes: editTransactionDescription })
                         .eq('id', editingTransaction.id)
                     } else {
+                      // Update expense with category
+                      const selectedCat = expenseCategories.find(c => c.id === editTransactionCategoryId)
                       await supabase.from('freelancer_expenses')
-                        .update({ amount: parseFloat(editTransactionAmount), description: editTransactionDescription })
+                        .update({ 
+                          amount: parseFloat(editTransactionAmount), 
+                          description: editTransactionDescription,
+                          category_id: editTransactionCategoryId || null,
+                          category: selectedCat?.name || null
+                        })
                         .eq('id', editingTransaction.id)
                     }
                     setEditingTransaction(null)
