@@ -62,7 +62,7 @@ export default function CustomerModal({ member, plans, services, onClose, onUpda
   const Icon = pCfg?.icon || User
 
   useEffect(() => {
-    supabase.from('subscription_history').select('*').eq('member_id', member.id).order('created_at', { ascending: false }).limit(50).then(({ data }) => { if (data) setHistory(data) })
+    supabase.from('subscription_history').select('*').eq('member_id', member.id).order('created_at', { ascending: false }).limit(50).then(({ data }: { data: SubscriptionHistory[] | null }) => { if (data) setHistory(data) })
   }, [member.id, supabase])
 
   const refreshMember = async () => {

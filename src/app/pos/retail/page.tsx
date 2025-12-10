@@ -70,7 +70,7 @@ export default function RetailPOSPage() {
     
     if (profileRes.data) setUserPin(profileRes.data.pin_code)
     if (productsRes.data) {
-      const normalizedProducts = productsRes.data.map(p => ({ ...p, barcode: null }))
+      const normalizedProducts = productsRes.data.map((p: any) => ({ ...p, barcode: null }))
       setProducts(normalizedProducts as Product[])
     }
     if (categoriesRes.data) setCategories(categoriesRes.data)

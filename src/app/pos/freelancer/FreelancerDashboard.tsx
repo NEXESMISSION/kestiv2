@@ -135,7 +135,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
         .order('created_at', { ascending: false })
       
       // Process data
-      const processedProjects = (projectsData || []).map(p => ({
+      const processedProjects = (projectsData || []).map((p: any) => ({
         ...p,
         client_name: (p.freelancer_clients as { name: string } | null)?.name || 'غير معروف'
       }))
@@ -152,24 +152,24 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       startOfMonth.setDate(1)
       startOfMonth.setHours(0, 0, 0, 0)
       
-      const todayPayments = (paymentsData || []).filter(p => 
+      const todayPayments = (paymentsData || []).filter((p: FreelancerPayment) => 
         p.created_at.startsWith(today)
       )
-      const monthPayments = (paymentsData || []).filter(p => 
+      const monthPayments = (paymentsData || []).filter((p: FreelancerPayment) => 
         new Date(p.created_at) >= startOfMonth
       )
-      const todayExpensesList = (expensesData || []).filter(e => e.date === today)
-      const monthExpensesList = (expensesData || []).filter(e => 
+      const todayExpensesList = (expensesData || []).filter((e: FreelancerExpense) => e.date === today)
+      const monthExpensesList = (expensesData || []).filter((e: FreelancerExpense) => 
         new Date(e.date) >= startOfMonth
       )
       
       setStats({
-        todayIncome: todayPayments.reduce((sum, p) => sum + Number(p.amount), 0),
-        todayExpenses: todayExpensesList.reduce((sum, e) => sum + Number(e.amount), 0),
-        monthIncome: monthPayments.reduce((sum, p) => sum + Number(p.amount), 0),
-        monthExpenses: monthExpensesList.reduce((sum, e) => sum + Number(e.amount), 0),
-        totalCredit: (clientsData || []).reduce((sum, c) => sum + Number(c.total_credit), 0),
-        activeProjects: processedProjects.filter(p => 
+        todayIncome: todayPayments.reduce((sum: number, p: FreelancerPayment) => sum + Number(p.amount), 0),
+        todayExpenses: todayExpensesList.reduce((sum: number, e: FreelancerExpense) => sum + Number(e.amount), 0),
+        monthIncome: monthPayments.reduce((sum: number, p: FreelancerPayment) => sum + Number(p.amount), 0),
+        monthExpenses: monthExpensesList.reduce((sum: number, e: FreelancerExpense) => sum + Number(e.amount), 0),
+        totalCredit: (clientsData || []).reduce((sum: number, c: FreelancerClient) => sum + Number(c.total_credit), 0),
+        activeProjects: processedProjects.filter((p: FreelancerProject & {client_name: string}) => 
           p.status === 'in_progress' || p.status === 'pending'
         ).length
       })
