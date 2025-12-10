@@ -19,7 +19,9 @@ async function verifySuperAdmin(supabase: Awaited<ReturnType<typeof createClient
     .eq('id', user.id)
     .maybeSingle()
   
-  if (profile?.role !== 'super_admin') {
+  const userRole = (profile as { role?: string } | null)?.role
+  
+  if (userRole !== 'super_admin') {
     return { error: 'Forbidden - Super admin access required', status: 403 }
   }
 
@@ -60,8 +62,10 @@ export async function PATCH(
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
+    const targetUserRole = (targetUser as { id: string; role?: string })?.role
+
     // Prevent modifying other super admins
-    if (targetUser.role === 'super_admin' && targetUserId !== authResult.user.id) {
+    if (targetUserRole === 'super_admin' && targetUserId !== authResult.user.id) {
       return NextResponse.json({ error: 'Cannot modify another super admin' }, { status: 403 })
     }
 
@@ -138,9 +142,9 @@ export async function PATCH(
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
-    // Perform update
-    const { data: updated, error: updateError } = await supabase
-      .from('profiles')
+    // Perform update - cast to unknown first to bypass strict type checking
+    const { data: updated, error: updateError } = await (supabase
+      .from('profiles') as unknown as { update: (data: Record<string, unknown>) => { eq: (col: string, val: string) => { select: () => { single: () => Promise<{ data: unknown; error: Error | null }> } } } })
       .update(updateData)
       .eq('id', targetUserId)
       .select()

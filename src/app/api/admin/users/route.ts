@@ -27,7 +27,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Failed to verify permissions' }, { status: 500 })
     }
     
-    const userRole = userProfile?.role || 'user'
+    const userRole = (userProfile as { role?: string } | null)?.role || 'user'
     
     if (userRole !== 'super_admin') {
       return NextResponse.json({ error: 'Forbidden - Super admin access required' }, { status: 403 })

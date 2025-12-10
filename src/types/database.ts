@@ -1,4 +1,4 @@
-export type BusinessMode = 'subscription' | 'retail' | 'freelancer'
+export type BusinessMode = 'subscription' | 'retail' | 'freelancer' | 'service'
 export type UserRole = 'user' | 'super_admin'
 export type SubscriptionStatus = 'active' | 'expired' | 'trial' | 'cancelled'
 export type TransactionType = 'subscription' | 'retail' | 'service' | 'debt_payment' | 'sale'
