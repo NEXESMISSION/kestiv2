@@ -192,8 +192,8 @@ export default function LandingPage() {
                 <Link href="/register" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white text-base sm:text-lg font-bold rounded-2xl hover:shadow-xl hover:shadow-primary-500/30 transition-all transform hover:-translate-y-1">
                   ابدأ تجربتك المجانية
                 </Link>
-                <a href="#pricing" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-200 text-gray-700 text-base sm:text-lg font-bold rounded-2xl hover:border-primary-300 hover:bg-primary-50 transition-all">
-                  اكتشف الأسعار
+                <a href="/pos" className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 border-2 border-gray-200 text-gray-700 text-base sm:text-lg font-bold rounded-2xl hover:border-primary-300 hover:bg-primary-50 transition-all">
+                  لوحة التحكم
                 </a>
               </div>
             </div>
