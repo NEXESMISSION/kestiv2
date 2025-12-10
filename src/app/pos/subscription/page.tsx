@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, resetClient } from '@/lib/supabase/client'
 import { Member, SubscriptionPlan, SubscriptionHistory, Service, Product } from '@/types/database'
 import { 
   Search, Users, Zap, Package, Calendar, Snowflake, X,
@@ -254,7 +254,11 @@ export default function SubscriptionPOSPage() {
               <button onClick={() => setShowPinModal(true)} className="flex items-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-medium">
                 <LayoutDashboard className="w-5 h-5" /><span className="hidden sm:inline">لوحة التحكم</span>
               </button>
-              <button onClick={async () => { await supabase.auth.signOut(); router.push('/login') }} className="p-2 text-gray-500 hover:text-red-600 rounded-lg">
+              <button onClick={async () => { 
+                await supabase.auth.signOut()
+                resetClient()
+                window.location.href = '/login'
+              }} className="p-2 text-gray-500 hover:text-red-600 rounded-lg">
                 <LogOut className="w-5 h-5" />
               </button>
             </div>

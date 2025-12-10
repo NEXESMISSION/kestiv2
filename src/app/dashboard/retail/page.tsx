@@ -12,7 +12,7 @@ import {
 } from 'lucide-react'
 import { Profile } from '@/types/database'
 
-type Tab = 'overview' | 'products' | 'history'
+type Tab = 'products' | 'history'
 
 type TransactionWithItems = Transaction & { items?: TransactionItem[] }
 
@@ -20,7 +20,7 @@ export default function RetailDashboardPage() {
   const router = useRouter()
   const supabase = createClient()
   
-  const [tab, setTab] = useState<Tab>('overview')
+  const [tab, setTab] = useState<Tab>('products')
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [transactions, setTransactions] = useState<TransactionWithItems[]>([])
@@ -157,204 +157,89 @@ export default function RetailDashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link 
-                href="/pos/retail"
-                className="flex items-center gap-2 px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg font-medium"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>العودة للبيع</span>
-              </Link>
-              <h1 className="text-xl font-bold">لوحة التحكم - تجزئة</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard/settings" prefetch={true} className="p-2 hover:bg-gray-100 rounded-lg transition-colors" title="الإعدادات">
-                <Settings className="w-5 h-5" />
-              </Link>
-            </div>
-          </div>
+      {/* Simple Header */}
+      <header className="bg-white border-b sticky top-0 z-40">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/pos/retail" className="flex items-center gap-2 text-primary-600 font-medium">
+            <ArrowLeft className="w-5 h-5" />
+            <span>العودة للبيع</span>
+          </Link>
+          <h1 className="text-lg font-bold text-gray-800">لوحة التحكم</h1>
+          <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 rounded-full">
+            <Settings className="w-5 h-5 text-gray-600" />
+          </Link>
         </div>
       </header>
 
-      {/* Tabs - Grid style visible on all sizes */}
-      <div className="max-w-6xl mx-auto px-4 pt-4">
-        <div className="grid grid-cols-3 gap-1 bg-gray-100 p-1 rounded-xl">
+      {/* Quick Stats */}
+      <div className="max-w-5xl mx-auto px-4 py-4">
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-green-600">{todaySales.toFixed(0)}</div>
+            <div className="text-xs text-gray-500">مبيعات اليوم</div>
+          </div>
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-blue-600">{weekSales.toFixed(0)}</div>
+            <div className="text-xs text-gray-500">هذا الأسبوع</div>
+          </div>
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-purple-600">{products.length}</div>
+            <div className="text-xs text-gray-500">المنتجات</div>
+          </div>
+        </div>
+        
+        {/* Quick Actions */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <Link href="/dashboard/retail/credit" className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 font-medium">
+            <CreditCard className="w-5 h-5" />
+            <span>الآجل</span>
+          </Link>
+          <Link href="/dashboard/retail/expenses" className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white rounded-xl py-3 font-medium">
+            <Receipt className="w-5 h-5" />
+            <span>المصروفات</span>
+          </Link>
+          <Link href="/dashboard/retail/financial" className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl py-3 font-medium">
+            <BarChart3 className="w-5 h-5" />
+            <span>التقارير</span>
+          </Link>
+        </div>
+
+        {/* Low Stock Alert - Compact */}
+        {lowStockProducts.length > 0 && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-3 mb-4">
+            <div className="flex items-center gap-2 text-yellow-700 font-medium text-sm">
+              <AlertTriangle className="w-4 h-4" />
+              <span>{lowStockProducts.length} منتجات منخفضة المخزون</span>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Simple Tabs */}
+      <div className="max-w-5xl mx-auto px-4 mb-4">
+        <div className="flex gap-2">
           {[
-            { k: 'overview', l: 'نظرة عامة', ls: 'نظرة', i: TrendingUp },
-            { k: 'products', l: 'المنتجات', ls: 'منتجات', i: Package },
-            { k: 'history', l: 'المبيعات', ls: 'مبيعات', i: History }
+            { k: 'products', l: 'المنتجات', i: Package },
+            { k: 'history', l: 'المبيعات', i: History }
           ].map(t => (
             <button 
               key={t.k} 
               onClick={() => setTab(t.k as Tab)} 
-              className={`flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg font-medium text-sm transition-all ${tab === t.k ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-full font-medium text-sm transition-all ${
+                tab === t.k 
+                  ? 'bg-primary-600 text-white shadow-md' 
+                  : 'bg-white text-gray-600 border hover:bg-gray-50'
+              }`}
             >
               <t.i className="w-4 h-4" />
-              <span className="hidden sm:inline">{t.l}</span>
-              <span className="sm:hidden">{t.ls}</span>
+              <span>{t.l}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Content */}
-      <main className="max-w-6xl mx-auto px-4 py-4">
-        {/* OVERVIEW TAB */}
-        {tab === 'overview' && (
-          <div className="space-y-4 sm:space-y-6">
-            {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
-              <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-3 sm:p-4 text-white">
-                <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <span className="font-bold">DT</span>مبيعات اليوم
-                </div>
-                <div className="text-xl sm:text-2xl font-bold">{todaySales.toFixed(3)}</div>
-                <div className="text-xs opacity-80">دينار</div>
-              </div>
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 sm:p-4 text-white">
-                <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <TrendingUp className="w-4 h-4" />مبيعات الأسبوع
-                </div>
-                <div className="text-xl sm:text-2xl font-bold">{weekSales.toFixed(3)}</div>
-                <div className="text-xs opacity-80">دينار</div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-3 sm:p-4 text-white">
-                <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <ShoppingBag className="w-4 h-4" />مبيعات الشهر
-                </div>
-                <div className="text-xl sm:text-2xl font-bold">{monthSales.toFixed(3)}</div>
-                <div className="text-xs opacity-80">دينار</div>
-              </div>
-              <div className="bg-gradient-to-br from-gray-600 to-gray-700 rounded-2xl p-3 sm:p-4 text-white">
-                <div className="flex items-center gap-2 text-xs sm:text-sm opacity-90 mb-1">
-                  <Package className="w-4 h-4" />عدد المنتجات
-                </div>
-                <div className="text-xl sm:text-2xl font-bold">{products.length}</div>
-                <div className="text-xs opacity-80">منتج</div>
-              </div>
-            </div>
-
-            {/* Subscription Status */}
-            {profile?.subscription_end_date && (
-              <div className={`rounded-2xl p-3 sm:p-4 flex items-center gap-3 ${
-                (() => {
-                  const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
-                  if (days <= 3) return 'bg-red-50 border border-red-200'
-                  if (days <= 7) return 'bg-yellow-50 border border-yellow-200'
-                  return 'bg-primary-50 border border-primary-200'
-                })()
-              }`}>
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                  (() => {
-                    const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
-                    if (days <= 3) return 'bg-red-100'
-                    if (days <= 7) return 'bg-yellow-100'
-                    return 'bg-primary-100'
-                  })()
-                }`}>
-                  <Calendar className={`w-5 h-5 ${
-                    (() => {
-                      const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
-                      if (days <= 3) return 'text-red-600'
-                      if (days <= 7) return 'text-yellow-600'
-                      return 'text-primary-600'
-                    })()
-                  }`} />
-                </div>
-                <div className="flex-1">
-                  <div className="text-xs text-gray-500">حالة الاشتراك</div>
-                  <div className="font-bold">
-                    {(() => {
-                      const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
-                      if (days <= 0) return <span className="text-red-600">منتهي</span>
-                      if (days <= 3) return <span className="text-red-600">متبقي {days} أيام</span>
-                      if (days <= 7) return <span className="text-yellow-600">متبقي {days} أيام</span>
-                      return <span className="text-primary-600">متبقي {days} يوم</span>
-                    })()}
-                  </div>
-                </div>
-                <div className="text-xs text-gray-400">
-                  {profile.subscription_status === 'trial' ? '🎁 تجريبي' : '✓ مفعل'}
-                </div>
-              </div>
-            )}
-
-            {/* Quick Links */}
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              <Link
-                href="/dashboard/retail/credit"
-                prefetch={true}
-                className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
-              >
-                <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-                <div className="font-bold text-sm sm:text-base">الآجل</div>
-                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">إدارة الديون</div>
-              </Link>
-              <Link
-                href="/dashboard/retail/expenses"
-                prefetch={true}
-                className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
-              >
-                <Receipt className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-                <div className="font-bold text-sm sm:text-base">المصروفات</div>
-                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">تسجيل المصاريف</div>
-              </Link>
-              <Link
-                href="/dashboard/retail/financial"
-                prefetch={true}
-                className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
-              >
-                <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-                <div className="font-bold text-sm sm:text-base">المالية</div>
-                <div className="text-xs sm:text-sm opacity-80 hidden sm:block">التقارير والأرباح</div>
-              </Link>
-            </div>
-
-            {/* Low Stock Alert */}
-            {lowStockProducts.length > 0 && (
-              <div className="bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200 rounded-2xl p-3 sm:p-4">
-                <div className="flex items-center gap-2 text-yellow-700 font-bold mb-3 text-sm sm:text-base">
-                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5" />
-                  منتجات منخفضة المخزون ({lowStockProducts.length})
-                </div>
-                <div className="flex gap-2 overflow-x-auto pb-2" style={{ scrollbarWidth: 'none' }}>
-                  {lowStockProducts.slice(0, 10).map(p => (
-                    <div key={p.id} className="flex-shrink-0 bg-white rounded-xl p-2 sm:p-3 min-w-[120px] sm:min-w-[140px]">
-                      <div className="font-medium text-sm truncate mb-1">{p.name}</div>
-                      <div className={`text-lg font-bold ${(p.stock ?? 0) <= 0 ? 'text-red-600' : 'text-yellow-600'}`}>
-                        {p.stock ?? 0} <span className="text-xs font-normal text-gray-400">متبقي</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Recent Sales */}
-            <div className="bg-white rounded-2xl border overflow-hidden">
-              <div className="p-3 sm:p-4 border-b font-bold flex items-center gap-2 text-sm sm:text-base">
-                <History className="w-4 h-4 sm:w-5 sm:h-5" />آخر المبيعات
-              </div>
-              <div className="divide-y">
-                {transactions.slice(0, 5).map(t => (
-                  <div key={t.id} className="p-3 sm:p-4 flex justify-between items-center">
-                    <div>
-                      <div className="font-medium text-sm sm:text-base">{t.items?.length || 0} منتج</div>
-                      <div className="text-xs sm:text-sm text-gray-500">{new Date(t.created_at).toLocaleString('ar-TN')}</div>
-                    </div>
-                    <div className="text-base sm:text-lg font-bold text-green-600">{t.amount.toFixed(3)} <span className="text-xs text-gray-400">DT</span></div>
-                  </div>
-                ))}
-                {transactions.length === 0 && <div className="p-6 sm:p-8 text-center text-gray-400 text-sm">لا توجد مبيعات</div>}
-              </div>
-            </div>
-          </div>
-        )}
-
+      <main className="max-w-5xl mx-auto px-4 pb-8">
         {/* PRODUCTS TAB */}
         {tab === 'products' && (
           <div className="space-y-4">

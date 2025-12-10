@@ -7,7 +7,7 @@ import {
   PauseCircle, PlayCircle, Timer, Plus, Minus,
   Calendar, Clock, CheckCircle, XCircle, ChevronLeft, Trash2, AlertTriangle
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, resetClient } from '@/lib/supabase/client'
 import type { Profile, UserRole } from '@/types/database'
 
 // Serialized user type for server-to-client transfer
@@ -48,23 +48,24 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
   const [cleanupUserId, setCleanupUserId] = useState<string | null>(null)
   const [cleanupConfirmText, setCleanupConfirmText] = useState('')
 
-  // Fetch profiles
+  // Fetch profiles using secure API route
   const fetchProfiles = async () => {
     setIsLoadingProfiles(true)
     setFetchError(null)
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false })
-      if (error) {
-        setFetchError(error.message)
+      const response = await fetch('/api/admin/users')
+      const result = await response.json()
+      
+      if (!response.ok) {
+        const errorMsg = result.details 
+          ? `${result.error}: ${result.details}` 
+          : result.error || 'فشل في تحميل المستخدمين'
+        setFetchError(errorMsg)
       } else {
-        setProfiles(data || [])
+        setProfiles(result.profiles || [])
       }
-    } catch {
-      setFetchError('فشل في تحميل المستخدمين')
+    } catch (err) {
+      setFetchError('فشل في الاتصال بالخادم')
     } finally {
       setIsLoadingProfiles(false)
     }
@@ -78,7 +79,8 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
     setIsLoggingOut(true)
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    resetClient()
+    window.location.href = '/login'
   }
 
   // Pause handlers

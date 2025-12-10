@@ -7,7 +7,7 @@ import Image from 'next/image'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Eye, EyeOff, LogIn, Loader2, XCircle, CheckCircle2, ArrowRight } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, resetClient } from '@/lib/supabase/client'
 import { loginSchema, type LoginData } from '@/lib/validations/auth'
 import { InstallButton } from '@/components/pwa'
 
@@ -139,13 +139,13 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginData) => {
     setIsLoading(true)
     setNotification(null)
-    console.log('Starting login process...')
-    
-    // Clear any previous redirect flags
     sessionStorage.removeItem('redirect_attempted')
 
     try {
+      // Reset client to ensure fresh state for new login
+      resetClient()
       const supabase = createClient()
+      
       const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password

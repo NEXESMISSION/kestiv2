@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Clock, LogOut, Loader2, Phone, Mail, CreditCard, AlertCircle, MessageCircle } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, resetClient } from '@/lib/supabase/client'
 
 export default function ExpiredPage() {
   const router = useRouter()
@@ -79,7 +79,8 @@ export default function ExpiredPage() {
     setIsLoggingOut(true)
     const supabase = createClient()
     await supabase.auth.signOut()
-    router.push('/login')
+    resetClient()
+    window.location.href = '/login'
   }
 
   if (isLoading) {

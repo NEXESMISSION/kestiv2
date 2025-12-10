@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { Lock, Delete, X, AlertCircle, Timer } from 'lucide-react'
+import { Lock, Delete, X, AlertCircle, Timer, Loader2 } from 'lucide-react'
 
 const MAX_ATTEMPTS = 5
 const LOCKOUT_DURATION = 30 // seconds
@@ -24,6 +24,7 @@ export default function PINModal({
   const [attempts, setAttempts] = useState(0)
   const [lockedUntil, setLockedUntil] = useState<number | null>(null)
   const [lockoutRemaining, setLockoutRemaining] = useState(0)
+  const [isLoading, setIsLoading] = useState(false)
 
   const pinLength = 6 // Always show 6 PIN dots
   const isLocked = lockedUntil !== null && Date.now() < lockedUntil
@@ -86,14 +87,19 @@ export default function PINModal({
 
   // Manual PIN check function with lockout
   const handleSubmit = useCallback(() => {
-    if (isLocked || pin.length < 4 || pin.length > 6) return
+    if (isLocked || pin.length < 4 || pin.length > 6 || isLoading) return
     
     if (pin === correctPin) {
-      onSuccess()
+      // Show loading immediately for better UX
+      setIsLoading(true)
       setPin('')
       setAttempts(0)
       localStorage.removeItem('pin_attempts')
       localStorage.removeItem('pin_lockout')
+      // Small delay to show loading state before navigation
+      setTimeout(() => {
+        onSuccess()
+      }, 100)
     } else {
       setError(true)
       const newAttempts = attempts + 1
@@ -109,7 +115,7 @@ export default function PINModal({
       
       setTimeout(() => setPin(''), 500)
     }
-  }, [pin, correctPin, onSuccess, attempts, isLocked])
+  }, [pin, correctPin, onSuccess, attempts, isLocked, isLoading])
 
   // Keyboard support
   useEffect(() => {
@@ -147,6 +153,18 @@ export default function PINModal({
   // If no PIN is set, don't render the modal
   if (!correctPin) {
     return null
+  }
+
+  // Show loading screen when authenticated
+  if (isLoading) {
+    return (
+      <div className="fixed inset-0 bg-gray-900/95 z-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-primary-500 mx-auto mb-4" />
+          <p className="text-white text-lg font-medium">جاري التحميل...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

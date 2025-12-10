@@ -112,8 +112,8 @@ export async function middleware(request: NextRequest) {
           cookiesToSet.forEach(({ name, value, options }) => {
             response.cookies.set(name, value, {
               ...options,
-              // Ensure proper cookie settings for auth
-              httpOnly: true,
+              // IMPORTANT: httpOnly must be false for @supabase/ssr browser client to read cookies
+              httpOnly: false,
               secure: process.env.NODE_ENV === 'production',
               sameSite: 'lax',
               path: '/',

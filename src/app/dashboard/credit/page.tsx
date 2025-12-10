@@ -110,50 +110,28 @@ export default function CreditPage() {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="px-4 py-3">
-          <div className="flex items-center gap-3">
-            <Link href="/dashboard" className="p-2 hover:bg-gray-100 rounded-xl">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div className="flex-1">
-              <h1 className="text-lg font-bold flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-orange-600" />
-                الآجل (الديون)
-              </h1>
-            </div>
-          </div>
+      {/* Simple Header */}
+      <header className="bg-white border-b sticky top-0 z-40">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <Link href="/dashboard" className="p-2 hover:bg-gray-100 rounded-full">
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <h1 className="text-lg font-bold">الآجل</h1>
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <main className="max-w-lg mx-auto p-4 space-y-4">
         {loading ? (
-          /* Skeleton loading */
-          <div className="space-y-4">
-            <div className="h-28 bg-gradient-to-br from-orange-200 to-orange-300 rounded-2xl" />
-            <div className="h-12 bg-white rounded-xl" />
-            <div className="space-y-3">
-              {[1,2,3].map(i => (
-                <div key={i} className="bg-white rounded-xl p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-100 rounded-full" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-100 rounded w-1/3 mb-2" />
-                      <div className="h-3 bg-gray-100 rounded w-1/4" />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="text-center py-12">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
           </div>
         ) : (
         <>
-        {/* Total Debt Card */}
-        <div className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-4 text-white">
+        {/* Total */}
+        <div className="bg-orange-500 rounded-xl p-4 text-white text-center">
           <div className="text-sm opacity-90">إجمالي الديون</div>
-          <div className="text-3xl font-bold mt-1">{totalDebt.toFixed(3)} DT</div>
-          <div className="text-sm opacity-80 mt-2">{members.length} عضو</div>
+          <div className="text-3xl font-bold">{totalDebt.toFixed(3)} DT</div>
+          <div className="text-sm opacity-80">{members.length} عضو</div>
         </div>
 
         {/* Search */}
@@ -163,7 +141,7 @@ export default function CreditPage() {
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="بحث عن عضو..."
+            placeholder="بحث..."
             className="w-full pr-10 pl-4 py-3 bg-white border rounded-xl"
           />
         </div>

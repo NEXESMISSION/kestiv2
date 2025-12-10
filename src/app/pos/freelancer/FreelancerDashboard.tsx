@@ -6,11 +6,10 @@ import {
   Plus, TrendingUp, TrendingDown, Users, 
   LogOut, Loader2, X, Check, Phone, Calendar as CalendarIcon,
   History, Settings, RefreshCw, Search, AlertCircle, Wallet,
-  ChevronLeft, ChevronRight, Tag, Edit2, Trash2, LayoutDashboard
+  ChevronLeft, ChevronRight, Tag, Edit2, Trash2
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, resetClient } from '@/lib/supabase/client'
 import type { Profile } from '@/types/database'
-import PINModal from '@/components/shared/PINModal'
 
 interface FreelancerDashboardProps {
   userId: string
@@ -70,7 +69,6 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   // UI State
   const [isLoading, setIsLoading] = useState(true)
   const [activeView, setActiveView] = useState<'home' | 'clients' | 'calendar' | 'history'>('home')
-  const [showPinModal, setShowPinModal] = useState(false)
   
   // Modal states
   const [showIncomeModal, setShowIncomeModal] = useState(false)
@@ -87,7 +85,6 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   const [incomeCategories, setIncomeCategories] = useState<Category[]>([])
   const [expenseCategories, setExpenseCategories] = useState<Category[]>([])
   const [calendarEvents, setCalendarEvents] = useState<CalendarEvent[]>([])
-  const [userPin, setUserPin] = useState<string | null>(null)
   
   // Form states - Income
   const [incomeAmount, setIncomeAmount] = useState('')
@@ -132,122 +129,52 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
 
   // Fetch data
   const fetchData = useCallback(async () => {
-    console.log('[FreelancerDashboard] Starting fetchData for userId:', userId)
     setIsLoading(true)
     try {
-      // DEBUG: Check auth session
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
-      console.log('[FreelancerDashboard] Auth session check:', {
-        hasSession: !!session,
-        sessionUserId: session?.user?.id,
-        propsUserId: userId,
-        match: session?.user?.id === userId,
-        error: sessionError
-      })
-      
-      // Get user PIN - use maybeSingle to handle missing column gracefully
-      console.log('[FreelancerDashboard] Fetching profile pin_code...')
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('pin_code')
-        .eq('id', userId)
-        .maybeSingle()
-      
-      if (profileError) {
-        // Check if it's just a missing column error
-        if (profileError.code === 'PGRST116' || profileError.message?.includes('column')) {
-          console.warn('[FreelancerDashboard] pin_code column may not exist. Run migration-update-2024.sql')
-        } else {
-          console.error('[FreelancerDashboard] Error fetching profile:', profileError)
-        }
-      } else {
-        console.log('[FreelancerDashboard] Profile data:', profileData)
-        if (profileData?.pin_code) setUserPin(profileData.pin_code)
-      }
-      
       // Get clients
-      console.log('[FreelancerDashboard] Fetching freelancer_clients...')
-      const { data: clientsData, error: clientsError } = await supabase
+      const { data: clientsData } = await supabase
         .from('freelancer_clients')
         .select('*')
         .eq('business_id', userId)
         .order('name')
-      
-      if (clientsError) {
-        console.error('[FreelancerDashboard] Error fetching clients:', clientsError)
-        console.error('[FreelancerDashboard] → This means freelancer_clients table does not exist. Run migration-update-2024.sql!')
-      } else {
-        console.log('[FreelancerDashboard] Clients loaded:', clientsData?.length || 0)
-        setClients(clientsData || [])
-      }
+      setClients(clientsData || [])
       
       // Get categories
-      console.log('[FreelancerDashboard] Fetching freelancer_categories...')
-      const { data: categoriesData, error: categoriesError } = await supabase
+      const { data: categoriesData } = await supabase
         .from('freelancer_categories')
         .select('*')
         .eq('business_id', userId)
         .eq('is_active', true)
         .order('name')
       
-      if (categoriesError) {
-        console.error('[FreelancerDashboard] Error fetching categories:', categoriesError)
-        console.error('[FreelancerDashboard] → This means freelancer_categories table does not exist. Run migration-update-2024.sql!')
-      } else {
-        console.log('[FreelancerDashboard] Categories loaded:', categoriesData?.length || 0)
-        if (categoriesData && categoriesData.length > 0) {
-          const incCats = categoriesData.filter((c: Category) => c.type === 'income')
-          const expCats = categoriesData.filter((c: Category) => c.type === 'expense')
-          console.log('[FreelancerDashboard] Income categories:', incCats.length, 'Expense categories:', expCats.length)
-          setIncomeCategories(incCats)
-          setExpenseCategories(expCats)
-        }
+      if (categoriesData && categoriesData.length > 0) {
+        setIncomeCategories(categoriesData.filter((c: Category) => c.type === 'income'))
+        setExpenseCategories(categoriesData.filter((c: Category) => c.type === 'expense'))
       }
       
       // Get payments (income)
-      console.log('[FreelancerDashboard] Fetching freelancer_payments...')
-      const { data: paymentsData, error: paymentsError } = await supabase
+      const { data: paymentsData } = await supabase
         .from('freelancer_payments')
         .select('*, freelancer_clients(name)')
         .eq('business_id', userId)
         .order('created_at', { ascending: false })
         .limit(200)
       
-      if (paymentsError) {
-        console.error('[FreelancerDashboard] Error fetching payments:', paymentsError)
-      } else {
-        console.log('[FreelancerDashboard] Payments loaded:', paymentsData?.length || 0)
-      }
-      
       // Get expenses
-      console.log('[FreelancerDashboard] Fetching freelancer_expenses...')
-      const { data: expensesData, error: expensesError } = await supabase
+      const { data: expensesData } = await supabase
         .from('freelancer_expenses')
         .select('*')
         .eq('business_id', userId)
         .order('date', { ascending: false })
         .limit(200)
       
-      if (expensesError) {
-        console.error('[FreelancerDashboard] Error fetching expenses:', expensesError)
-      } else {
-        console.log('[FreelancerDashboard] Expenses loaded:', expensesData?.length || 0)
-      }
-      
       // Get calendar events (reminders)
-      console.log('[FreelancerDashboard] Fetching freelancer_reminders...')
-      const { data: eventsData, error: eventsError } = await supabase
+      const { data: eventsData } = await supabase
         .from('freelancer_reminders')
         .select('*')
         .eq('business_id', userId)
         .order('date')
-      
-      if (eventsError) {
-        console.error('[FreelancerDashboard] Error fetching reminders:', eventsError)
-      } else {
-        console.log('[FreelancerDashboard] Events loaded:', eventsData?.length || 0)
-        setCalendarEvents(eventsData || [])
-      }
+      setCalendarEvents(eventsData || [])
       
       // Combine transactions
       const allTransactions: Transaction[] = [
@@ -308,9 +235,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       setStats({ todayIncome, todayExpense, monthIncome, monthExpense, totalCredit })
       
     } catch (error) {
-      console.error('[FreelancerDashboard] Critical error in fetchData:', error)
+      console.error('Error fetching data:', error)
     } finally {
-      console.log('[FreelancerDashboard] fetchData completed')
       setIsLoading(false)
     }
   }, [supabase, userId])
@@ -322,24 +248,18 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   // Handlers
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.push('/login')
+    resetClient() // Clear cached client for fresh session on next login
+    window.location.href = '/login'
   }
 
   const handleAddIncome = async () => {
-    console.log('[FreelancerDashboard] handleAddIncome called')
-    console.log('[FreelancerDashboard] incomeAmount:', incomeAmount, 'incomeClientId:', incomeClientId, 'incomePaymentMethod:', incomePaymentMethod)
-    
-    if (!incomeAmount) {
-      console.log('[FreelancerDashboard] No amount, returning')
-      return
-    }
+    if (!incomeAmount) return
     setIsSubmitting(true)
     
     try {
       const amount = parseFloat(incomeAmount)
       const categoryName = incomeCategories.find(c => c.id === incomeCategoryId)?.name || 'عام'
       
-      console.log('[FreelancerDashboard] Inserting payment...')
       // Record the payment
       const { data: insertData, error: insertError } = await supabase.from('freelancer_payments').insert({
         business_id: userId,
@@ -352,11 +272,10 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       }).select()
       
       if (insertError) {
-        console.error('[FreelancerDashboard] Error inserting payment:', insertError)
-        alert('خطأ في تسجيل الدخل. تأكد من تشغيل migration-update-2024.sql')
+        console.error('Error inserting payment:', insertError)
+        alert('خطأ في تسجيل الدخل')
         return
       }
-      console.log('[FreelancerDashboard] Payment inserted:', insertData)
       
       // If credit sale, update client's credit
       if (incomePaymentMethod === 'credit' && incomeClientId) {
@@ -389,7 +308,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       resetIncomeForm()
       fetchData()
     } catch (err) {
-      console.error('[FreelancerDashboard] Error in handleAddIncome:', err)
+      console.error('Error in handleAddIncome:', err)
       alert('حدث خطأ في تسجيل الدخل')
     } finally {
       setIsSubmitting(false)
@@ -397,38 +316,32 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   }
 
   const handleAddExpense = async () => {
-    console.log('[FreelancerDashboard] handleAddExpense called')
-    if (!expenseAmount || !expenseDescription) {
-      console.log('[FreelancerDashboard] Missing required fields')
-      return
-    }
+    if (!expenseAmount || !expenseDescription) return
     setIsSubmitting(true)
     
     try {
       const categoryName = expenseCategories.find(c => c.id === expenseCategoryId)?.name || 'عام'
       
-      console.log('[FreelancerDashboard] Inserting expense...')
-      const { data: expData, error: expError } = await supabase.from('freelancer_expenses').insert({
+      const { error: expError } = await supabase.from('freelancer_expenses').insert({
         business_id: userId,
         amount: parseFloat(expenseAmount),
         category_id: expenseCategoryId || null,
         category: categoryName,
         description: expenseDescription,
         date: new Date().toISOString().split('T')[0]
-      }).select()
+      })
       
       if (expError) {
-        console.error('[FreelancerDashboard] Error inserting expense:', expError)
-        alert('خطأ في تسجيل المصروف. تأكد من تشغيل migration-update-2024.sql')
+        console.error('Error inserting expense:', expError)
+        alert('خطأ في تسجيل المصروف')
         return
       }
-      console.log('[FreelancerDashboard] Expense inserted:', expData)
       
       setShowExpenseModal(false)
       resetExpenseForm()
       fetchData()
     } catch (err) {
-      console.error('[FreelancerDashboard] Error in handleAddExpense:', err)
+      console.error('Error in handleAddExpense:', err)
       alert('حدث خطأ في تسجيل المصروف')
     } finally {
       setIsSubmitting(false)
@@ -436,17 +349,10 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   }
 
   const handleAddClient = async () => {
-    console.log('[FreelancerDashboard] handleAddClient called')
-    console.log('[FreelancerDashboard] clientName:', clientName, 'clientPhone:', clientPhone)
-    
-    if (!clientName) {
-      console.log('[FreelancerDashboard] No client name, returning')
-      return
-    }
+    if (!clientName) return
     setIsSubmitting(true)
     
     try {
-      console.log('[FreelancerDashboard] Inserting client...')
       const { data: clientData, error: clientError } = await supabase.from('freelancer_clients').insert({
         business_id: userId,
         name: clientName,
@@ -456,12 +362,10 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       }).select().single()
       
       if (clientError) {
-        console.error('[FreelancerDashboard] Error inserting client:', clientError)
-        alert('خطأ في إضافة العميل. تأكد من تشغيل migration-update-2024.sql')
+        console.error('Error inserting client:', clientError)
+        alert('خطأ في إضافة العميل')
         return
       }
-      
-      console.log('[FreelancerDashboard] Client inserted:', clientData)
       
       // Update local state immediately
       if (clientData) {
@@ -472,7 +376,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       setClientName('')
       setClientPhone('')
     } catch (err) {
-      console.error('[FreelancerDashboard] Error in handleAddClient:', err)
+      console.error('Error in handleAddClient:', err)
       alert('حدث خطأ في إضافة العميل')
     } finally {
       setIsSubmitting(false)
@@ -480,26 +384,10 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   }
 
   const handleAddCategory = async () => {
-    console.log('[FreelancerDashboard] handleAddCategory called')
-    console.log('[FreelancerDashboard] categoryName:', categoryName, 'categoryType:', categoryType, 'categoryColor:', categoryColor)
-    
-    if (!categoryName) {
-      console.log('[FreelancerDashboard] No category name, returning')
-      return
-    }
+    if (!categoryName) return
     setIsSubmitting(true)
     
     try {
-      // DEBUG: Check auth session before insert
-      const { data: { session } } = await supabase.auth.getSession()
-      console.log('[FreelancerDashboard] INSERT Auth check:', {
-        hasSession: !!session,
-        sessionUserId: session?.user?.id,
-        propsUserId: userId,
-        willInsertBusinessId: userId
-      })
-      
-      console.log('[FreelancerDashboard] Inserting category...')
       const { data, error } = await supabase.from('freelancer_categories').insert({
         business_id: userId,
         name: categoryName,
@@ -509,13 +397,10 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       }).select().single()
       
       if (error) {
-        console.error('[FreelancerDashboard] Error adding category:', error)
-        console.error('[FreelancerDashboard] Error details:', JSON.stringify(error, null, 2))
-        alert('خطأ في إضافة التصنيف. تأكد من تشغيل migration-update-2024.sql في Supabase')
+        console.error('Error adding category:', error)
+        alert('خطأ في إضافة التصنيف')
         return
       }
-      
-      console.log('[FreelancerDashboard] Category inserted:', data)
       
       // Update local state immediately
       if (data) {
@@ -728,13 +613,6 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
         
         <div className="p-4 border-t space-y-2">
           <button
-            onClick={() => setShowPinModal(true)}
-            className="w-full flex items-center gap-3 px-4 py-3 text-gray-600 hover:bg-gray-100 rounded-xl transition-colors"
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            <span className="font-medium">لوحة التحكم</span>
-          </button>
-          <button
             onClick={handleLogout}
             className="w-full flex items-center gap-3 px-4 py-3 text-gray-500 hover:text-red-500 hover:bg-red-50 rounded-xl transition-colors"
           >
@@ -762,9 +640,6 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
               <div className="flex items-center gap-1">
                 <button onClick={fetchData} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
                   <RefreshCw className="w-5 h-5" />
-                </button>
-                <button onClick={() => setShowPinModal(true)} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
-                  <LayoutDashboard className="w-5 h-5" />
                 </button>
                 <button onClick={handleLogout} className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg">
                   <LogOut className="w-5 h-5" />
@@ -1644,13 +1519,6 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
         </div>
       )}
 
-      {/* PIN Modal */}
-      <PINModal 
-        isOpen={showPinModal} 
-        correctPin={userPin} 
-        onSuccess={() => { setShowPinModal(false); router.push('/pos/freelancer/settings') }} 
-        onCancel={() => setShowPinModal(false)} 
-      />
     </div>
   )
 }

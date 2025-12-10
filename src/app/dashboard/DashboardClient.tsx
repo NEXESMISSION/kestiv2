@@ -168,140 +168,82 @@ export default function DashboardClient({ user, profile }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/pos" className="flex items-center gap-2 px-3 py-2 bg-primary-100 hover:bg-primary-200 text-primary-700 rounded-lg font-medium">
-                <ArrowLeft className="w-4 h-4" />
-                <span>العودة للبيع</span>
-              </Link>
-              <h1 className="text-xl font-bold">لوحة التحكم</h1>
-            </div>
-            <div className="flex items-center gap-2">
-              <Link href="/dashboard/settings" prefetch={true} className="p-2 hover:bg-gray-100 rounded-lg transition-colors"><Settings className="w-5 h-5" /></Link>
-            </div>
-          </div>
+      {/* Simple Header */}
+      <header className="bg-white border-b sticky top-0 z-40">
+        <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
+          <Link href="/pos" className="flex items-center gap-2 text-primary-600 font-medium">
+            <ArrowLeft className="w-5 h-5" />
+            <span>العودة للبيع</span>
+          </Link>
+          <h1 className="text-lg font-bold text-gray-800">لوحة التحكم</h1>
+          <Link href="/dashboard/settings" className="p-2 hover:bg-gray-100 rounded-full">
+            <Settings className="w-5 h-5 text-gray-600" />
+          </Link>
         </div>
       </header>
 
-      {/* Stats */}
-      <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4 space-y-3 sm:space-y-4">
-        <div className="grid grid-cols-2 gap-2 sm:gap-4">
-          <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-2xl p-3 sm:p-4 text-white">
-            <div className="text-xs sm:text-sm opacity-90 mb-1">العملاء النشطين</div>
-            <div className="text-2xl sm:text-3xl font-bold">{activeCount}</div>
-            <div className="text-xs opacity-80">عميل</div>
+      {/* Quick Stats - Simple cards */}
+      <div className="max-w-5xl mx-auto px-4 py-4">
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-green-600">{activeCount}</div>
+            <div className="text-xs text-gray-500">عملاء نشطين</div>
           </div>
-          <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-3 sm:p-4 text-white">
-            <div className="text-xs sm:text-sm opacity-90 mb-1">المنتهية صلاحيتهم</div>
-            <div className="text-2xl sm:text-3xl font-bold">{expiredCount}</div>
-            <div className="text-xs opacity-80">عميل</div>
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-red-500">{expiredCount}</div>
+            <div className="text-xs text-gray-500">منتهي الصلاحية</div>
+          </div>
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-blue-600">{totalRevenue.toFixed(0)}</div>
+            <div className="text-xs text-gray-500">إجمالي الإيرادات</div>
           </div>
         </div>
         
-        {/* Subscription Status */}
-        {profile?.subscription_end_date && (
-          <div className={`rounded-2xl p-3 sm:p-4 flex items-center gap-3 ${
-            (() => {
-              const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
-              if (days <= 3) return 'bg-red-50 border border-red-200'
-              if (days <= 7) return 'bg-yellow-50 border border-yellow-200'
-              return 'bg-primary-50 border border-primary-200'
-            })()
-          }`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-              (() => {
-                const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
-                if (days <= 3) return 'bg-red-100'
-                if (days <= 7) return 'bg-yellow-100'
-                return 'bg-primary-100'
-              })()
-            }`}>
-              <Calendar className={`w-5 h-5 ${
-                (() => {
-                  const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
-                  if (days <= 3) return 'text-red-600'
-                  if (days <= 7) return 'text-yellow-600'
-                  return 'text-primary-600'
-                })()
-              }`} />
-            </div>
-            <div className="flex-1">
-              <div className="text-xs text-gray-500">حالة الاشتراك</div>
-              <div className="font-bold">
-                {(() => {
-                  const days = Math.ceil((new Date(profile.subscription_end_date).getTime() - Date.now()) / 86400000)
-                  if (days <= 0) return <span className="text-red-600">منتهي</span>
-                  if (days <= 3) return <span className="text-red-600">متبقي {days} أيام</span>
-                  if (days <= 7) return <span className="text-yellow-600">متبقي {days} أيام</span>
-                  return <span className="text-primary-600">متبقي {days} يوم</span>
-                })()}
-              </div>
-            </div>
-            <div className="text-xs text-gray-400">
-              {profile.subscription_status === 'trial' ? '🎁 تجريبي' : '✓ مفعل'}
-            </div>
-          </div>
-        )}
-
-        {/* Quick Links */}
-        <div className="grid grid-cols-3 gap-2 sm:gap-3">
-          <Link
-            href="/dashboard/credit"
-            prefetch={true}
-            className="bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
-          >
-            <CreditCard className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-            <div className="font-bold text-sm sm:text-base">الآجل</div>
-            <div className="text-xs sm:text-sm opacity-80 hidden sm:block">إدارة الديون</div>
+        {/* Quick Actions - 3 simple buttons */}
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <Link href="/dashboard/credit" className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl py-3 font-medium">
+            <CreditCard className="w-5 h-5" />
+            <span>الآجل</span>
           </Link>
-          <Link
-            href="/dashboard/expenses"
-            prefetch={true}
-            className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
-          >
-            <Receipt className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-            <div className="font-bold text-sm sm:text-base">المصروفات</div>
-            <div className="text-xs sm:text-sm opacity-80 hidden sm:block">تسجيل المصاريف</div>
+          <Link href="/dashboard/expenses" className="flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white rounded-xl py-3 font-medium">
+            <Receipt className="w-5 h-5" />
+            <span>المصروفات</span>
           </Link>
-          <Link
-            href="/dashboard/financial"
-            prefetch={true}
-            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-3 sm:p-4 text-white text-right hover:shadow-lg transition-all hover:-translate-y-1"
-          >
-            <BarChart3 className="w-5 h-5 sm:w-6 sm:h-6 mb-1 sm:mb-2" />
-            <div className="font-bold text-sm sm:text-base">المالية</div>
-            <div className="text-xs sm:text-sm opacity-80 hidden sm:block">التقارير والأرباح</div>
+          <Link href="/dashboard/financial" className="flex items-center justify-center gap-2 bg-blue-500 hover:bg-blue-600 text-white rounded-xl py-3 font-medium">
+            <BarChart3 className="w-5 h-5" />
+            <span>التقارير</span>
           </Link>
         </div>
       </div>
 
-      {/* Tabs - Grid visible on all sizes */}
-      <div className="max-w-6xl mx-auto px-4">
-        <div className="grid grid-cols-5 gap-1 bg-gray-100 p-1 rounded-xl">
+      {/* Simple Tabs */}
+      <div className="max-w-5xl mx-auto px-4 mb-4">
+        <div className="flex gap-2 overflow-x-auto pb-2">
           {[
             { k: 'members', l: 'العملاء', i: Users }, 
             { k: 'plans', l: 'الخطط', i: Package }, 
-            { k: 'services', l: 'خدمات', i: Sparkles }, 
-            { k: 'products', l: 'منتجات', i: ShoppingBag }, 
+            { k: 'services', l: 'الخدمات', i: Sparkles }, 
+            { k: 'products', l: 'المنتجات', i: ShoppingBag }, 
             { k: 'history', l: 'السجل', i: History }
           ].map(t => (
             <button 
               key={t.k} 
               onClick={() => setTab(t.k as Tab)} 
-              className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 px-1 sm:px-3 py-2 rounded-lg font-medium text-xs sm:text-sm transition-all ${tab === t.k ? 'bg-white text-primary-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-full font-medium text-sm whitespace-nowrap transition-all ${
+                tab === t.k 
+                  ? 'bg-primary-600 text-white shadow-md' 
+                  : 'bg-white text-gray-600 border hover:bg-gray-50'
+              }`}
             >
               <t.i className="w-4 h-4" />
-              <span className="truncate">{t.l}</span>
+              <span>{t.l}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Content */}
-      <main className="max-w-6xl mx-auto px-4 py-4">
+      <main className="max-w-5xl mx-auto px-4 pb-8">
         {/* MEMBERS TAB */}
         {tab === 'members' && (
           <div className="space-y-4">

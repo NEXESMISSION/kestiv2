@@ -132,54 +132,37 @@ export default function ExpensesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="px-4 py-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <Link href="/dashboard/retail" className="p-2 hover:bg-gray-100 rounded-xl">
-                <ArrowLeft className="w-5 h-5" />
-              </Link>
-              <h1 className="text-lg font-bold flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-red-600" />
-                المصروفات
-              </h1>
-            </div>
-            <button
-              onClick={() => openModal()}
-              className="p-2 bg-primary-600 hover:bg-primary-700 text-white rounded-xl"
-            >
-              <Plus className="w-5 h-5" />
-            </button>
+      {/* Simple Header */}
+      <header className="bg-white border-b sticky top-0 z-40">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Link href="/dashboard/retail" className="p-2 hover:bg-gray-100 rounded-full">
+              <ArrowLeft className="w-5 h-5" />
+            </Link>
+            <h1 className="text-lg font-bold">المصروفات</h1>
           </div>
+          <button onClick={() => openModal()} className="flex items-center gap-2 px-3 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg text-sm font-medium">
+            <Plus className="w-4 h-4" />
+            <span>إضافة</span>
+          </button>
         </div>
       </header>
 
-      <main className="p-4 space-y-4">
+      <main className="max-w-lg mx-auto p-4 space-y-4">
         {loading ? (
-          <div className="space-y-4">
-            <div className="h-24 bg-gradient-to-br from-red-200 to-red-300 rounded-2xl" />
-            <div className="flex gap-2">
-              {[1,2,3,4].map(i => <div key={i} className="h-10 w-20 bg-white rounded-xl" />)}
-            </div>
-            <div className="space-y-2">
-              {[1,2,3,4].map(i => (
-                <div key={i} className="bg-white rounded-xl p-4">
-                  <div className="h-4 bg-gray-100 rounded w-1/4" />
-                </div>
-              ))}
-            </div>
+          <div className="text-center py-12">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
           </div>
         ) : (
         <>
-        {/* Total Card */}
-        <div className="bg-gradient-to-br from-red-500 to-red-600 rounded-2xl p-4 text-white">
-          <div className="text-sm opacity-90">إجمالي المصروفات</div>
-          <div className="text-3xl font-bold mt-1">{totalFiltered.toFixed(3)} DT</div>
+        {/* Total */}
+        <div className="bg-red-500 rounded-xl p-4 text-white text-center">
+          <div className="text-sm opacity-90">المصروفات</div>
+          <div className="text-3xl font-bold">{totalFiltered.toFixed(3)} DT</div>
         </div>
 
-        {/* Filter */}
-        <div className="flex gap-2 overflow-x-auto">
+        {/* Filter Pills */}
+        <div className="flex gap-2">
           {[
             { k: 'today', l: 'اليوم' },
             { k: 'week', l: 'الأسبوع' },
@@ -189,9 +172,9 @@ export default function ExpensesPage() {
             <button
               key={f.k}
               onClick={() => setFilter(f.k as any)}
-              className={`px-4 py-2 rounded-xl font-medium whitespace-nowrap text-sm ${
+              className={`flex-1 py-2 rounded-lg font-medium text-sm ${
                 filter === f.k 
-                  ? 'bg-primary-600 text-white' 
+                  ? 'bg-red-500 text-white' 
                   : 'bg-white border text-gray-600'
               }`}
             >

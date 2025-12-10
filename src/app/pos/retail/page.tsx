@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
+import { createClient, resetClient } from '@/lib/supabase/client'
 import { Product, Category, RetailCustomer } from '@/types/database'
 import { 
   Search, ShoppingCart, Plus, Minus, Trash2, Package,
@@ -290,7 +290,11 @@ export default function RetailPOSPage() {
                 <span className="hidden sm:inline">لوحة التحكم</span>
               </button>
               <button 
-                onClick={async () => { await supabase.auth.signOut(); router.push('/login') }} 
+                onClick={async () => { 
+                  await supabase.auth.signOut()
+                  resetClient()
+                  window.location.href = '/login'
+                }} 
                 className="p-2 text-gray-500 hover:text-red-600 rounded-lg"
               >
                 <LogOut className="w-5 h-5" />

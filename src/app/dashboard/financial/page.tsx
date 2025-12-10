@@ -153,43 +153,25 @@ export default function FinancialPage() {
 
   return (
     <div className="min-h-screen bg-gray-50" dir="rtl">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-40">
-        <div className="px-4 py-3 flex items-center gap-3">
-          <Link href="/dashboard" className="p-2 hover:bg-gray-100 rounded-xl">
+      {/* Simple Header */}
+      <header className="bg-white border-b sticky top-0 z-40">
+        <div className="max-w-lg mx-auto px-4 py-3 flex items-center gap-3">
+          <Link href="/dashboard" className="p-2 hover:bg-gray-100 rounded-full">
             <ArrowLeft className="w-5 h-5" />
           </Link>
-          <div>
-            <h1 className="text-lg font-bold flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-primary-600" />
-              لوحة المالية
-            </h1>
-            <p className="text-xs text-gray-500">عرض وتحليل الأداء المالي لنشاطك التجاري</p>
-          </div>
+          <h1 className="text-lg font-bold">التقارير المالية</h1>
         </div>
       </header>
 
-      <main className="p-4 space-y-4 pb-20">
+      <main className="max-w-lg mx-auto p-4 space-y-4 pb-20">
         {loading ? (
-          /* Skeleton loading */
-          <div className="space-y-4">
-            <div className="flex gap-2 bg-white p-1 rounded-xl">
-              {[1,2,3,4].map(i => <div key={i} className="flex-1 h-10 bg-gray-100 rounded-lg" />)}
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="h-28 bg-gray-100 rounded-2xl" />
-              <div className="h-28 bg-gray-100 rounded-2xl" />
-            </div>
-            <div className="h-32 bg-gray-100 rounded-2xl" />
-            <div className="h-48 bg-white rounded-2xl border p-4">
-              <div className="h-4 bg-gray-100 rounded w-1/3 mb-4" />
-              <div className="h-32 bg-gray-50 rounded" />
-            </div>
+          <div className="text-center py-12">
+            <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gray-400" />
           </div>
         ) : (
         <>
-        {/* Period Tabs */}
-        <div className="flex gap-1 bg-white p-1.5 rounded-2xl shadow-sm overflow-x-auto">
+        {/* Period Filter */}
+        <div className="flex gap-2">
           {[
             { k: 'today', l: 'اليوم' },
             { k: 'week', l: 'الأسبوع' },
@@ -199,10 +181,10 @@ export default function FinancialPage() {
             <button
               key={p.k}
               onClick={() => setPeriod(p.k as PeriodType)}
-              className={`flex-1 py-2.5 px-4 rounded-xl font-medium text-sm whitespace-nowrap transition-all ${
+              className={`flex-1 py-2 rounded-lg font-medium text-sm ${
                 period === p.k 
-                  ? 'bg-primary-600 text-white shadow-md' 
-                  : 'text-gray-600 hover:bg-gray-100'
+                  ? 'bg-blue-500 text-white' 
+                  : 'bg-white border text-gray-600'
               }`}
             >
               {p.l}
@@ -210,88 +192,39 @@ export default function FinancialPage() {
           ))}
         </div>
 
-        {/* Net Profit Card - Hero */}
-        <div className={`rounded-3xl p-6 text-white shadow-lg ${netProfit >= 0 ? 'bg-gradient-to-br from-emerald-500 to-green-600' : 'bg-gradient-to-br from-red-500 to-rose-600'}`}>
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center">
-              <PiggyBank className="w-6 h-6" />
-            </div>
-            <span className="font-medium opacity-90">صافي الربح</span>
-          </div>
-          <div className="text-4xl font-bold mb-2">{netProfit.toFixed(3)} <span className="text-lg font-normal opacity-80">د.ت</span></div>
-          <div className="text-sm opacity-80 flex items-center gap-1">
-            <span>= الإيرادات - تكلفة البضاعة - المصروفات</span>
-          </div>
+        {/* Net Profit - Main Card */}
+        <div className={`rounded-xl p-5 text-white text-center ${netProfit >= 0 ? 'bg-green-500' : 'bg-red-500'}`}>
+          <div className="text-sm opacity-90 mb-1">صافي الربح</div>
+          <div className="text-4xl font-bold">{netProfit.toFixed(3)} DT</div>
         </div>
 
-        {/* Main Stats Grid */}
+        {/* Stats Grid - Simplified */}
         <div className="grid grid-cols-2 gap-3">
-          {/* Revenue */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
-                <ArrowUpRight className="w-4 h-4 text-green-600" />
-              </div>
-              <span className="text-sm text-gray-600">الإيرادات</span>
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{revenue.toFixed(3)}</div>
-            <div className="text-xs text-gray-500 mt-1">إجمالي المبيعات</div>
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-green-600">{revenue.toFixed(0)}</div>
+            <div className="text-xs text-gray-500">الإيرادات</div>
           </div>
-
-          {/* Cost of Goods */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Package className="w-4 h-4 text-blue-600" />
-              </div>
-              <span className="text-sm text-gray-600">تكلفة البضاعة</span>
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{costOfGoods.toFixed(3)}</div>
-            <div className="text-xs text-gray-500 mt-1">سعر شراء المنتجات</div>
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-red-500">{expenseTotal.toFixed(0)}</div>
+            <div className="text-xs text-gray-500">المصروفات</div>
           </div>
-
-          {/* Expenses */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-red-100 rounded-lg flex items-center justify-center">
-                <Receipt className="w-4 h-4 text-red-600" />
-              </div>
-              <span className="text-sm text-gray-600">المصروفات</span>
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{expenseTotal.toFixed(3)}</div>
-            <div className="text-xs text-gray-500 mt-1">إيجار، كهرباء، رواتب...</div>
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className="text-2xl font-bold text-blue-600">{salesCount}</div>
+            <div className="text-xs text-gray-500">عدد المبيعات</div>
           </div>
-
-          {/* Gross Profit */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
-                <BarChart3 className="w-4 h-4 text-purple-600" />
-              </div>
-              <span className="text-sm text-gray-600">الربح الإجمالي</span>
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{grossProfit.toFixed(3)}</div>
-            <div className="text-xs text-gray-500 mt-1">الإيرادات - تكلفة البضاعة</div>
-          </div>
-        </div>
-
-        {/* Sales Stats Row */}
-        <div className="flex gap-3">
-          <div className="flex-1 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
-            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <ShoppingCart className="w-5 h-5 text-indigo-600" />
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{salesCount}</div>
-            <div className="text-xs text-gray-500">عملية بيع</div>
-          </div>
-          <div className="flex-1 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 text-center">
-            <div className="w-10 h-10 bg-amber-100 rounded-xl flex items-center justify-center mx-auto mb-2">
-              <TrendingUp className="w-5 h-5 text-amber-600" />
-            </div>
-            <div className={`text-2xl font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {profitMargin.toFixed(1)}%
+          <div className="bg-white rounded-xl p-4 border text-center">
+            <div className={`text-2xl font-bold ${profitMargin >= 0 ? 'text-green-600' : 'text-red-500'}`}>
+              {profitMargin.toFixed(0)}%
             </div>
             <div className="text-xs text-gray-500">هامش الربح</div>
+          </div>
+        </div>
+
+        {/* Debt Section */}
+        <div className="bg-white rounded-xl p-4 border">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-600">إجمالي الديون</span>
+            <span className="text-xl font-bold text-orange-600">{totalDebt.toFixed(3)} DT</span>
           </div>
         </div>
 

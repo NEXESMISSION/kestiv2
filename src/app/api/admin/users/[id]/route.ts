@@ -5,6 +5,12 @@ import { sanitizeString } from '@/lib/security'
 
 export const dynamic = 'force-dynamic'
 
+// SECURITY: Validate UUID format to prevent injection attacks
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+function isValidUUID(id: string): boolean {
+  return UUID_REGEX.test(id)
+}
+
 // Helper to verify super admin
 async function verifySuperAdmin(supabase: Awaited<ReturnType<typeof createClient>>) {
   const { data: { user }, error: userError } = await supabase.auth.getUser()
@@ -36,6 +42,11 @@ export async function PATCH(
   try {
     const supabase = await createClient()
     const { id: targetUserId } = await params
+    
+    // SECURITY: Validate UUID format before any database operations
+    if (!targetUserId || !isValidUUID(targetUserId)) {
+      return NextResponse.json({ error: 'Invalid user ID format' }, { status: 400 })
+    }
     
     // Verify super admin
     const authResult = await verifySuperAdmin(supabase)
