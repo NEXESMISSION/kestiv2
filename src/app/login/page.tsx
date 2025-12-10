@@ -29,28 +29,50 @@ export default function LoginPage() {
   useEffect(() => {
     // Only register in browser and production
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/login-sw.js')
-        .then(registration => {
-          console.log('Login service worker registered:', registration.scope);
-        })
-        .catch(error => {
-          console.error('Login service worker registration failed:', error);
-        });
+      // Check if service worker is already active to prevent re-registration
+      navigator.serviceWorker.getRegistration('/login-sw.js').then(registration => {
+        if (!registration) {
+          navigator.serviceWorker.register('/login-sw.js')
+            .then(registration => {
+              console.log('Login service worker registered:', registration.scope);
+            })
+            .catch(error => {
+              console.error('Login service worker registration failed:', error);
+            });
+        }
+      });
     }
   }, []);
 
   // Check if user is already logged in and redirect accordingly
   useEffect(() => {
+    // Create a flag in sessionStorage to prevent redirect loops
+    const redirectAttempted = sessionStorage.getItem('redirect_attempted')
+    
     const checkAuth = async () => {
       try {
+        // If we've already attempted a redirect in this session, don't try again
+        if (redirectAttempted === 'true') {
+          console.log('Already attempted redirect, skipping auth check')
+          sessionStorage.removeItem('redirect_attempted') // Clear for next page load
+          setIsCheckingAuth(false)
+          return
+        }
+        
         const supabase = createClient()
         const { data: { session } } = await supabase.auth.getSession()
         
         if (session) {
+          // Set flag before attempting redirect
+          sessionStorage.setItem('redirect_attempted', 'true')
+          
           // User is already logged in, get their role
           const { data: { user } } = await supabase.auth.getUser()
           
-          if (!user) return
+          if (!user) {
+            setIsCheckingAuth(false)
+            return
+          }
           
           // Check profile for pause status and role
           const { data: profile } = await supabase
@@ -62,6 +84,7 @@ export default function LoginPage() {
           const userRole = profile?.role || user.user_metadata?.role || 'user'
           const isPaused = profile?.is_paused || false
           
+          // Use router.push instead of window.location for smoother transitions
           if (isPaused) {
             window.location.href = '/paused'
           } else if (userRole === 'super_admin') {
@@ -69,15 +92,21 @@ export default function LoginPage() {
           } else {
             window.location.href = '/pos'
           }
+        } else {
+          setIsCheckingAuth(false)
         }
       } catch (error) {
         console.error('Error checking auth:', error)
-      } finally {
         setIsCheckingAuth(false)
       }
     }
     
     checkAuth()
+    
+    // Cleanup function to ensure we don't leave stale state
+    return () => {
+      sessionStorage.removeItem('redirect_attempted')
+    }
   }, [])
 
   const showNotification = (type: NotificationType, message: string) => {
