@@ -31,6 +31,15 @@ function logAuthDebug(msg: string, obj?: any) {
   }
 }
 
+// Helper to create redirect with cookies
+function createRedirectWithCookies(url: URL, response: NextResponse): NextResponse {
+  const redirectResponse = NextResponse.redirect(url)
+  response.cookies.getAll().forEach(cookie => {
+    redirectResponse.cookies.set(cookie.name, cookie.value, cookie)
+  })
+  return redirectResponse
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname
   const ip = request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown'
@@ -138,8 +147,7 @@ export async function middleware(request: NextRequest) {
   // Not logged in -> login
   if (!user) {
     logAuthDebug(`No user found, redirecting to login`)
-    const loginUrl = new URL('/login', request.url)
-    return NextResponse.redirect(loginUrl)
+    return createRedirectWithCookies(new URL('/login', request.url), response)
   }
   
   logAuthDebug(`User authenticated: ${user.id}`)
@@ -167,19 +175,19 @@ export async function middleware(request: NextRequest) {
   // Super admin only accesses /superadmin
   if (isSuperAdmin) {
     if (!pathname.startsWith('/superadmin')) {
-      return NextResponse.redirect(new URL('/superadmin', request.url))
+      return createRedirectWithCookies(new URL('/superadmin', request.url), response)
     }
     return response
   }
   
   // Regular users can't access /superadmin
   if (pathname.startsWith('/superadmin')) {
-    return NextResponse.redirect(new URL('/pos', request.url))
+    return createRedirectWithCookies(new URL('/pos', request.url), response)
   }
 
   // Check pause status
   if (profile.is_paused) {
-    return NextResponse.redirect(new URL('/paused', request.url))
+    return createRedirectWithCookies(new URL('/paused', request.url), response)
   }
   
   // Check subscription expiry
@@ -187,7 +195,7 @@ export async function middleware(request: NextRequest) {
   const dateExpired = profile.subscription_end_date && new Date(profile.subscription_end_date) < new Date()
   
   if (statusExpired || dateExpired) {
-    return NextResponse.redirect(new URL('/expired', request.url))
+    return createRedirectWithCookies(new URL('/expired', request.url), response)
   }
 
   return response

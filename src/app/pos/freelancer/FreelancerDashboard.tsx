@@ -132,63 +132,122 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
 
   // Fetch data
   const fetchData = useCallback(async () => {
+    console.log('[FreelancerDashboard] Starting fetchData for userId:', userId)
     setIsLoading(true)
     try {
-      // Get user PIN
-      const { data: profileData } = await supabase
+      // DEBUG: Check auth session
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession()
+      console.log('[FreelancerDashboard] Auth session check:', {
+        hasSession: !!session,
+        sessionUserId: session?.user?.id,
+        propsUserId: userId,
+        match: session?.user?.id === userId,
+        error: sessionError
+      })
+      
+      // Get user PIN - use maybeSingle to handle missing column gracefully
+      console.log('[FreelancerDashboard] Fetching profile pin_code...')
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('pin_code')
         .eq('id', userId)
-        .single()
+        .maybeSingle()
       
-      if (profileData) setUserPin(profileData.pin_code)
+      if (profileError) {
+        // Check if it's just a missing column error
+        if (profileError.code === 'PGRST116' || profileError.message?.includes('column')) {
+          console.warn('[FreelancerDashboard] pin_code column may not exist. Run migration-update-2024.sql')
+        } else {
+          console.error('[FreelancerDashboard] Error fetching profile:', profileError)
+        }
+      } else {
+        console.log('[FreelancerDashboard] Profile data:', profileData)
+        if (profileData?.pin_code) setUserPin(profileData.pin_code)
+      }
       
       // Get clients
-      const { data: clientsData } = await supabase
+      console.log('[FreelancerDashboard] Fetching freelancer_clients...')
+      const { data: clientsData, error: clientsError } = await supabase
         .from('freelancer_clients')
         .select('*')
         .eq('business_id', userId)
         .order('name')
       
-      setClients(clientsData || [])
+      if (clientsError) {
+        console.error('[FreelancerDashboard] Error fetching clients:', clientsError)
+        console.error('[FreelancerDashboard] → This means freelancer_clients table does not exist. Run migration-update-2024.sql!')
+      } else {
+        console.log('[FreelancerDashboard] Clients loaded:', clientsData?.length || 0)
+        setClients(clientsData || [])
+      }
       
       // Get categories
-      const { data: categoriesData } = await supabase
+      console.log('[FreelancerDashboard] Fetching freelancer_categories...')
+      const { data: categoriesData, error: categoriesError } = await supabase
         .from('freelancer_categories')
         .select('*')
         .eq('business_id', userId)
         .eq('is_active', true)
         .order('name')
       
-      if (categoriesData && categoriesData.length > 0) {
-        setIncomeCategories(categoriesData.filter((c: Category) => c.type === 'income'))
-        setExpenseCategories(categoriesData.filter((c: Category) => c.type === 'expense'))
+      if (categoriesError) {
+        console.error('[FreelancerDashboard] Error fetching categories:', categoriesError)
+        console.error('[FreelancerDashboard] → This means freelancer_categories table does not exist. Run migration-update-2024.sql!')
+      } else {
+        console.log('[FreelancerDashboard] Categories loaded:', categoriesData?.length || 0)
+        if (categoriesData && categoriesData.length > 0) {
+          const incCats = categoriesData.filter((c: Category) => c.type === 'income')
+          const expCats = categoriesData.filter((c: Category) => c.type === 'expense')
+          console.log('[FreelancerDashboard] Income categories:', incCats.length, 'Expense categories:', expCats.length)
+          setIncomeCategories(incCats)
+          setExpenseCategories(expCats)
+        }
       }
       
       // Get payments (income)
-      const { data: paymentsData } = await supabase
+      console.log('[FreelancerDashboard] Fetching freelancer_payments...')
+      const { data: paymentsData, error: paymentsError } = await supabase
         .from('freelancer_payments')
         .select('*, freelancer_clients(name)')
         .eq('business_id', userId)
         .order('created_at', { ascending: false })
         .limit(200)
       
+      if (paymentsError) {
+        console.error('[FreelancerDashboard] Error fetching payments:', paymentsError)
+      } else {
+        console.log('[FreelancerDashboard] Payments loaded:', paymentsData?.length || 0)
+      }
+      
       // Get expenses
-      const { data: expensesData } = await supabase
+      console.log('[FreelancerDashboard] Fetching freelancer_expenses...')
+      const { data: expensesData, error: expensesError } = await supabase
         .from('freelancer_expenses')
         .select('*')
         .eq('business_id', userId)
         .order('date', { ascending: false })
         .limit(200)
       
+      if (expensesError) {
+        console.error('[FreelancerDashboard] Error fetching expenses:', expensesError)
+      } else {
+        console.log('[FreelancerDashboard] Expenses loaded:', expensesData?.length || 0)
+      }
+      
       // Get calendar events (reminders)
-      const { data: eventsData } = await supabase
+      console.log('[FreelancerDashboard] Fetching freelancer_reminders...')
+      const { data: eventsData, error: eventsError } = await supabase
         .from('freelancer_reminders')
         .select('*')
         .eq('business_id', userId)
         .order('date')
       
-      setCalendarEvents(eventsData || [])
+      if (eventsError) {
+        console.error('[FreelancerDashboard] Error fetching reminders:', eventsError)
+      } else {
+        console.log('[FreelancerDashboard] Events loaded:', eventsData?.length || 0)
+        setCalendarEvents(eventsData || [])
+      }
       
       // Combine transactions
       const allTransactions: Transaction[] = [
@@ -249,8 +308,9 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       setStats({ todayIncome, todayExpense, monthIncome, monthExpense, totalCredit })
       
     } catch (error) {
-      // Handle error
+      console.error('[FreelancerDashboard] Critical error in fetchData:', error)
     } finally {
+      console.log('[FreelancerDashboard] fetchData completed')
       setIsLoading(false)
     }
   }, [supabase, userId])
@@ -266,15 +326,22 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   }
 
   const handleAddIncome = async () => {
-    if (!incomeAmount) return
+    console.log('[FreelancerDashboard] handleAddIncome called')
+    console.log('[FreelancerDashboard] incomeAmount:', incomeAmount, 'incomeClientId:', incomeClientId, 'incomePaymentMethod:', incomePaymentMethod)
+    
+    if (!incomeAmount) {
+      console.log('[FreelancerDashboard] No amount, returning')
+      return
+    }
     setIsSubmitting(true)
     
     try {
       const amount = parseFloat(incomeAmount)
       const categoryName = incomeCategories.find(c => c.id === incomeCategoryId)?.name || 'عام'
       
+      console.log('[FreelancerDashboard] Inserting payment...')
       // Record the payment
-      await supabase.from('freelancer_payments').insert({
+      const { data: insertData, error: insertError } = await supabase.from('freelancer_payments').insert({
         business_id: userId,
         client_id: incomeClientId || null,
         amount: amount,
@@ -282,7 +349,14 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
         category_id: incomeCategoryId || null,
         category: categoryName,
         notes: incomeDescription || null
-      })
+      }).select()
+      
+      if (insertError) {
+        console.error('[FreelancerDashboard] Error inserting payment:', insertError)
+        alert('خطأ في تسجيل الدخل. تأكد من تشغيل migration-update-2024.sql')
+        return
+      }
+      console.log('[FreelancerDashboard] Payment inserted:', insertData)
       
       // If credit sale, update client's credit
       if (incomePaymentMethod === 'credit' && incomeClientId) {
@@ -314,83 +388,151 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       setShowIncomeModal(false)
       resetIncomeForm()
       fetchData()
-    } catch {
-      alert('حدث خطأ')
+    } catch (err) {
+      console.error('[FreelancerDashboard] Error in handleAddIncome:', err)
+      alert('حدث خطأ في تسجيل الدخل')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleAddExpense = async () => {
-    if (!expenseAmount || !expenseDescription) return
+    console.log('[FreelancerDashboard] handleAddExpense called')
+    if (!expenseAmount || !expenseDescription) {
+      console.log('[FreelancerDashboard] Missing required fields')
+      return
+    }
     setIsSubmitting(true)
     
     try {
       const categoryName = expenseCategories.find(c => c.id === expenseCategoryId)?.name || 'عام'
       
-      await supabase.from('freelancer_expenses').insert({
+      console.log('[FreelancerDashboard] Inserting expense...')
+      const { data: expData, error: expError } = await supabase.from('freelancer_expenses').insert({
         business_id: userId,
         amount: parseFloat(expenseAmount),
         category_id: expenseCategoryId || null,
         category: categoryName,
         description: expenseDescription,
         date: new Date().toISOString().split('T')[0]
-      })
+      }).select()
+      
+      if (expError) {
+        console.error('[FreelancerDashboard] Error inserting expense:', expError)
+        alert('خطأ في تسجيل المصروف. تأكد من تشغيل migration-update-2024.sql')
+        return
+      }
+      console.log('[FreelancerDashboard] Expense inserted:', expData)
       
       setShowExpenseModal(false)
       resetExpenseForm()
       fetchData()
-    } catch {
-      alert('حدث خطأ')
+    } catch (err) {
+      console.error('[FreelancerDashboard] Error in handleAddExpense:', err)
+      alert('حدث خطأ في تسجيل المصروف')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleAddClient = async () => {
-    if (!clientName) return
+    console.log('[FreelancerDashboard] handleAddClient called')
+    console.log('[FreelancerDashboard] clientName:', clientName, 'clientPhone:', clientPhone)
+    
+    if (!clientName) {
+      console.log('[FreelancerDashboard] No client name, returning')
+      return
+    }
     setIsSubmitting(true)
     
     try {
-      await supabase.from('freelancer_clients').insert({
+      console.log('[FreelancerDashboard] Inserting client...')
+      const { data: clientData, error: clientError } = await supabase.from('freelancer_clients').insert({
         business_id: userId,
         name: clientName,
         phone: clientPhone || null,
         total_spent: 0,
         total_credit: 0
-      })
+      }).select().single()
+      
+      if (clientError) {
+        console.error('[FreelancerDashboard] Error inserting client:', clientError)
+        alert('خطأ في إضافة العميل. تأكد من تشغيل migration-update-2024.sql')
+        return
+      }
+      
+      console.log('[FreelancerDashboard] Client inserted:', clientData)
+      
+      // Update local state immediately
+      if (clientData) {
+        setClients([...clients, clientData])
+      }
       
       setShowClientModal(false)
       setClientName('')
       setClientPhone('')
-      fetchData()
-    } catch {
-      alert('حدث خطأ')
+    } catch (err) {
+      console.error('[FreelancerDashboard] Error in handleAddClient:', err)
+      alert('حدث خطأ في إضافة العميل')
     } finally {
       setIsSubmitting(false)
     }
   }
 
   const handleAddCategory = async () => {
-    if (!categoryName) return
+    console.log('[FreelancerDashboard] handleAddCategory called')
+    console.log('[FreelancerDashboard] categoryName:', categoryName, 'categoryType:', categoryType, 'categoryColor:', categoryColor)
+    
+    if (!categoryName) {
+      console.log('[FreelancerDashboard] No category name, returning')
+      return
+    }
     setIsSubmitting(true)
     
     try {
-      await supabase.from('freelancer_categories').insert({
+      // DEBUG: Check auth session before insert
+      const { data: { session } } = await supabase.auth.getSession()
+      console.log('[FreelancerDashboard] INSERT Auth check:', {
+        hasSession: !!session,
+        sessionUserId: session?.user?.id,
+        propsUserId: userId,
+        willInsertBusinessId: userId
+      })
+      
+      console.log('[FreelancerDashboard] Inserting category...')
+      const { data, error } = await supabase.from('freelancer_categories').insert({
         business_id: userId,
         name: categoryName,
         type: categoryType,
         color: categoryColor,
         is_active: true
-      })
+      }).select().single()
+      
+      if (error) {
+        console.error('[FreelancerDashboard] Error adding category:', error)
+        console.error('[FreelancerDashboard] Error details:', JSON.stringify(error, null, 2))
+        alert('خطأ في إضافة التصنيف. تأكد من تشغيل migration-update-2024.sql في Supabase')
+        return
+      }
+      
+      console.log('[FreelancerDashboard] Category inserted:', data)
+      
+      // Update local state immediately
+      if (data) {
+        if (categoryType === 'income') {
+          setIncomeCategories([...incomeCategories, data])
+        } else {
+          setExpenseCategories([...expenseCategories, data])
+        }
+      }
       
       setShowCategoryModal(false)
       setCategoryName('')
       setCategoryType('income')
       setCategoryColor(CATEGORY_COLORS[0])
-      fetchData()
-    } catch {
-      alert('حدث خطأ')
+    } catch (err) {
+      console.error('Category error:', err)
+      alert('حدث خطأ في إضافة التصنيف')
     } finally {
       setIsSubmitting(false)
     }
@@ -1038,8 +1180,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       
       {/* Income Modal */}
       {showIncomeModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setShowIncomeModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowIncomeModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-green-500 to-green-600 p-5 text-white rounded-t-2xl sticky top-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">تسجيل دخل</h3>
@@ -1062,7 +1204,17 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">التصنيف</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">التصنيف</label>
+                  <button
+                    type="button"
+                    onClick={() => { setCategoryType('income'); setShowCategoryModal(true); }}
+                    className="text-xs text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    إضافة
+                  </button>
+                </div>
                 <select
                   value={incomeCategoryId}
                   onChange={(e) => setIncomeCategoryId(e.target.value)}
@@ -1073,6 +1225,9 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
+                {incomeCategories.length === 0 && (
+                  <p className="text-xs text-gray-400 mt-1">لا توجد تصنيفات. أضف تصنيف جديد ↑</p>
+                )}
               </div>
               
               <div>
@@ -1101,13 +1256,21 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                   </button>
                   <button
                     type="button"
-                    onClick={() => setIncomePaymentMethod('credit')}
-                    disabled={!incomeClientId}
-                    className={`py-3 rounded-xl font-medium transition-colors ${incomePaymentMethod === 'credit' ? 'bg-orange-500 text-white' : 'bg-gray-100 text-gray-700'} disabled:opacity-50`}
+                    onClick={() => {
+                      if (!incomeClientId) {
+                        alert('يجب اختيار عميل أولاً لتسجيل دين')
+                        return
+                      }
+                      setIncomePaymentMethod('credit')
+                    }}
+                    className={`py-3 rounded-xl font-medium transition-colors ${incomePaymentMethod === 'credit' ? 'bg-orange-500 text-white' : !incomeClientId ? 'bg-gray-100 text-gray-400' : 'bg-gray-100 text-gray-700'}`}
                   >
                     📝 آجل
                   </button>
                 </div>
+                {!incomeClientId && incomePaymentMethod !== 'credit' && (
+                  <p className="text-xs text-gray-500 mt-2">💡 اختر عميل أعلاه لتفعيل خيار الدين</p>
+                )}
                 {incomePaymentMethod === 'credit' && (
                   <p className="text-xs text-orange-600 mt-2">⚠️ سيتم إضافة المبلغ كدين على العميل</p>
                 )}
@@ -1139,8 +1302,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
 
       {/* Expense Modal */}
       {showExpenseModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setShowExpenseModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowExpenseModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-red-500 to-red-600 p-5 text-white rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">تسجيل مصروف</h3>
@@ -1163,7 +1326,17 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">التصنيف</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">التصنيف</label>
+                  <button
+                    type="button"
+                    onClick={() => { setCategoryType('expense'); setShowCategoryModal(true); }}
+                    className="text-xs text-red-600 hover:text-red-700 flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    إضافة
+                  </button>
+                </div>
                 <select
                   value={expenseCategoryId}
                   onChange={(e) => setExpenseCategoryId(e.target.value)}
@@ -1174,6 +1347,9 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                     <option key={c.id} value={c.id}>{c.name}</option>
                   ))}
                 </select>
+                {expenseCategories.length === 0 && (
+                  <p className="text-xs text-gray-400 mt-1">لا توجد تصنيفات. أضف تصنيف جديد ↑</p>
+                )}
               </div>
               
               <div>
@@ -1202,8 +1378,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
 
       {/* Client Modal */}
       {showClientModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setShowClientModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowClientModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">عميل جديد</h3>
@@ -1252,8 +1428,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
 
       {/* Category Modal */}
       {showCategoryModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setShowCategoryModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowCategoryModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-purple-500 to-purple-600 p-5 text-white rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">تصنيف جديد</h3>
@@ -1325,8 +1501,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
 
       {/* Event Modal */}
       {showEventModal && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setShowEventModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowEventModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-5 text-white rounded-t-2xl">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">حدث جديد</h3>
@@ -1383,8 +1559,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
 
       {/* Day Details Modal */}
       {showDayModal && selectedDate && (
-        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50" onClick={() => setShowDayModal(false)}>
-          <div className="w-full max-w-md bg-white rounded-t-2xl sm:rounded-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setShowDayModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl max-h-[85vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
             <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white rounded-t-2xl sticky top-0">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-bold">
@@ -1472,7 +1648,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
       <PINModal 
         isOpen={showPinModal} 
         correctPin={userPin} 
-        onSuccess={() => { setShowPinModal(false); router.push('/dashboard') }} 
+        onSuccess={() => { setShowPinModal(false); router.push('/pos/freelancer/settings') }} 
         onCancel={() => setShowPinModal(false)} 
       />
     </div>

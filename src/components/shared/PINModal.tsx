@@ -131,11 +131,21 @@ export default function PINModal({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, handleNumberClick, handleDelete, onCancel, handleSubmit])
 
+  // If no PIN is set, auto-succeed (use setTimeout to avoid setState during render)
+  useEffect(() => {
+    if (isOpen && !correctPin) {
+      // Use setTimeout to ensure we're not in render phase
+      const timer = setTimeout(() => {
+        onSuccess()
+      }, 0)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen, correctPin, onSuccess])
+
   if (!isOpen) return null
 
-  // If no PIN is set, auto-succeed
+  // If no PIN is set, don't render the modal
   if (!correctPin) {
-    onSuccess()
     return null
   }
 

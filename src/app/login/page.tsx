@@ -67,12 +67,22 @@ export default function LoginPage() {
       try {
         const supabase = createClient()
         
-        // Use getUser() for secure server-side validation instead of getSession()
-        // getSession() only checks local storage, getUser() validates with the server
+        // First check session quickly without server validation
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!session) {
+          // No session - show login form immediately (no need to call getUser)
+          if (isMounted) {
+            setIsCheckingAuth(false)
+          }
+          return
+        }
+        
+        // Session exists - validate with server using getUser()
         const { data: { user }, error } = await supabase.auth.getUser()
         
         if (error || !user) {
-          // No valid user session - show login form
+          // Invalid session - show login form
           if (isMounted) {
             setIsCheckingAuth(false)
           }
@@ -158,22 +168,15 @@ export default function LoginPage() {
         return
       }
 
-      // Get the logged in user to check role and pause status
-      const { data: userData, error: userError } = await supabase.auth.getUser()
-      
-      if (userError) {
-        console.error('Error getting user:', userError)
-        showNotification('error', 'خطأ في جلب بيانات المستخدم. حاول مرة أخرى.')
-        return
-      }
-      
-      if (!userData || !userData.user) {
+      // Use the user data from signInWithPassword directly - no need to call getUser() again
+      // signInWithPassword already returns the authenticated user and session
+      if (!authData || !authData.user) {
         console.error('No user data returned after login')
         showNotification('error', 'حدث خطأ غير متوقع. حاول مرة أخرى.')
         return
       }
       
-      const user = userData.user
+      const user = authData.user
       
       // Check profile for pause status and role
       const { data: profile, error: profileError } = await supabase

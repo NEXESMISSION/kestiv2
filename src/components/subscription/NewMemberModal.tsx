@@ -52,9 +52,8 @@ export default function NewMemberModal({ plans, isOpen, onClose, onSubmit, onAdd
   }
 
   return (
-    <>
-      <div className="fixed inset-0 bg-black/50 z-50" onClick={onClose} />
-      <div className="fixed inset-4 sm:inset-auto sm:top-1/2 sm:left-1/2 sm:-translate-x-1/2 sm:-translate-y-1/2 sm:w-[500px] bg-white rounded-2xl shadow-2xl z-50 flex flex-col max-h-[90vh]" dir="rtl">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" dir="rtl" onClick={onClose}>
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-[500px] max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-bold flex items-center gap-2"><User className="w-5 h-5" />عميل جديد</h2>
@@ -152,6 +151,6 @@ export default function NewMemberModal({ plans, isOpen, onClose, onSubmit, onAdd
           )}
         </div>
       </div>
-    </>
+    </div>
   )
 }
