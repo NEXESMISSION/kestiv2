@@ -313,7 +313,8 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
 
   const stats = {
     total: profiles.length,
-    active: profiles.filter(p => p.subscription_status === 'active').length,
+    // Count 'active' and 'trial' as active subscriptions (both have valid time remaining)
+    active: profiles.filter(p => p.subscription_status === 'active' || p.subscription_status === 'trial').length,
     paused: profiles.filter(p => p.is_paused).length
   }
 

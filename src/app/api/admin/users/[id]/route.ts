@@ -1,4 +1,4 @@
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createServiceClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { sanitizeString } from '@/lib/security'
@@ -62,15 +62,18 @@ export async function PATCH(
       return NextResponse.json({ error: 'Missing action or user ID' }, { status: 400 })
     }
 
-    // Validate target user exists
-    const { data: targetUser, error: targetError } = await supabase
+    // Use service client to bypass RLS for admin operations
+    const serviceClient = createServiceClient()
+
+    // Validate target user exists (use service client to bypass RLS)
+    const { data: targetUser, error: targetError } = await serviceClient
       .from('profiles')
       .select('id, role')
       .eq('id', targetUserId)
       .maybeSingle()
 
     if (targetError || !targetUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      return NextResponse.json({ error: 'User not found', details: 'Profile does not exist for this user ID' }, { status: 404 })
     }
 
     const targetUserRole = (targetUser as { id: string; role?: string })?.role
@@ -137,7 +140,7 @@ export async function PATCH(
         
         for (const table of tablesToClean) {
           try {
-            await supabase.from(table).delete().eq('business_id', targetUserId)
+            await serviceClient.from(table).delete().eq('business_id', targetUserId)
           } catch {
             // Table might not exist, continue
           }
@@ -153,8 +156,8 @@ export async function PATCH(
         return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     }
 
-    // Perform update - cast to unknown first to bypass strict type checking
-    const { data: updated, error: updateError } = await (supabase
+    // Perform update using service client to bypass RLS
+    const { data: updated, error: updateError } = await (serviceClient
       .from('profiles') as unknown as { update: (data: Record<string, unknown>) => { eq: (col: string, val: string) => { select: () => { single: () => Promise<{ data: unknown; error: Error | null }> } } } })
       .update(updateData)
       .eq('id', targetUserId)
