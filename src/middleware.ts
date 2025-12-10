@@ -71,34 +71,47 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next()
   }
 
-  let supabaseResponse = NextResponse.next({ request })
+  // Create response object that will carry cookies through
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return request.cookies.getAll() },
+        getAll() {
+          return request.cookies.getAll()
+        },
         setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          supabaseResponse = NextResponse.next({ request })
+          // First, update the request cookies (for this request)
+          cookiesToSet.forEach(({ name, value }) => {
+            request.cookies.set(name, value)
+          })
+          
+          // Create a new response with updated request
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          
+          // Then, set the cookies on the response (for the browser)
           cookiesToSet.forEach(({ name, value, options }) => {
-            // Ensure cookies are properly set with secure attributes for PWA
-            const cookieOptions = {
+            response.cookies.set(name, value, {
               ...options,
+              // Ensure proper cookie settings for auth
               httpOnly: true,
               secure: process.env.NODE_ENV === 'production',
-              sameSite: 'lax' as const,
-              maxAge: 60 * 60 * 24 * 7 // 7 days
-            }
-            supabaseResponse.cookies.set(name, value, cookieOptions)
+              sameSite: 'lax',
+              path: '/',
+            })
           })
         },
       },
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true
-      }
     }
   )
 
@@ -108,13 +121,15 @@ export async function middleware(request: NextRequest) {
   
   if (!isProtected) {
     logAuthDebug(`Path not protected: ${pathname}`)
-    return supabaseResponse
+    return response
   }
   
   logAuthDebug(`Checking auth for protected path: ${pathname}`)
 
-  const { data, error } = await supabase.auth.getUser()
-  const user = data?.user
+  // IMPORTANT: Use getUser() instead of getSession() for secure server-side auth
+  // getUser() sends a request to Supabase to validate the token
+  // getSession() only reads from cookies without validation
+  const { data: { user }, error } = await supabase.auth.getUser()
 
   if (error) {
     logAuthDebug(`Auth error: ${error.message}`)
@@ -123,11 +138,8 @@ export async function middleware(request: NextRequest) {
   // Not logged in -> login
   if (!user) {
     logAuthDebug(`No user found, redirecting to login`)
-    // Use replace instead of redirect to ensure cookies are properly handled
-    return NextResponse.redirect(new URL('/login', request.url), {
-      // Set the status to 302 to indicate a temporary redirect
-      status: 302,
-    })
+    const loginUrl = new URL('/login', request.url)
+    return NextResponse.redirect(loginUrl)
   }
   
   logAuthDebug(`User authenticated: ${user.id}`)
@@ -145,7 +157,7 @@ export async function middleware(request: NextRequest) {
 
   if (!profile) {
     logAuthDebug(`No profile found for user: ${user.id}`)
-    return supabaseResponse
+    return response
   }
   
   logAuthDebug(`User profile found: role=${profile.role}, paused=${profile.is_paused}, status=${profile.subscription_status}`)
@@ -157,7 +169,7 @@ export async function middleware(request: NextRequest) {
     if (!pathname.startsWith('/superadmin')) {
       return NextResponse.redirect(new URL('/superadmin', request.url))
     }
-    return supabaseResponse
+    return response
   }
   
   // Regular users can't access /superadmin
@@ -178,7 +190,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL('/expired', request.url))
   }
 
-  return supabaseResponse
+  return response
 }
 
 export const config = {

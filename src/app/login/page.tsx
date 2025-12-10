@@ -25,9 +25,24 @@ export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isCheckingAuth, setIsCheckingAuth] = useState(true)
   
-  // Register service worker for better PWA auth handling
+  // Clean up old localStorage auth data and register service worker
   useEffect(() => {
-    // Only register in browser and production
+    // Clean up old localStorage auth data that might interfere with cookie-based auth
+    if (typeof window !== 'undefined') {
+      // Remove any old auth tokens from localStorage
+      const keysToRemove = ['sb-auth-token', 'kesti-auth-token']
+      keysToRemove.forEach(key => {
+        try {
+          localStorage.removeItem(key)
+        } catch (e) {
+          // Ignore errors
+        }
+      })
+      // Also remove sessionStorage flags
+      sessionStorage.removeItem('redirect_attempted')
+    }
+    
+    // Only register service worker in browser and production
     if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
       // Check if service worker is already active to prevent re-registration
       navigator.serviceWorker.getRegistration('/login-sw.js').then(registration => {
@@ -46,66 +61,56 @@ export default function LoginPage() {
 
   // Check if user is already logged in and redirect accordingly
   useEffect(() => {
-    // Create a flag in sessionStorage to prevent redirect loops
-    const redirectAttempted = sessionStorage.getItem('redirect_attempted')
+    let isMounted = true
     
     const checkAuth = async () => {
       try {
-        // If we've already attempted a redirect in this session, don't try again
-        if (redirectAttempted === 'true') {
-          console.log('Already attempted redirect, skipping auth check')
-          sessionStorage.removeItem('redirect_attempted') // Clear for next page load
-          setIsCheckingAuth(false)
+        const supabase = createClient()
+        
+        // Use getUser() for secure server-side validation instead of getSession()
+        // getSession() only checks local storage, getUser() validates with the server
+        const { data: { user }, error } = await supabase.auth.getUser()
+        
+        if (error || !user) {
+          // No valid user session - show login form
+          if (isMounted) {
+            setIsCheckingAuth(false)
+          }
           return
         }
         
-        const supabase = createClient()
-        const { data: { session } } = await supabase.auth.getSession()
+        // User is logged in, get their profile to determine redirect
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, is_paused')
+          .eq('id', user.id)
+          .maybeSingle()
         
-        if (session) {
-          // Set flag before attempting redirect
-          sessionStorage.setItem('redirect_attempted', 'true')
-          
-          // User is already logged in, get their role
-          const { data: { user } } = await supabase.auth.getUser()
-          
-          if (!user) {
-            setIsCheckingAuth(false)
-            return
-          }
-          
-          // Check profile for pause status and role
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('role, is_paused')
-            .eq('id', user.id)
-            .maybeSingle()
-          
-          const userRole = profile?.role || user.user_metadata?.role || 'user'
-          const isPaused = profile?.is_paused || false
-          
-          // Use router.push instead of window.location for smoother transitions
-          if (isPaused) {
-            window.location.href = '/paused'
-          } else if (userRole === 'super_admin') {
-            window.location.href = '/superadmin'
-          } else {
-            window.location.href = '/pos'
-          }
+        const userRole = profile?.role || user.user_metadata?.role || 'user'
+        const isPaused = profile?.is_paused || false
+        
+        console.log('User already logged in, redirecting...', { userRole, isPaused })
+        
+        // Redirect based on role
+        if (isPaused) {
+          window.location.href = '/paused'
+        } else if (userRole === 'super_admin') {
+          window.location.href = '/superadmin'
         } else {
-          setIsCheckingAuth(false)
+          window.location.href = '/pos'
         }
       } catch (error) {
         console.error('Error checking auth:', error)
-        setIsCheckingAuth(false)
+        if (isMounted) {
+          setIsCheckingAuth(false)
+        }
       }
     }
     
     checkAuth()
     
-    // Cleanup function to ensure we don't leave stale state
     return () => {
-      sessionStorage.removeItem('redirect_attempted')
+      isMounted = false
     }
   }, [])
 
@@ -196,30 +201,31 @@ export default function LoginPage() {
       // Success - redirect based on role and pause status
       showNotification('success', 'تم تسجيل الدخول بنجاح! جاري التحويل...')
       
-      // Store session in localStorage to ensure it persists
-      localStorage.setItem('sb-auth-token', JSON.stringify(authData.session))
-      
-      // Force a full page refresh with a direct URL navigation to bypass potential middleware issues
+      // The session is now stored in cookies by Supabase automatically
+      // Use router.refresh() to update server components, then redirect
       console.log('Preparing redirect for role:', userRole, 'paused:', isPaused)
+      
+      // Clear any redirection flags
+      sessionStorage.removeItem('redirect_attempted')
+      
+      // Small delay to show success message, then redirect
+      // Using window.location.href instead of replace to ensure cookies are sent
       setTimeout(() => {
-        // Clear any redirection flags
-        sessionStorage.removeItem('redirect_attempted')
-        
         if (isPaused) {
           // Store pause reason in session for the paused page
           if (typeof window !== 'undefined') {
             sessionStorage.setItem('pauseReason', pauseReason)
           }
           console.log('Redirecting to paused page')
-          window.location.replace('/paused')
+          window.location.href = '/paused'
         } else if (userRole === 'super_admin') {
           console.log('Redirecting to superadmin')
-          window.location.replace('/superadmin')
+          window.location.href = '/superadmin'
         } else {
           console.log('Redirecting to POS')
-          window.location.replace('/pos')
+          window.location.href = '/pos'
         }
-      }, 1500)
+      }, 500)
     } catch (error) {
       console.error('Unexpected error during login:', error)
       showNotification('error', 'حدث خطأ غير متوقع. حاول مرة أخرى لاحقاً.')
