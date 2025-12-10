@@ -118,6 +118,12 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   
   const [searchQuery, setSearchQuery] = useState('')
   
+  // Edit/Delete transaction state
+  const [editingTransaction, setEditingTransaction] = useState<Transaction | null>(null)
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null)
+  const [editTransactionAmount, setEditTransactionAmount] = useState('')
+  const [editTransactionDescription, setEditTransactionDescription] = useState('')
+  
   // Stats
   const [stats, setStats] = useState({
     todayIncome: 0,
@@ -1004,13 +1010,31 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                         </div>
                       </div>
                     </div>
-                    <div className="text-left">
-                      <span className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
-                        {t.type === 'income' ? '+' : '-'}{t.amount.toFixed(0)} DT
-                      </span>
-                      {t.payment_method === 'credit' && (
-                        <p className="text-xs text-orange-500">آجل</p>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <div className="text-left">
+                        <span className={`font-bold text-lg ${t.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
+                          {t.type === 'income' ? '+' : '-'}{t.amount.toFixed(0)} DT
+                        </span>
+                        {t.payment_method === 'credit' && (
+                          <p className="text-xs text-orange-500">آجل</p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          setEditingTransaction(t)
+                          setEditTransactionAmount(t.amount.toString())
+                          setEditTransactionDescription(t.description || '')
+                        }}
+                        className="p-2 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-lg transition-colors"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => setDeletingTransaction(t)}
+                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </div>
                 ))}
@@ -1512,6 +1536,126 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                   className="py-3 bg-green-500 text-white rounded-xl font-medium"
                 >
                   + دخل
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Transaction Modal */}
+      {editingTransaction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setEditingTransaction(null)}>
+          <div className="w-full max-w-sm bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className={`p-5 text-white rounded-t-2xl ${editingTransaction.type === 'income' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600'}`}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">تعديل {editingTransaction.type === 'income' ? 'الدخل' : 'المصروف'}</h3>
+                <button onClick={() => setEditingTransaction(null)} className="p-1 hover:bg-white/20 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ (DT)</label>
+                <input
+                  type="number"
+                  value={editTransactionAmount}
+                  onChange={(e) => setEditTransactionAmount(e.target.value)}
+                  className="input-field text-lg"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
+                <input
+                  type="text"
+                  value={editTransactionDescription}
+                  onChange={(e) => setEditTransactionDescription(e.target.value)}
+                  className="input-field"
+                  placeholder="وصف العملية"
+                />
+              </div>
+              <button
+                onClick={async () => {
+                  if (!editTransactionAmount) return
+                  setIsSubmitting(true)
+                  try {
+                    if (editingTransaction.type === 'income') {
+                      await supabase.from('freelancer_payments')
+                        .update({ amount: parseFloat(editTransactionAmount), notes: editTransactionDescription })
+                        .eq('id', editingTransaction.id)
+                    } else {
+                      await supabase.from('freelancer_expenses')
+                        .update({ amount: parseFloat(editTransactionAmount), description: editTransactionDescription })
+                        .eq('id', editingTransaction.id)
+                    }
+                    setEditingTransaction(null)
+                    fetchData()
+                  } catch (error) {
+                    console.error('Error updating transaction:', error)
+                  } finally {
+                    setIsSubmitting(false)
+                  }
+                }}
+                disabled={!editTransactionAmount || isSubmitting}
+                className="w-full btn-primary flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                حفظ التغييرات
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Transaction Confirmation Modal */}
+      {deletingTransaction && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDeletingTransaction(null)}>
+          <div className="w-full max-w-sm bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-red-500 to-red-600 p-5 text-white rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6" />
+                <h3 className="text-lg font-bold">حذف المعاملة</h3>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center">
+                <p className="text-red-700 font-medium mb-1">هل أنت متأكد من حذف هذه المعاملة؟</p>
+                <p className="text-red-600 text-sm">{deletingTransaction.client_name || deletingTransaction.description || (deletingTransaction.type === 'income' ? 'دخل' : 'مصروف')}</p>
+                <p className="text-red-600 font-bold text-lg mt-2">
+                  {deletingTransaction.type === 'income' ? '+' : '-'}{deletingTransaction.amount.toFixed(0)} DT
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeletingTransaction(null)}
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsSubmitting(true)
+                    try {
+                      if (deletingTransaction.type === 'income') {
+                        await supabase.from('freelancer_payments').delete().eq('id', deletingTransaction.id)
+                      } else {
+                        await supabase.from('freelancer_expenses').delete().eq('id', deletingTransaction.id)
+                      }
+                      setDeletingTransaction(null)
+                      fetchData()
+                    } catch (error) {
+                      console.error('Error deleting transaction:', error)
+                    } finally {
+                      setIsSubmitting(false)
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                  حذف
                 </button>
               </div>
             </div>

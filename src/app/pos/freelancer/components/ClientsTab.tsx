@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { 
   Plus, User, Phone, FolderKanban, X, Loader2, 
-  Check, ChevronLeft, AlertCircle, Search
+  Check, ChevronLeft, AlertCircle, Search, Edit3, Trash2, AlertTriangle
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import type { FreelancerClient, FreelancerProject } from '@/types/database'
@@ -30,6 +30,13 @@ export default function ClientsTab({ clients, projects, userId, onRefresh }: Cli
   // Payment form
   const [paymentAmount, setPaymentAmount] = useState('')
   const [paymentNotes, setPaymentNotes] = useState('')
+  
+  // Edit/Delete state
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editPhone, setEditPhone] = useState('')
+  const [editNotes, setEditNotes] = useState('')
 
   const filteredClients = clients.filter(c => 
     c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -338,6 +345,29 @@ export default function ClientsTab({ clients, projects, userId, onRefresh }: Cli
                 <p className="text-sm text-gray-600">{selectedClient.notes}</p>
               </div>
             )}
+            
+            {/* Edit/Delete Actions */}
+            <div className="p-4 border-t flex gap-3">
+              <button
+                onClick={() => {
+                  setEditName(selectedClient.name)
+                  setEditPhone(selectedClient.phone || '')
+                  setEditNotes(selectedClient.notes || '')
+                  setShowEditModal(true)
+                }}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-primary-50 hover:bg-primary-100 text-primary-600 font-medium rounded-xl transition-colors"
+              >
+                <Edit3 className="w-5 h-5" />
+                تعديل
+              </button>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                className="flex-1 flex items-center justify-center gap-2 py-3 bg-red-50 hover:bg-red-100 text-red-600 font-medium rounded-xl transition-colors"
+              >
+                <Trash2 className="w-5 h-5" />
+                حذف
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -394,6 +424,145 @@ export default function ClientsTab({ clients, projects, userId, onRefresh }: Cli
                 {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
                 تأكيد السداد
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Client Modal */}
+      {showEditModal && selectedClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowEditModal(false)}>
+          <div className="w-full max-w-md bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">تعديل العميل</h3>
+                <button onClick={() => setShowEditModal(false)} className="p-1 hover:bg-white/20 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">الاسم *</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="input-field"
+                  placeholder="اسم العميل"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
+                <input
+                  type="tel"
+                  value={editPhone}
+                  onChange={(e) => setEditPhone(e.target.value)}
+                  className="input-field"
+                  placeholder="اختياري"
+                  dir="ltr"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ملاحظات</label>
+                <textarea
+                  value={editNotes}
+                  onChange={(e) => setEditNotes(e.target.value)}
+                  className="input-field min-h-[80px]"
+                  placeholder="اختياري"
+                />
+              </div>
+              
+              <button
+                onClick={async () => {
+                  if (!editName) return
+                  setIsSubmitting(true)
+                  try {
+                    const supabase = createClient()
+                    await supabase.from('freelancer_clients')
+                      .update({ 
+                        name: editName, 
+                        phone: editPhone || null, 
+                        notes: editNotes || null,
+                        updated_at: new Date().toISOString()
+                      })
+                      .eq('id', selectedClient.id)
+                    
+                    setShowEditModal(false)
+                    setSelectedClient(null)
+                    onRefresh()
+                  } catch (error) {
+                    console.error('Error updating client:', error)
+                  } finally {
+                    setIsSubmitting(false)
+                  }
+                }}
+                disabled={!editName || isSubmitting}
+                className="w-full btn-primary flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                حفظ التغييرات
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Client Confirmation Modal */}
+      {showDeleteModal && selectedClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowDeleteModal(false)}>
+          <div className="w-full max-w-sm bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-red-500 to-red-600 p-5 text-white rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-6 h-6" />
+                <h3 className="text-lg font-bold">حذف العميل</h3>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center">
+                <p className="text-red-700 font-medium mb-2">هل أنت متأكد من حذف هذا العميل؟</p>
+                <p className="text-red-600 font-bold text-lg">{selectedClient.name}</p>
+                {selectedClient.projects_count > 0 && (
+                  <p className="text-red-500 text-sm mt-2">
+                    ⚠️ سيتم حذف {selectedClient.projects_count} مشروع مرتبط
+                  </p>
+                )}
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsSubmitting(true)
+                    try {
+                      const supabase = createClient()
+                      // Delete related data first
+                      await supabase.from('freelancer_payments').delete().eq('client_id', selectedClient.id)
+                      await supabase.from('freelancer_projects').delete().eq('client_id', selectedClient.id)
+                      await supabase.from('freelancer_clients').delete().eq('id', selectedClient.id)
+                      
+                      setShowDeleteModal(false)
+                      setSelectedClient(null)
+                      onRefresh()
+                    } catch (error) {
+                      console.error('Error deleting client:', error)
+                    } finally {
+                      setIsSubmitting(false)
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                  حذف
+                </button>
+              </div>
             </div>
           </div>
         </div>

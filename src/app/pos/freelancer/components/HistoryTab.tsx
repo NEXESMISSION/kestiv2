@@ -3,8 +3,9 @@
 import { useState, useMemo } from 'react'
 import { 
   TrendingUp, TrendingDown, Calendar, Search, Filter,
-  ChevronDown, ChevronUp
+  ChevronDown, ChevronUp, Trash2, Edit3, X, Loader2, Check, AlertTriangle
 } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import type { FreelancerPayment, FreelancerExpense } from '@/types/database'
 
 type HistoryPeriod = 'today' | 'week' | 'month' | 'all'
@@ -13,6 +14,8 @@ type HistoryType = 'all' | 'income' | 'expense'
 interface HistoryTabProps {
   payments: FreelancerPayment[]
   expenses: FreelancerExpense[]
+  userId: string
+  onRefresh: () => void
 }
 
 interface HistoryItem {
@@ -24,11 +27,18 @@ interface HistoryItem {
   dateStr: string
 }
 
-export default function HistoryTab({ payments, expenses }: HistoryTabProps) {
+export default function HistoryTab({ payments, expenses, userId, onRefresh }: HistoryTabProps) {
   const [period, setPeriod] = useState<HistoryPeriod>('month')
   const [typeFilter, setTypeFilter] = useState<HistoryType>('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [showFilters, setShowFilters] = useState(false)
+  
+  // Edit/Delete state
+  const [editingItem, setEditingItem] = useState<HistoryItem | null>(null)
+  const [deletingItem, setDeletingItem] = useState<HistoryItem | null>(null)
+  const [editAmount, setEditAmount] = useState('')
+  const [editDescription, setEditDescription] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Combine and sort history items
   const historyItems = useMemo(() => {
@@ -261,9 +271,31 @@ export default function HistoryTab({ payments, expenses }: HistoryTabProps) {
                         </p>
                       </div>
                     </div>
-                    <p className={`font-bold ${item.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
-                      {item.type === 'income' ? '+' : '-'}{item.amount.toFixed(0)} DT
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className={`font-bold ${item.type === 'income' ? 'text-green-600' : 'text-red-500'}`}>
+                        {item.type === 'income' ? '+' : '-'}{item.amount.toFixed(0)} DT
+                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setEditingItem(item)
+                          setEditAmount(item.amount.toString())
+                          setEditDescription(item.description)
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-primary-500 hover:bg-primary-50 rounded-lg transition-colors"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setDeletingItem(item)
+                        }}
+                        className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -271,6 +303,128 @@ export default function HistoryTab({ payments, expenses }: HistoryTabProps) {
           ))
         )}
       </div>
+
+      {/* Edit Modal */}
+      {editingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setEditingItem(null)}>
+          <div className="w-full max-w-sm bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className={`p-5 text-white rounded-t-2xl ${editingItem.type === 'income' ? 'bg-gradient-to-r from-green-500 to-green-600' : 'bg-gradient-to-r from-red-500 to-red-600'}`}>
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">تعديل {editingItem.type === 'income' ? 'الدخل' : 'المصروف'}</h3>
+                <button onClick={() => setEditingItem(null)} className="p-1 hover:bg-white/20 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ (DT)</label>
+                <input
+                  type="number"
+                  value={editAmount}
+                  onChange={(e) => setEditAmount(e.target.value)}
+                  className="input-field text-lg"
+                  placeholder="0"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">الوصف</label>
+                <input
+                  type="text"
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  className="input-field"
+                  placeholder="وصف العملية"
+                />
+              </div>
+              <button
+                onClick={async () => {
+                  if (!editAmount) return
+                  setIsSubmitting(true)
+                  try {
+                    const supabase = createClient()
+                    if (editingItem.type === 'income') {
+                      await supabase.from('freelancer_payments')
+                        .update({ amount: parseFloat(editAmount), notes: editDescription })
+                        .eq('id', editingItem.id)
+                    } else {
+                      await supabase.from('freelancer_expenses')
+                        .update({ amount: parseFloat(editAmount), description: editDescription })
+                        .eq('id', editingItem.id)
+                    }
+                    setEditingItem(null)
+                    onRefresh()
+                  } catch (error) {
+                    console.error('Error updating:', error)
+                  } finally {
+                    setIsSubmitting(false)
+                  }
+                }}
+                disabled={!editAmount || isSubmitting}
+                className="w-full btn-primary flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                حفظ التغييرات
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deletingItem && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDeletingItem(null)}>
+          <div className="w-full max-w-sm bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-red-500 to-red-600 p-5 text-white rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <AlertTriangle className="w-6 h-6" />
+                <h3 className="text-lg font-bold">حذف العملية</h3>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center">
+                <p className="text-red-700 font-medium mb-1">هل أنت متأكد من حذف هذه العملية؟</p>
+                <p className="text-red-600 text-sm">{deletingItem.description}</p>
+                <p className="text-red-600 font-bold text-lg mt-2">
+                  {deletingItem.type === 'income' ? '+' : '-'}{deletingItem.amount.toFixed(0)} DT
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeletingItem(null)}
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsSubmitting(true)
+                    try {
+                      const supabase = createClient()
+                      if (deletingItem.type === 'income') {
+                        await supabase.from('freelancer_payments').delete().eq('id', deletingItem.id)
+                      } else {
+                        await supabase.from('freelancer_expenses').delete().eq('id', deletingItem.id)
+                      }
+                      setDeletingItem(null)
+                      onRefresh()
+                    } catch (error) {
+                      console.error('Error deleting:', error)
+                    } finally {
+                      setIsSubmitting(false)
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                  حذف
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
