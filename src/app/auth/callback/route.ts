@@ -22,15 +22,29 @@ export async function GET(request: NextRequest) {
           },
           setAll(cookiesToSet: { name: string; value: string; options: CookieOptions }[]) {
             try {
-              cookiesToSet.forEach(({ name, value, options }) =>
-                cookieStore.set(name, value, options)
-              )
-            } catch {
+              cookiesToSet.forEach(({ name, value, options }) => {
+                // Enhanced cookie options for better session persistence
+                const enhancedOptions: CookieOptions = {
+                  ...options,
+                  httpOnly: true,
+                  secure: process.env.NODE_ENV === 'production',
+                  maxAge: 60 * 60 * 24 * 7, // 7 days
+                  sameSite: 'lax',
+                  path: '/',
+                }
+                cookieStore.set(name, value, enhancedOptions)
+              })
+            } catch (error) {
+              console.error('Error setting cookies in auth callback:', error)
               // The `setAll` method was called from a Server Component.
               // This can be ignored if you have middleware refreshing user sessions.
             }
           },
         },
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true
+        }
       }
     )
 

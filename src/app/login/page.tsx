@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -23,6 +23,62 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [notification, setNotification] = useState<Notification | null>(null)
   const [isLoading, setIsLoading] = useState(false)
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true)
+  
+  // Register service worker for better PWA auth handling
+  useEffect(() => {
+    // Only register in browser and production
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/login-sw.js')
+        .then(registration => {
+          console.log('Login service worker registered:', registration.scope);
+        })
+        .catch(error => {
+          console.error('Login service worker registration failed:', error);
+        });
+    }
+  }, []);
+
+  // Check if user is already logged in and redirect accordingly
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const supabase = createClient()
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (session) {
+          // User is already logged in, get their role
+          const { data: { user } } = await supabase.auth.getUser()
+          
+          if (!user) return
+          
+          // Check profile for pause status and role
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('role, is_paused')
+            .eq('id', user.id)
+            .maybeSingle()
+          
+          const userRole = profile?.role || user.user_metadata?.role || 'user'
+          const isPaused = profile?.is_paused || false
+          
+          if (isPaused) {
+            window.location.href = '/paused'
+          } else if (userRole === 'super_admin') {
+            window.location.href = '/superadmin'
+          } else {
+            window.location.href = '/pos'
+          }
+        }
+      } catch (error) {
+        console.error('Error checking auth:', error)
+      } finally {
+        setIsCheckingAuth(false)
+      }
+    }
+    
+    checkAuth()
+  }, [])
 
   const showNotification = (type: NotificationType, message: string) => {
     setNotification({ type, message })
@@ -108,6 +164,18 @@ export default function LoginPage() {
     }
   }
 
+  // Show loading spinner while checking auth status
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen min-h-[100dvh] flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="flex flex-col items-center gap-4">
+          <Image src="/kesti.png" alt="Kesti Pro" width={80} height={80} className="rounded-xl shadow-lg" />
+          <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+        </div>
+      </div>
+    )
+  }
+  
   return (
     <div className="min-h-screen min-h-[100dvh] flex items-center justify-center px-4 py-6 sm:p-6 bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="w-full max-w-md">
