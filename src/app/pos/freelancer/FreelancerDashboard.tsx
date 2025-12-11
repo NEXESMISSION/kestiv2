@@ -127,6 +127,13 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
   const [editTransactionDescription, setEditTransactionDescription] = useState('')
   const [editTransactionCategoryId, setEditTransactionCategoryId] = useState('')
   
+  // Edit/Delete client state
+  const [editingClient, setEditingClient] = useState<Client | null>(null)
+  const [deletingClient, setDeletingClient] = useState<Client | null>(null)
+  const [editClientName, setEditClientName] = useState('')
+  const [editClientPhone, setEditClientPhone] = useState('')
+  const [editClientNotes, setEditClientNotes] = useState('')
+  
   // Stats
   const [stats, setStats] = useState({
     todayIncome: 0,
@@ -274,10 +281,8 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
         business_id: userId,
         client_id: incomeClientId || null,
         amount: amount,
-        payment_type: incomePaymentMethod === 'credit' ? 'credit' : 'cash',
-        category_id: incomeCategoryId || null,
-        category: categoryName,
-        notes: incomeDescription || null
+        payment_type: incomePaymentMethod === 'credit' ? 'deposit' : 'general',
+        notes: incomeDescription ? `${categoryName}: ${incomeDescription}` : categoryName
       }).select()
       
       if (insertError) {
@@ -485,7 +490,7 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
         business_id: userId,
         client_id: client.id,
         amount: numAmount,
-        payment_type: 'debt_payment',
+        payment_type: 'partial',
         notes: 'سداد دين'
       })
       
@@ -901,6 +906,27 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                         تسجيل سداد
                       </button>
                     )}
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => {
+                          setEditClientName(client.name)
+                          setEditClientPhone(client.phone || '')
+                          setEditClientNotes(client.notes || '')
+                          setEditingClient(client)
+                        }}
+                        className="flex-1 py-2 bg-primary-50 hover:bg-primary-100 text-primary-600 rounded-lg text-sm font-medium flex items-center justify-center gap-1"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                        تعديل
+                      </button>
+                      <button
+                        onClick={() => setDeletingClient(client)}
+                        className="flex-1 py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-sm font-medium flex items-center justify-center gap-1"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                        حذف
+                      </button>
+                    </div>
                   </div>
                 ))}
                 {filteredClients.length === 0 && (
@@ -1766,6 +1792,133 @@ export default function FreelancerDashboard({ userId, profile }: FreelancerDashb
                       fetchData()
                     } catch (error) {
                       console.error('Error deleting transaction:', error)
+                    } finally {
+                      setIsSubmitting(false)
+                    }
+                  }}
+                  disabled={isSubmitting}
+                  className="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                >
+                  {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Trash2 className="w-5 h-5" />}
+                  حذف
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Client Modal */}
+      {editingClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setEditingClient(null)}>
+          <div className="w-full max-w-md bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white rounded-t-2xl">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-bold">تعديل العميل</h3>
+                <button onClick={() => setEditingClient(null)} className="p-1 hover:bg-white/20 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">الاسم *</label>
+                <input
+                  type="text"
+                  value={editClientName}
+                  onChange={(e) => setEditClientName(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl"
+                  placeholder="اسم العميل"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">رقم الهاتف</label>
+                <input
+                  type="tel"
+                  value={editClientPhone}
+                  onChange={(e) => setEditClientPhone(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl"
+                  placeholder="اختياري"
+                  dir="ltr"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">ملاحظات</label>
+                <textarea
+                  value={editClientNotes}
+                  onChange={(e) => setEditClientNotes(e.target.value)}
+                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl min-h-[80px]"
+                  placeholder="اختياري"
+                />
+              </div>
+              
+              <button
+                onClick={async () => {
+                  if (!editClientName) return
+                  setIsSubmitting(true)
+                  try {
+                    await supabase.from('freelancer_clients')
+                      .update({ 
+                        name: editClientName, 
+                        phone: editClientPhone || null, 
+                        notes: editClientNotes || null,
+                        updated_at: new Date().toISOString()
+                      })
+                      .eq('id', editingClient.id)
+                    
+                    setEditingClient(null)
+                    fetchData()
+                  } catch (error) {
+                    console.error('Error updating client:', error)
+                  } finally {
+                    setIsSubmitting(false)
+                  }
+                }}
+                disabled={!editClientName || isSubmitting}
+                className="w-full py-3 bg-primary-500 hover:bg-primary-600 disabled:bg-gray-300 text-white font-medium rounded-xl flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? <Loader2 className="w-5 h-5 animate-spin" /> : <Check className="w-5 h-5" />}
+                حفظ التغييرات
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Client Confirmation Modal */}
+      {deletingClient && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setDeletingClient(null)}>
+          <div className="w-full max-w-sm bg-white rounded-2xl" onClick={e => e.stopPropagation()}>
+            <div className="bg-gradient-to-r from-red-500 to-red-600 p-5 text-white rounded-t-2xl">
+              <div className="flex items-center gap-3">
+                <AlertCircle className="w-6 h-6" />
+                <h3 className="text-lg font-bold">حذف العميل</h3>
+              </div>
+            </div>
+            <div className="p-5 space-y-4">
+              <div className="p-4 bg-red-50 border border-red-200 rounded-xl text-center">
+                <p className="text-red-700 font-medium mb-2">هل أنت متأكد من حذف هذا العميل؟</p>
+                <p className="text-red-600 font-bold text-lg">{deletingClient.name}</p>
+              </div>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setDeletingClient(null)}
+                  className="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded-xl transition-colors"
+                >
+                  إلغاء
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsSubmitting(true)
+                    try {
+                      await supabase.from('freelancer_payments').delete().eq('client_id', deletingClient.id)
+                      await supabase.from('freelancer_clients').delete().eq('id', deletingClient.id)
+                      setDeletingClient(null)
+                      fetchData()
+                    } catch (error) {
+                      console.error('Error deleting client:', error)
                     } finally {
                       setIsSubmitting(false)
                     }
