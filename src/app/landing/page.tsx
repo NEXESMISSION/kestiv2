@@ -101,11 +101,36 @@ export default function LandingPage() {
     { q: 'ماذا لو واجهت مشكلة؟', a: 'فريق الدعم متاح على واتساب للرد على أسئلتك. نرد خلال دقائق في أوقات العمل.' },
   ]
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setFormSubmitted(true)
-    setTimeout(() => setFormSubmitted(false), 3000)
-    setFormData({ name: '', phone: '', email: '', message: '' })
+    setIsSubmitting(true)
+    setSubmitError(null)
+    
+    try {
+      const response = await fetch('/api/inquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      })
+      
+      const result = await response.json()
+      
+      if (!response.ok) {
+        setSubmitError(result.error || 'فشل في إرسال الاستفسار')
+        return
+      }
+      
+      setFormSubmitted(true)
+      setTimeout(() => setFormSubmitted(false), 3000)
+      setFormData({ name: '', phone: '', email: '', message: '' })
+    } catch {
+      setSubmitError('حدث خطأ في الاتصال')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -291,7 +316,7 @@ export default function LandingPage() {
       <section id="features" className="py-16 sm:py-20 px-4 bg-gray-50">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">ليش Kesti Pro؟</h2>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">علاش Kesti Pro؟</h2>
             <p className="text-gray-600 text-lg">مشاكل حقيقية وحلول فورية</p>
           </div>
 
@@ -456,8 +481,8 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
                 <Store className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">للمحلات والبقالات</h3>
-              <p className="text-gray-500 text-sm mb-4">بيع المنتجات وتتبع المخزون</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">للبيع بالتجزئة</h3>
+              <p className="text-gray-500 text-sm mb-4">محلات، بقالات، كافيهات، متاجر إلكترونية...</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-blue-500" />بيع سريع</li>
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-blue-500" />متابعة المخزون</li>
@@ -468,14 +493,14 @@ export default function LandingPage() {
               <Link href="/register" className="block mt-4 text-blue-600 font-medium text-sm hover:underline">جرّبها بنفسك →</Link>
             </div>
 
-            {/* Gym/Subscriptions */}
+            {/* Subscriptions */}
             <div className="bg-white rounded-2xl p-6 border-2 border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all relative">
-              <div className="absolute -top-3 right-4 bg-purple-500 text-white text-xs px-3 py-1 rounded-full font-bold">مميز للجيم</div>
+              <div className="absolute -top-3 right-4 bg-purple-500 text-white text-xs px-3 py-1 rounded-full font-bold">للاشتراكات</div>
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
                 <Dumbbell className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">للصالات والجيم</h3>
-              <p className="text-gray-500 text-sm mb-4">إدارة الاشتراكات والعضويات</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">للاشتراكات والعضويات</h3>
+              <p className="text-gray-500 text-sm mb-4">جيم، co-working، نوادي، أي نشاط باشتراك زمني</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-purple-500" />إدارة الاشتراكات</li>
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-purple-500" />التنبيهات التلقائية</li>
@@ -495,7 +520,7 @@ export default function LandingPage() {
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />تتبع العملاء</li>
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />جلسات ومواعيد</li>
-                <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />فوترة سهلة</li>
+                <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />كريديات العملاء</li>
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />تقارير الدخل</li>
               </ul>
               <Link href="/register" className="block mt-4 text-green-600 font-medium text-sm hover:underline">جرّبها بنفسك →</Link>
@@ -687,11 +712,24 @@ export default function LandingPage() {
 
               <button
                 type="submit"
-                className="w-full py-3 sm:py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-500/30 transition-all flex items-center justify-center gap-2 text-sm sm:text-base"
+                disabled={isSubmitting}
+                className="w-full py-3 sm:py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary-500/30 transition-all flex items-center justify-center gap-2 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Send className="w-4 h-4 sm:w-5 sm:h-5" />
-                إرسال الاستفسار
+                {isSubmitting ? (
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 sm:w-5 sm:h-5" />
+                    إرسال الاستفسار
+                  </>
+                )}
               </button>
+
+              {submitError && (
+                <div className="text-center p-3 sm:p-4 bg-red-50 text-red-700 rounded-xl animate-scale-in">
+                  {submitError}
+                </div>
+              )}
 
               {formSubmitted && (
                 <div className="text-center p-3 sm:p-4 bg-green-50 text-green-700 rounded-xl animate-scale-in">

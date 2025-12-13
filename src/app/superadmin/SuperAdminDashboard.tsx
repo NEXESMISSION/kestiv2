@@ -6,7 +6,7 @@ import {
   PauseCircle, PlayCircle, Timer, Plus, Minus,
   Calendar, Clock, CheckCircle, XCircle, ChevronLeft, Trash2, AlertTriangle,
   Eye, Package, CreditCard, UserCheck, Briefcase, TrendingUp, TrendingDown,
-  ShoppingCart, Wallet, FileText
+  ShoppingCart, Wallet, FileText, Mail, MessageSquare, Check
 } from 'lucide-react'
 import { createClient, resetClient } from '@/lib/supabase/client'
 import { PullToRefresh } from '@/components/pwa'
@@ -55,6 +55,12 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
   const [seeThroughData, setSeeThroughData] = useState<any>(null)
   const [seeThroughLoading, setSeeThroughLoading] = useState(false)
   const [seeThroughTab, setSeeThroughTab] = useState<'overview' | 'transactions' | 'products' | 'members' | 'freelancer'>('overview')
+
+  // Inquiries Modal
+  const [showInquiriesModal, setShowInquiriesModal] = useState(false)
+  const [inquiries, setInquiries] = useState<any[]>([])
+  const [inquiriesLoading, setInquiriesLoading] = useState(false)
+  const [inquiriesError, setInquiriesError] = useState<string | null>(null)
 
   // Fetch profiles using secure API route
   const fetchProfiles = async () => {
@@ -327,6 +333,66 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
     setSeeThroughData(null)
   }
 
+  // Inquiries handlers
+  const fetchInquiries = async () => {
+    setInquiriesLoading(true)
+    setInquiriesError(null)
+    try {
+      const response = await fetch('/api/inquiries')
+      const result = await response.json()
+      
+      if (!response.ok) {
+        setInquiriesError(result.error || 'فشل في جلب الاستفسارات')
+        return
+      }
+      
+      setInquiries(result.inquiries || [])
+    } catch {
+      setInquiriesError('فشل في الاتصال بالخادم')
+    } finally {
+      setInquiriesLoading(false)
+    }
+  }
+
+  const openInquiriesModal = () => {
+    setShowInquiriesModal(true)
+    fetchInquiries()
+  }
+
+  const handleMarkAsRead = async (id: string, isRead: boolean) => {
+    try {
+      const response = await fetch(`/api/inquiries/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_read: isRead })
+      })
+      
+      if (response.ok) {
+        setInquiries(prev => prev.map(inq => 
+          inq.id === id ? { ...inq, is_read: isRead } : inq
+        ))
+      }
+    } catch {
+      // Silently fail
+    }
+  }
+
+  const handleDeleteInquiry = async (id: string) => {
+    if (!confirm('هل أنت متأكد من حذف هذا الاستفسار؟')) return
+    
+    try {
+      const response = await fetch(`/api/inquiries/${id}`, {
+        method: 'DELETE'
+      })
+      
+      if (response.ok) {
+        setInquiries(prev => prev.filter(inq => inq.id !== id))
+      }
+    } catch {
+      // Silently fail
+    }
+  }
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('ar-TN', { style: 'decimal', minimumFractionDigits: 2 }).format(amount) + ' د.ت'
   }
@@ -379,7 +445,19 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
               <p className="text-sm text-gray-500">لوحة إدارة المستخدمين</p>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-600">{currentProfile.full_name}</span>
+              <button
+                onClick={openInquiriesModal}
+                className="relative flex items-center gap-2 px-4 py-2 bg-primary-50 text-primary-600 hover:bg-primary-100 rounded-lg transition-colors"
+              >
+                <Mail className="w-4 h-4" />
+                <span className="hidden sm:inline">الرسائل</span>
+                {inquiries.filter(i => !i.is_read).length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
+                    {inquiries.filter(i => !i.is_read).length}
+                  </span>
+                )}
+              </button>
+              <span className="text-sm text-gray-600 hidden sm:inline">{currentProfile.full_name}</span>
               <button
                 onClick={handleLogout}
                 disabled={isLoggingOut}
@@ -1231,6 +1309,109 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
                 </div>
               </>
             ) : null}
+          </div>
+        </div>
+      )}
+
+      {/* Inquiries Modal */}
+      {showInquiriesModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setShowInquiriesModal(false)}>
+          <div className="w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-primary-500 to-primary-600 p-5 text-white flex items-center justify-between flex-shrink-0">
+              <div className="flex items-center gap-3">
+                <MessageSquare className="w-6 h-6" />
+                <div>
+                  <h3 className="text-lg font-bold">استفسارات الموقع</h3>
+                  <p className="text-sm text-white/80">{inquiries.length} رسالة</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={fetchInquiries}
+                  disabled={inquiriesLoading}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+                >
+                  <RefreshCw className={`w-5 h-5 ${inquiriesLoading ? 'animate-spin' : ''}`} />
+                </button>
+                <button onClick={() => setShowInquiriesModal(false)} className="p-2 hover:bg-white/20 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="flex-1 overflow-y-auto p-4">
+              {inquiriesLoading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+                </div>
+              ) : inquiriesError ? (
+                <div className="text-center py-12">
+                  <p className="text-red-600">{inquiriesError}</p>
+                  <button onClick={fetchInquiries} className="mt-4 px-4 py-2 bg-primary-500 text-white rounded-lg">
+                    إعادة المحاولة
+                  </button>
+                </div>
+              ) : inquiries.length === 0 ? (
+                <div className="text-center py-12">
+                  <Mail className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                  <p className="text-gray-500">لا توجد استفسارات</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {inquiries.map((inquiry) => (
+                    <div 
+                      key={inquiry.id} 
+                      className={`p-4 rounded-xl border transition-all ${
+                        inquiry.is_read 
+                          ? 'bg-gray-50 border-gray-200' 
+                          : 'bg-primary-50 border-primary-200'
+                      }`}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="font-bold text-gray-800">{inquiry.name}</span>
+                            {!inquiry.is_read && (
+                              <span className="px-2 py-0.5 bg-primary-500 text-white text-xs rounded-full">جديد</span>
+                            )}
+                          </div>
+                          <div className="flex flex-wrap gap-3 text-sm text-gray-500 mb-2">
+                            <span>{inquiry.phone}</span>
+                            {inquiry.email && <span>{inquiry.email}</span>}
+                          </div>
+                          <p className="text-gray-700 whitespace-pre-wrap">{inquiry.message}</p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            {new Date(inquiry.created_at).toLocaleString('ar-TN')}
+                          </p>
+                        </div>
+                        <div className="flex flex-col gap-2 flex-shrink-0">
+                          <button
+                            onClick={() => handleMarkAsRead(inquiry.id, !inquiry.is_read)}
+                            className={`p-2 rounded-lg transition-colors ${
+                              inquiry.is_read 
+                                ? 'bg-gray-200 hover:bg-gray-300 text-gray-600' 
+                                : 'bg-green-100 hover:bg-green-200 text-green-600'
+                            }`}
+                            title={inquiry.is_read ? 'تحديد كغير مقروء' : 'تحديد كمقروء'}
+                          >
+                            <Check className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteInquiry(inquiry.id)}
+                            className="p-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg transition-colors"
+                            title="حذف"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
