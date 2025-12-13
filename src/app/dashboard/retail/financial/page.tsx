@@ -48,19 +48,19 @@ export default function RetailFinancialPage() {
   useEffect(() => { fetchData() }, [fetchData])
 
   // Date calculations
-  const now = new Date()
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const weekAgo = new Date(today.getTime() - 7 * 86400000)
-  const monthAgo = new Date(today.getTime() - 30 * 86400000)
+  const today = useMemo(() => {
+    const now = new Date()
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  }, [])
+  const weekAgo = useMemo(() => new Date(today.getTime() - 7 * 86400000), [today])
+  const monthAgo = useMemo(() => new Date(today.getTime() - 30 * 86400000), [today])
 
-  const getStartDate = (p: PeriodType) => {
-    if (p === 'today') return today
-    if (p === 'week') return weekAgo
-    if (p === 'month') return monthAgo
+  const startDate = useMemo(() => {
+    if (period === 'today') return today
+    if (period === 'week') return weekAgo
+    if (period === 'month') return monthAgo
     return new Date(0) // 'all'
-  }
-
-  const startDate = getStartDate(period)
+  }, [period, today, weekAgo, monthAgo])
 
   // Filter transactions by period (excluding debt payments from revenue)
   const periodTransactions = useMemo(() => 

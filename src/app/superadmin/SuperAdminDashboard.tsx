@@ -1,11 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
 import { 
   Users, LogOut, Search, Loader2, X, RefreshCw,
   PauseCircle, PlayCircle, Timer, Plus, Minus,
-  Calendar, Clock, CheckCircle, XCircle, ChevronLeft, Trash2, AlertTriangle
+  Calendar, Clock, CheckCircle, XCircle, ChevronLeft, Trash2, AlertTriangle,
+  Eye, Package, CreditCard, UserCheck, Briefcase, TrendingUp, TrendingDown,
+  ShoppingCart, Wallet, FileText
 } from 'lucide-react'
 import { createClient, resetClient } from '@/lib/supabase/client'
 import { PullToRefresh } from '@/components/pwa'
@@ -24,7 +25,6 @@ interface SuperAdminDashboardProps {
 }
 
 export default function SuperAdminDashboard({ currentUser, currentProfile }: SuperAdminDashboardProps) {
-  const router = useRouter()
   const [profiles, setProfiles] = useState<Profile[]>([])
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
@@ -48,6 +48,13 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
   const [showCleanupModal, setShowCleanupModal] = useState(false)
   const [cleanupUserId, setCleanupUserId] = useState<string | null>(null)
   const [cleanupConfirmText, setCleanupConfirmText] = useState('')
+  
+  // See Through Modal
+  const [showSeeThroughModal, setShowSeeThroughModal] = useState(false)
+  const [seeThroughUserId, setSeeThroughUserId] = useState<string | null>(null)
+  const [seeThroughData, setSeeThroughData] = useState<any>(null)
+  const [seeThroughLoading, setSeeThroughLoading] = useState(false)
+  const [seeThroughTab, setSeeThroughTab] = useState<'overview' | 'transactions' | 'products' | 'members' | 'freelancer'>('overview')
 
   // Fetch profiles using secure API route
   const fetchProfiles = async () => {
@@ -287,6 +294,47 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
     }
   }
 
+  // See Through handler
+  const handleSeeThrough = async (userId: string, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setSeeThroughUserId(userId)
+    setSeeThroughLoading(true)
+    setShowSeeThroughModal(true)
+    setSeeThroughTab('overview')
+    
+    try {
+      const response = await fetch(`/api/admin/users/${userId}/details`)
+      const result = await response.json()
+      
+      if (!response.ok) {
+        alert('خطأ: ' + (result.error || 'فشل في جلب البيانات'))
+        setShowSeeThroughModal(false)
+        return
+      }
+      
+      setSeeThroughData(result)
+    } catch (err) {
+      alert('حدث خطأ أثناء جلب البيانات')
+      setShowSeeThroughModal(false)
+    } finally {
+      setSeeThroughLoading(false)
+    }
+  }
+
+  const closeSeeThroughModal = () => {
+    setShowSeeThroughModal(false)
+    setSeeThroughUserId(null)
+    setSeeThroughData(null)
+  }
+
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('ar-TN', { style: 'decimal', minimumFractionDigits: 2 }).format(amount) + ' د.ت'
+  }
+
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString('ar-TN', { year: 'numeric', month: 'short', day: 'numeric' })
+  }
+
   // Helper functions
   const getRemainingTime = (endDate: string | null) => {
     if (!endDate) return null
@@ -437,8 +485,17 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
                       </div>
                     </div>
 
-                    {/* Status */}
-                    <div className="flex items-center gap-3">
+                    {/* Status & Actions */}
+                    <div className="flex items-center gap-2">
+                      {/* See Through Button */}
+                      <button
+                        onClick={(e) => handleSeeThrough(profile.id, e)}
+                        className="p-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg transition-colors"
+                        title="عرض التفاصيل الكاملة"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      
                       {profile.is_paused ? (
                         <span className="px-3 py-1 bg-orange-100 text-orange-700 text-sm rounded-full">
                           موقوف
@@ -727,7 +784,7 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
               
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  للتأكيد، اكتب "تأكيد"
+                  للتأكيد، اكتب تأكيد
                 </label>
                 <input
                   type="text"
@@ -755,6 +812,425 @@ export default function SuperAdminDashboard({ currentUser, currentProfile }: Sup
                 </button>
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* See Through Modal - Full Account Details */}
+      {showSeeThroughModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 bg-black/50" onClick={closeSeeThroughModal}>
+          <div className="w-full max-w-4xl max-h-[95vh] bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col" onClick={e => e.stopPropagation()}>
+            {/* Header */}
+            <div className="bg-gradient-to-r from-blue-600 to-indigo-600 p-4 text-white flex-shrink-0">
+              <div className="flex items-center justify-between">
+                <button onClick={closeSeeThroughModal} className="p-2 hover:bg-white/20 rounded-lg">
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <Eye className="w-5 h-5" />
+                  <span className="font-bold">عرض شامل للحساب</span>
+                </div>
+                <div className="w-9" />
+              </div>
+              {seeThroughData?.profile && (
+                <div className="mt-3 text-center">
+                  <p className="text-lg font-bold">{seeThroughData.profile.full_name}</p>
+                  <p className="text-white/80 text-sm">{seeThroughData.profile.email || seeThroughData.profile.phone_number}</p>
+                  <p className="text-white/60 text-xs mt-1">نوع النشاط: {
+                    seeThroughData.profile.business_mode === 'subscription' ? 'اشتراكات' :
+                    seeThroughData.profile.business_mode === 'retail' ? 'بيع بالتجزئة' :
+                    seeThroughData.profile.business_mode === 'freelancer' ? 'عمل حر' : 'خدمات'
+                  }</p>
+                </div>
+              )}
+            </div>
+
+            {/* Loading State */}
+            {seeThroughLoading ? (
+              <div className="flex-1 flex items-center justify-center p-12">
+                <div className="text-center">
+                  <Loader2 className="w-12 h-12 animate-spin text-blue-500 mx-auto mb-4" />
+                  <p className="text-gray-500">جاري تحميل البيانات...</p>
+                </div>
+              </div>
+            ) : seeThroughData ? (
+              <>
+                {/* Tabs */}
+                <div className="flex border-b bg-gray-50 overflow-x-auto flex-shrink-0">
+                  {[
+                    { id: 'overview', label: 'نظرة عامة', icon: FileText },
+                    { id: 'transactions', label: 'المعاملات', icon: CreditCard },
+                    { id: 'products', label: 'المنتجات', icon: Package },
+                    { id: 'members', label: 'الأعضاء', icon: UserCheck },
+                    { id: 'freelancer', label: 'العمل الحر', icon: Briefcase }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      onClick={() => setSeeThroughTab(tab.id as any)}
+                      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap border-b-2 transition-colors ${
+                        seeThroughTab === tab.id 
+                          ? 'border-blue-500 text-blue-600 bg-white' 
+                          : 'border-transparent text-gray-500 hover:text-gray-700'
+                      }`}
+                    >
+                      <tab.icon className="w-4 h-4" />
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Content */}
+                <div className="flex-1 overflow-y-auto p-4">
+                  {/* Overview Tab */}
+                  {seeThroughTab === 'overview' && (
+                    <div className="space-y-4">
+                      {/* Stats Cards */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center">
+                          <TrendingUp className="w-6 h-6 text-green-600 mx-auto mb-2" />
+                          <p className="text-xs text-green-600 mb-1">إجمالي الإيرادات</p>
+                          <p className="text-lg font-bold text-green-700">{formatCurrency(seeThroughData.stats?.totalRevenue || 0)}</p>
+                        </div>
+                        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-center">
+                          <TrendingDown className="w-6 h-6 text-red-600 mx-auto mb-2" />
+                          <p className="text-xs text-red-600 mb-1">إجمالي المصروفات</p>
+                          <p className="text-lg font-bold text-red-700">{formatCurrency(seeThroughData.stats?.totalExpenses || 0)}</p>
+                        </div>
+                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
+                          <Wallet className="w-6 h-6 text-blue-600 mx-auto mb-2" />
+                          <p className="text-xs text-blue-600 mb-1">صافي الربح</p>
+                          <p className="text-lg font-bold text-blue-700">{formatCurrency(seeThroughData.stats?.netProfit || 0)}</p>
+                        </div>
+                        <div className="bg-purple-50 border border-purple-200 rounded-xl p-4 text-center">
+                          <ShoppingCart className="w-6 h-6 text-purple-600 mx-auto mb-2" />
+                          <p className="text-xs text-purple-600 mb-1">عدد المعاملات</p>
+                          <p className="text-lg font-bold text-purple-700">{seeThroughData.stats?.transactionsCount || 0}</p>
+                        </div>
+                      </div>
+
+                      {/* Counts Summary */}
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                        <div className="bg-gray-50 rounded-xl p-3 text-center">
+                          <p className="text-2xl font-bold text-gray-800">{seeThroughData.stats?.membersCount || 0}</p>
+                          <p className="text-xs text-gray-500">أعضاء</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl p-3 text-center">
+                          <p className="text-2xl font-bold text-gray-800">{seeThroughData.stats?.productsCount || 0}</p>
+                          <p className="text-xs text-gray-500">منتجات</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl p-3 text-center">
+                          <p className="text-2xl font-bold text-gray-800">{seeThroughData.stats?.servicesCount || 0}</p>
+                          <p className="text-xs text-gray-500">خدمات</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl p-3 text-center">
+                          <p className="text-2xl font-bold text-gray-800">{seeThroughData.stats?.freelancerClientsCount || 0}</p>
+                          <p className="text-xs text-gray-500">عملاء حر</p>
+                        </div>
+                        <div className="bg-gray-50 rounded-xl p-3 text-center">
+                          <p className="text-2xl font-bold text-gray-800">{seeThroughData.stats?.freelancerProjectsCount || 0}</p>
+                          <p className="text-xs text-gray-500">مشاريع</p>
+                        </div>
+                      </div>
+
+                      {/* Account Info */}
+                      <div className="bg-gray-50 rounded-xl p-4">
+                        <h4 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                          <Users className="w-4 h-4" />
+                          معلومات الحساب
+                        </h4>
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          <div><span className="text-gray-500">الاسم:</span> <span className="font-medium">{seeThroughData.profile?.full_name}</span></div>
+                          <div><span className="text-gray-500">البريد:</span> <span className="font-medium font-mono text-xs">{seeThroughData.profile?.email || '-'}</span></div>
+                          <div><span className="text-gray-500">الهاتف:</span> <span className="font-medium">{seeThroughData.profile?.phone_number || '-'}</span></div>
+                          <div><span className="text-gray-500">تاريخ التسجيل:</span> <span className="font-medium">{formatDate(seeThroughData.profile?.created_at)}</span></div>
+                          <div><span className="text-gray-500">حالة الاشتراك:</span> <span className={`font-medium ${seeThroughData.profile?.subscription_status === 'active' ? 'text-green-600' : 'text-red-600'}`}>{seeThroughData.profile?.subscription_status === 'active' ? 'نشط' : 'غير نشط'}</span></div>
+                          <div><span className="text-gray-500">موقوف:</span> <span className={`font-medium ${seeThroughData.profile?.is_paused ? 'text-orange-600' : 'text-green-600'}`}>{seeThroughData.profile?.is_paused ? 'نعم' : 'لا'}</span></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Transactions Tab */}
+                  {seeThroughTab === 'transactions' && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-bold text-gray-800">المعاملات ({seeThroughData.data?.transactions?.length || 0})</h4>
+                      </div>
+                      {seeThroughData.data?.transactions?.length > 0 ? (
+                        <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                          {seeThroughData.data.transactions.map((t: any) => (
+                            <div key={t.id} className="bg-gray-50 rounded-lg p-3 flex items-center justify-between">
+                              <div>
+                                <p className="font-medium text-gray-800">{t.type === 'sale' ? 'بيع' : t.type === 'subscription' ? 'اشتراك' : t.type}</p>
+                                <p className="text-xs text-gray-500">{formatDate(t.created_at)}</p>
+                                {t.notes && <p className="text-xs text-gray-400 mt-1">{t.notes}</p>}
+                              </div>
+                              <div className="text-left">
+                                <p className={`font-bold ${t.amount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                  {formatCurrency(t.amount)}
+                                </p>
+                                <p className="text-xs text-gray-500">{t.payment_method === 'cash' ? 'نقدي' : t.payment_method === 'card' ? 'بطاقة' : t.payment_method}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <CreditCard className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                          <p>لا توجد معاملات</p>
+                        </div>
+                      )}
+
+                      {/* Expenses */}
+                      <h4 className="font-bold text-gray-800 mt-6 mb-2">المصروفات ({seeThroughData.data?.expenses?.length || 0})</h4>
+                      {seeThroughData.data?.expenses?.length > 0 ? (
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                          {seeThroughData.data.expenses.map((e: any) => (
+                            <div key={e.id} className="bg-red-50 rounded-lg p-3 flex items-center justify-between">
+                              <div>
+                                <p className="font-medium text-gray-800">{e.category}</p>
+                                <p className="text-xs text-gray-500">{formatDate(e.date || e.created_at)}</p>
+                                {e.notes && <p className="text-xs text-gray-400 mt-1">{e.notes}</p>}
+                              </div>
+                              <p className="font-bold text-red-600">-{formatCurrency(e.amount)}</p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">لا توجد مصروفات</div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Products Tab */}
+                  {seeThroughTab === 'products' && (
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-gray-800 mb-2">المنتجات ({seeThroughData.data?.products?.length || 0})</h4>
+                      {seeThroughData.data?.products?.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {seeThroughData.data.products.map((p: any) => (
+                            <div key={p.id} className="bg-gray-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="font-medium text-gray-800">{p.name}</p>
+                                <span className={`px-2 py-0.5 text-xs rounded-full ${p.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-600'}`}>
+                                  {p.is_active ? 'نشط' : 'غير نشط'}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-3 gap-2 text-xs">
+                                <div><span className="text-gray-500">السعر:</span> <span className="font-medium">{formatCurrency(p.price)}</span></div>
+                                <div><span className="text-gray-500">التكلفة:</span> <span className="font-medium">{formatCurrency(p.cost || 0)}</span></div>
+                                <div><span className="text-gray-500">المخزون:</span> <span className="font-medium">{p.stock ?? '-'}</span></div>
+                              </div>
+                              {p.category && <p className="text-xs text-gray-400 mt-1">التصنيف: {p.category}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Package className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                          <p>لا توجد منتجات</p>
+                        </div>
+                      )}
+
+                      {/* Services */}
+                      <h4 className="font-bold text-gray-800 mt-6 mb-2">الخدمات ({seeThroughData.data?.services?.length || 0})</h4>
+                      {seeThroughData.data?.services?.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {seeThroughData.data.services.map((s: any) => (
+                            <div key={s.id} className="bg-blue-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                <p className="font-medium text-gray-800">{s.name}</p>
+                                <p className="font-bold text-blue-600">{formatCurrency(s.price)}</p>
+                              </div>
+                              {s.description && <p className="text-xs text-gray-500 mt-1">{s.description}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">لا توجد خدمات</div>
+                      )}
+
+                      {/* Subscription Plans */}
+                      <h4 className="font-bold text-gray-800 mt-6 mb-2">خطط الاشتراك ({seeThroughData.data?.subscriptionPlans?.length || 0})</h4>
+                      {seeThroughData.data?.subscriptionPlans?.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {seeThroughData.data.subscriptionPlans.map((plan: any) => (
+                            <div key={plan.id} className="bg-purple-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between">
+                                <p className="font-medium text-gray-800">{plan.name}</p>
+                                <p className="font-bold text-purple-600">{formatCurrency(plan.price)}</p>
+                              </div>
+                              <p className="text-xs text-gray-500 mt-1">
+                                {plan.duration_days > 0 ? `${plan.duration_days} يوم` : plan.sessions > 0 ? `${plan.sessions} حصة` : 'غير محدد'}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">لا توجد خطط</div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Members Tab */}
+                  {seeThroughTab === 'members' && (
+                    <div className="space-y-3">
+                      <h4 className="font-bold text-gray-800 mb-2">الأعضاء ({seeThroughData.data?.members?.length || 0})</h4>
+                      {seeThroughData.data?.members?.length > 0 ? (
+                        <div className="space-y-2 max-h-[500px] overflow-y-auto">
+                          {seeThroughData.data.members.map((m: any) => (
+                            <div key={m.id} className="bg-gray-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 bg-primary-100 text-primary-600 rounded-full flex items-center justify-center font-bold">
+                                    {m.name?.charAt(0) || '?'}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-gray-800">{m.name}</p>
+                                    <p className="text-xs text-gray-500">{m.phone}</p>
+                                  </div>
+                                </div>
+                                <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                  m.is_frozen ? 'bg-blue-100 text-blue-700' :
+                                  m.expires_at && new Date(m.expires_at) < new Date() ? 'bg-red-100 text-red-700' :
+                                  'bg-green-100 text-green-700'
+                                }`}>
+                                  {m.is_frozen ? 'مجمد' : m.expires_at && new Date(m.expires_at) < new Date() ? 'منتهي' : 'نشط'}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-3 gap-2 text-xs">
+                                <div><span className="text-gray-500">الخطة:</span> <span className="font-medium">{m.plan_name || '-'}</span></div>
+                                <div><span className="text-gray-500">الدين:</span> <span className={`font-medium ${m.debt > 0 ? 'text-red-600' : ''}`}>{formatCurrency(m.debt || 0)}</span></div>
+                                <div><span className="text-gray-500">الانتهاء:</span> <span className="font-medium">{m.expires_at ? formatDate(m.expires_at) : '-'}</span></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <UserCheck className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                          <p>لا يوجد أعضاء</p>
+                        </div>
+                      )}
+
+                      {/* Subscription History */}
+                      <h4 className="font-bold text-gray-800 mt-6 mb-2">سجل الاشتراكات ({seeThroughData.data?.subscriptionHistory?.length || 0})</h4>
+                      {seeThroughData.data?.subscriptionHistory?.length > 0 ? (
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                          {seeThroughData.data.subscriptionHistory.slice(0, 50).map((h: any) => (
+                            <div key={h.id} className="bg-gray-50 rounded-lg p-2 text-xs flex items-center justify-between">
+                              <div>
+                                <span className="font-medium">{h.type === 'subscription' ? 'تجديد' : h.type === 'session_use' ? 'استخدام حصة' : h.type}</span>
+                                <span className="text-gray-400 mr-2">{formatDate(h.created_at)}</span>
+                              </div>
+                              {h.amount > 0 && <span className="text-green-600 font-medium">{formatCurrency(h.amount)}</span>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">لا يوجد سجل</div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Freelancer Tab */}
+                  {seeThroughTab === 'freelancer' && (
+                    <div className="space-y-3">
+                      {/* Freelancer Clients */}
+                      <h4 className="font-bold text-gray-800 mb-2">عملاء العمل الحر ({seeThroughData.data?.freelancerClients?.length || 0})</h4>
+                      {seeThroughData.data?.freelancerClients?.length > 0 ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                          {seeThroughData.data.freelancerClients.map((c: any) => (
+                            <div key={c.id} className="bg-gray-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="font-medium text-gray-800">{c.name}</p>
+                                <span className="text-xs text-gray-500">{c.projects_count || 0} مشاريع</span>
+                              </div>
+                              <div className="grid grid-cols-2 gap-2 text-xs">
+                                <div><span className="text-gray-500">المدفوع:</span> <span className="font-medium text-green-600">{formatCurrency(c.total_spent || 0)}</span></div>
+                                <div><span className="text-gray-500">المستحق:</span> <span className="font-medium text-red-600">{formatCurrency(c.total_credit || 0)}</span></div>
+                              </div>
+                              {c.phone && <p className="text-xs text-gray-400 mt-1">{c.phone}</p>}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-8 text-gray-500">
+                          <Briefcase className="w-12 h-12 mx-auto mb-2 opacity-30" />
+                          <p>لا يوجد عملاء</p>
+                        </div>
+                      )}
+
+                      {/* Freelancer Projects */}
+                      <h4 className="font-bold text-gray-800 mt-6 mb-2">المشاريع ({seeThroughData.data?.freelancerProjects?.length || 0})</h4>
+                      {seeThroughData.data?.freelancerProjects?.length > 0 ? (
+                        <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                          {seeThroughData.data.freelancerProjects.map((p: any) => (
+                            <div key={p.id} className="bg-gray-50 rounded-lg p-3">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="font-medium text-gray-800">{p.title}</p>
+                                <span className={`px-2 py-0.5 text-xs rounded-full ${
+                                  p.status === 'completed' ? 'bg-green-100 text-green-700' :
+                                  p.status === 'in_progress' ? 'bg-blue-100 text-blue-700' :
+                                  p.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                  'bg-yellow-100 text-yellow-700'
+                                }`}>
+                                  {p.status === 'completed' ? 'مكتمل' : p.status === 'in_progress' ? 'جاري' : p.status === 'cancelled' ? 'ملغي' : 'معلق'}
+                                </span>
+                              </div>
+                              <div className="grid grid-cols-3 gap-2 text-xs">
+                                <div><span className="text-gray-500">الإجمالي:</span> <span className="font-medium">{formatCurrency(p.total_price || 0)}</span></div>
+                                <div><span className="text-gray-500">المدفوع:</span> <span className="font-medium text-green-600">{formatCurrency(p.paid_amount || 0)}</span></div>
+                                <div><span className="text-gray-500">المتبقي:</span> <span className="font-medium text-red-600">{formatCurrency(p.remaining || 0)}</span></div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">لا توجد مشاريع</div>
+                      )}
+
+                      {/* Freelancer Payments */}
+                      <h4 className="font-bold text-gray-800 mt-6 mb-2">المدفوعات ({seeThroughData.data?.freelancerPayments?.length || 0})</h4>
+                      {seeThroughData.data?.freelancerPayments?.length > 0 ? (
+                        <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                          {seeThroughData.data.freelancerPayments.slice(0, 30).map((p: any) => (
+                            <div key={p.id} className="bg-green-50 rounded-lg p-2 text-xs flex items-center justify-between">
+                              <div>
+                                <span className="font-medium">{p.payment_type === 'full' ? 'دفعة كاملة' : p.payment_type === 'deposit' ? 'عربون' : 'دفعة جزئية'}</span>
+                                <span className="text-gray-400 mr-2">{formatDate(p.created_at)}</span>
+                              </div>
+                              <span className="text-green-600 font-bold">{formatCurrency(p.amount)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">لا توجد مدفوعات</div>
+                      )}
+
+                      {/* Freelancer Expenses */}
+                      <h4 className="font-bold text-gray-800 mt-6 mb-2">مصروفات العمل الحر ({seeThroughData.data?.freelancerExpenses?.length || 0})</h4>
+                      {seeThroughData.data?.freelancerExpenses?.length > 0 ? (
+                        <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                          {seeThroughData.data.freelancerExpenses.slice(0, 30).map((e: any) => (
+                            <div key={e.id} className="bg-red-50 rounded-lg p-2 text-xs flex items-center justify-between">
+                              <div>
+                                <span className="font-medium">{e.category}</span>
+                                <span className="text-gray-400 mr-2">{formatDate(e.date)}</span>
+                                {e.description && <span className="text-gray-500 mr-2">- {e.description}</span>}
+                              </div>
+                              <span className="text-red-600 font-bold">-{formatCurrency(e.amount)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">لا توجد مصروفات</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </>
+            ) : null}
           </div>
         </div>
       )}

@@ -112,6 +112,17 @@ export function useInstall(): UseInstallReturn {
     setDeferredPrompt(null)
   }, [deferredPrompt])
 
+  // Redirect to Safari with install flag
+  const redirectToSafari = useCallback(() => {
+    const currentUrl = window.location.origin + '/login?install=safari'
+    // Use x-safari scheme to open in Safari
+    window.location.href = `x-safari-${currentUrl}`
+    // Fallback after delay
+    setTimeout(() => {
+      window.location.href = currentUrl
+    }, 100)
+  }, [])
+
   // Main install action - handles all platforms
   const installApp = useCallback(async () => {
     switch (platform.platform) {
@@ -137,7 +148,7 @@ export function useInstall(): UseInstallReturn {
       default:
         setShowSafariModal(true)
     }
-  }, [platform.platform, deferredPrompt, installNative])
+  }, [platform.platform, deferredPrompt, installNative, redirectToSafari])
 
   // Open Safari modal manually
   const openSafariModal = useCallback(() => {
@@ -147,17 +158,6 @@ export function useInstall(): UseInstallReturn {
   // Close Safari modal
   const closeSafariModal = useCallback(() => {
     setShowSafariModal(false)
-  }, [])
-
-  // Redirect to Safari with install flag
-  const redirectToSafari = useCallback(() => {
-    const currentUrl = window.location.origin + '/login?install=safari'
-    // Use x-safari scheme to open in Safari
-    window.location.href = `x-safari-${currentUrl}`
-    // Fallback after delay
-    setTimeout(() => {
-      window.location.href = currentUrl
-    }, 100)
   }, [])
 
   return {

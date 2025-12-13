@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { 
   Plus, Calendar, Star, Tag,
   X, Loader2, Check, ChevronLeft, ChevronRight, Trash2, Settings
@@ -59,7 +59,7 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
     ? projects.filter(p => p.client_id === eventClientId && p.status !== 'completed')
     : projects.filter(p => p.status !== 'completed')
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true)
     try {
       const supabase = createClient()
@@ -87,11 +87,11 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [userId])
 
   useEffect(() => {
     fetchData()
-  }, [userId])
+  }, [fetchData])
 
   const handleAddEvent = async () => {
     if (!eventTitle || !eventDate) return
@@ -550,7 +550,7 @@ export default function CalendarTab({ userId, projects, clients, onRefresh }: Ca
                 </div>
                 {eventTypes.length === 0 ? (
                   <p className="text-sm text-gray-500 text-center py-2 bg-gray-50 rounded-lg">
-                    لا توجد أنواع - أضف أنواع الأحداث من "إدارة الأنواع"
+                    لا توجد أنواع - أضف أنواع الأحداث من إدارة الأنواع
                   </p>
                 ) : (
                   <div className="flex flex-wrap gap-2">

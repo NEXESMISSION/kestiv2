@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -290,7 +291,13 @@ export default function RetailDashboardPage() {
                 <div key={p.id} className="bg-white rounded-xl border p-3">
                   <div className="flex items-start gap-3">
                     <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                      {p.image_url ? <img src={p.image_url} className="w-12 h-12 rounded-lg object-cover" /> : <Package className="w-6 h-6 text-gray-400" />}
+                      {p.image_url ? (
+                        <div className="relative w-12 h-12">
+                          <Image src={p.image_url} alt={p.name} fill className="rounded-lg object-cover" sizes="48px" />
+                        </div>
+                      ) : (
+                        <Package className="w-6 h-6 text-gray-400" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2">
@@ -343,7 +350,13 @@ export default function RetailDashboardPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                            {p.image_url ? <img src={p.image_url} className="w-10 h-10 rounded-lg object-cover" /> : <Package className="w-5 h-5 text-gray-400" />}
+                            {p.image_url ? (
+                              <div className="relative w-10 h-10">
+                                <Image src={p.image_url} alt={p.name} fill className="rounded-lg object-cover" sizes="40px" />
+                              </div>
+                            ) : (
+                              <Package className="w-5 h-5 text-gray-400" />
+                            )}
                           </div>
                           <div>
                             <div className="font-medium">{p.name}</div>
@@ -773,7 +786,7 @@ function ProductModal({ product, categories, onClose, onSave, userId }: {
                 <div className="animate-spin w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full" />
               ) : imageUrl ? (
                 <>
-                  <img src={imageUrl} alt="صورة المنتج" className="w-full h-full object-cover" />
+                  <Image src={imageUrl} alt="صورة المنتج" fill className="object-cover" sizes="80px" />
                   <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <Camera className="w-5 h-5 text-white" />
                   </div>

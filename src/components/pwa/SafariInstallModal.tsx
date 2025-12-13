@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { X, Share, Plus, CheckCircle } from 'lucide-react'
 
 interface SafariInstallModalProps {
@@ -33,7 +34,7 @@ export default function SafariInstallModal({ isOpen, onClose }: SafariInstallMod
             
             {/* App Icon */}
             <div className="w-20 h-20 mx-auto mb-4 rounded-2xl shadow-lg overflow-hidden">
-              <img src="/kesti.png" alt="Kesti Pro" className="w-full h-full object-cover" />
+              <Image src="/kesti.png" alt="Kesti Pro" width={80} height={80} className="w-full h-full object-cover" priority />
             </div>
             
             <h3 className="text-xl font-bold text-gray-900 mb-1">تثبيت Kesti Pro</h3>
@@ -74,7 +75,7 @@ export default function SafariInstallModal({ isOpen, onClose }: SafariInstallMod
                   <span className="w-6 h-6 rounded-full bg-green-600 text-white text-sm font-bold flex items-center justify-center">2</span>
                   <span className="font-semibold text-gray-900">إضافة إلى الشاشة الرئيسية</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1 mr-8">ثم اضغط "إضافة" للتأكيد</p>
+                <p className="text-xs text-gray-500 mt-1 mr-8">ثم اضغط إضافة للتأكيد</p>
               </div>
             </div>
           </div>

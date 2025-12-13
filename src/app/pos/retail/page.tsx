@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient, resetClient } from '@/lib/supabase/client'
 import { Product, Category, RetailCustomer } from '@/types/database'
 import { 
@@ -410,7 +411,9 @@ export default function RetailPOSPage() {
                           product.image_url ? '' : 'bg-gradient-to-br from-primary-100 to-blue-50'
                         }`}>
                           {product.image_url ? (
-                            <img src={product.image_url} alt={product.name} className="h-full w-full object-cover rounded-xl" />
+                            <div className="relative h-full w-full">
+                              <Image src={product.image_url} alt={product.name} fill className="object-cover rounded-xl" sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw" />
+                            </div>
                           ) : (
                             <Package className="w-8 h-8 text-primary-400" />
                           )}
@@ -463,7 +466,9 @@ export default function RetailPOSPage() {
                                 product.image_url ? '' : 'bg-gradient-to-br from-gray-100 to-gray-50'
                               }`}>
                                 {product.image_url ? (
-                                  <img src={product.image_url} alt={product.name} className="h-full w-full object-cover rounded-xl" />
+                                  <div className="relative h-full w-full">
+                                    <Image src={product.image_url} alt={product.name} fill className="object-cover rounded-xl" sizes="160px" />
+                                  </div>
                                 ) : (
                                   <Package className="w-8 h-8 text-gray-400" />
                                 )}
@@ -512,7 +517,9 @@ export default function RetailPOSPage() {
                             >
                               <div className={`h-16 rounded-xl mb-2 flex items-center justify-center`} style={{ backgroundColor: category.color + '20' }}>
                                 {product.image_url ? (
-                                  <img src={product.image_url} alt={product.name} className="h-full w-full object-cover rounded-xl" />
+                                  <div className="relative h-full w-full">
+                                    <Image src={product.image_url} alt={product.name} fill className="object-cover rounded-xl" sizes="160px" />
+                                  </div>
                                 ) : (
                                   <Package className="w-8 h-8" style={{ color: category.color }} />
                                 )}

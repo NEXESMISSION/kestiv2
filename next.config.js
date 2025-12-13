@@ -3,6 +3,15 @@ const nextConfig = {
   reactStrictMode: true,
   trailingSlash: false,
   output: undefined,
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**.supabase.co'
+      }
+    ]
+  },
   
   // Security headers
   async headers() {
