@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'Kesti Pro',
   webDir: 'build',
   server: {
-    url: 'https://kestipro.com',
+    url: 'https://kestipro.com/login',
     allowNavigation: ['kestipro.com', '*.kestipro.com', '*.supabase.co']
   },
   plugins: {
