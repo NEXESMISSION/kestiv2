@@ -36,7 +36,7 @@ export async function PATCH(
     const serviceClient = createServiceClient()
     const { error } = await serviceClient
       .from('inquiries')
-      .update({ is_read })
+      .update({ is_read } as Record<string, unknown>)
       .eq('id', id)
 
     if (error) {
