@@ -11,35 +11,53 @@
   "id": "/login",
   "lang": "ar",
   "dir": "rtl",
-  "categories": ["business", "productivity", "utilities"],
+  "categories": [
+    "business",
+    "productivity",
+    "utilities"
+  ],
   "icons": [
     {
-      "src": "/kesti.png",
-      "sizes": "192x192",
+      "src": "../icons/icon-48.webp",
       "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/kesti.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/kesti.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
-    },
-    {
-      "src": "/favicon.ico",
       "sizes": "48x48",
-      "type": "image/x-icon"
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-72.webp",
+      "type": "image/png",
+      "sizes": "72x72",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-96.webp",
+      "type": "image/png",
+      "sizes": "96x96",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-128.webp",
+      "type": "image/png",
+      "sizes": "128x128",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-192.webp",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-256.webp",
+      "type": "image/png",
+      "sizes": "256x256",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "../icons/icon-512.webp",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
   "screenshots": [],
@@ -49,14 +67,24 @@
       "short_name": "POS",
       "description": "فتح نقطة البيع",
       "url": "/pos",
-      "icons": [{ "src": "/kesti.png", "sizes": "512x512" }]
+      "icons": [
+        {
+          "src": "/kesti.png",
+          "sizes": "512x512"
+        }
+      ]
     },
     {
       "name": "لوحة التحكم",
       "short_name": "Dashboard",
       "description": "فتح لوحة التحكم",
       "url": "/dashboard",
-      "icons": [{ "src": "/kesti.png", "sizes": "512x512" }]
+      "icons": [
+        {
+          "src": "/kesti.png",
+          "sizes": "512x512"
+        }
+      ]
     }
   ],
   "related_applications": [],

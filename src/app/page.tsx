@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
-import LandingPage from './landing/page'
 
 export const metadata: Metadata = {
   title: 'كاستي برو | نظام نقاط البيع الذكي وإدارة المخزون',
@@ -19,9 +18,9 @@ export default async function Home() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Show landing page for non-authenticated users
+  // Redirect non-authenticated users to login
   if (!user) {
-    return <LandingPage />
+    redirect('/login')
   }
 
   // Check user role, pause and subscription status from profile

@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     const supabase = createServiceClient()
 
-    const { data, error } = await supabase
+    const { data, error } = await (supabase as any)
       .from('inquiries')
       .insert({
         name: name.trim(),
@@ -74,7 +74,7 @@ export async function GET() {
 
     // Fetch inquiries using service client to bypass RLS
     const serviceClient = createServiceClient()
-    const { data: inquiries, error } = await serviceClient
+    const { data: inquiries, error } = await (serviceClient as any)
       .from('inquiries')
       .select('*')
       .order('created_at', { ascending: false })
