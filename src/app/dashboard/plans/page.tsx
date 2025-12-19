@@ -349,14 +349,24 @@ export default function PlansPage() {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl w-full max-w-md">
-            <div className="p-6 border-b">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-gray-900">
+            <div className="p-4 border-b bg-primary-50 rounded-t-2xl">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-lg font-bold text-gray-900">
                   {editingPlan ? 'تعديل الخطة' : 'خطة جديدة'}
                 </h2>
-                <button onClick={closeModal} className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving || !formData.name || (formData.plan_type === 'subscription' && formData.duration_days <= 0) || (formData.plan_type === 'package' && formData.sessions < 2)}
+                    className="flex items-center gap-1.5 px-4 py-2 bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300 text-white rounded-xl font-medium text-sm transition-colors"
+                  >
+                    {saving ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                    {editingPlan ? 'حفظ' : 'إنشاء'}
+                  </button>
+                  <button onClick={closeModal} className="p-2 hover:bg-white/50 rounded-lg transition-colors">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
             </div>
 

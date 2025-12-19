@@ -394,15 +394,19 @@ export default function ClientsTab({ clients, projects, userId, onRefresh }: Cli
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ (DT)</label>
-                <input
-                  type="number"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="input-field text-lg"
-                  max={selectedClient.total_credit}
-                  placeholder="0"
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ (د.ت)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    className="input-field text-lg pr-12"
+                    max={selectedClient.total_credit}
+                    placeholder="0"
+                    dir="ltr"
+                  />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">د.ت</span>
+                </div>
               </div>
               
               <div>

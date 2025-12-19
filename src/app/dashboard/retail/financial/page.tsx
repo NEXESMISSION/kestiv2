@@ -23,7 +23,7 @@ export default function RetailFinancialPage() {
   const [customers, setCustomers] = useState<RetailCustomer[]>([])
   const [products, setProducts] = useState<Product[]>([])
   const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState<PeriodType>('week')
+  const [period, setPeriod] = useState<PeriodType>('month')
   const [showDebtDetails, setShowDebtDetails] = useState(false)
 
   const fetchData = useCallback(async () => {

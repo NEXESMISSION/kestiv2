@@ -217,16 +217,20 @@ export default function CreditPage() {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ</label>
-                <input
-                  type="number"
-                  step="0.001"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="w-full px-4 py-3 border rounded-xl text-lg font-bold text-center"
-                  placeholder="0.000"
-                  max={payingCustomer.total_debt}
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ (د.ت)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    step="0.001"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    dir="ltr"
+                    className="w-full px-4 py-3 pr-12 border rounded-xl text-lg font-bold text-center"
+                    placeholder="0.000"
+                    max={payingCustomer.total_debt}
+                  />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">د.ت</span>
+                </div>
               </div>
               
               <button

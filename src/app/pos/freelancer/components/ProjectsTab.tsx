@@ -312,14 +312,18 @@ export default function ProjectsTab({ projects, clients, userId, onRefresh }: Pr
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ (DT)</label>
-                <input
-                  type="number"
-                  value={paymentAmount}
-                  onChange={(e) => setPaymentAmount(e.target.value)}
-                  className="input-field text-lg"
-                  max={selectedProject.remaining}
-                />
+                <label className="block text-sm font-medium text-gray-700 mb-1">المبلغ (د.ت)</label>
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                    className="input-field text-lg pr-12"
+                    max={selectedProject.remaining}
+                    dir="ltr"
+                  />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">د.ت</span>
+                </div>
               </div>
               
               <div>
@@ -471,24 +475,32 @@ export default function ProjectsTab({ projects, clients, userId, onRefresh }: Pr
                   
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">السعر *</label>
-                      <input
-                        type="number"
-                        value={projectPrice}
-                        onChange={(e) => setProjectPrice(e.target.value)}
-                        className="input-field"
-                        placeholder="0 DT"
-                      />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">السعر (د.ت) *</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={projectPrice}
+                          onChange={(e) => setProjectPrice(e.target.value)}
+                          className="input-field pr-10"
+                          placeholder="0"
+                          dir="ltr"
+                        />
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">د.ت</span>
+                      </div>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">العربون</label>
-                      <input
-                        type="number"
-                        value={projectDeposit}
-                        onChange={(e) => setProjectDeposit(e.target.value)}
-                        className="input-field"
-                        placeholder="0 DT"
-                      />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">العربون (د.ت)</label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={projectDeposit}
+                          onChange={(e) => setProjectDeposit(e.target.value)}
+                          className="input-field pr-10"
+                          placeholder="0"
+                          dir="ltr"
+                        />
+                        <span className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-sm">د.ت</span>
+                      </div>
                     </div>
                   </div>
                   

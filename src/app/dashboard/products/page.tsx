@@ -366,31 +366,41 @@ export default function ProductsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    سعر البيع (DT) *
+                    سعر البيع *
                   </label>
-                  <input
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                    onFocus={(e) => e.target.select()}
-                    min="0"
-                    step="0.001"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                      onFocus={(e) => e.target.select()}
+                      min="0"
+                      step="0.001"
+                      dir="ltr"
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-left"
+                      placeholder="0.000"
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">د.ت</span>
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    التكلفة (DT)
+                    التكلفة
                   </label>
-                  <input
-                    type="number"
-                    value={formData.cost}
-                    onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) || 0 })}
-                    onFocus={(e) => e.target.select()}
-                    min="0"
-                    step="0.001"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type="number"
+                      value={formData.cost}
+                      onChange={(e) => setFormData({ ...formData, cost: parseFloat(e.target.value) || 0 })}
+                      onFocus={(e) => e.target.select()}
+                      min="0"
+                      step="0.001"
+                      dir="ltr"
+                      className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-left"
+                      placeholder="0.000"
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">د.ت</span>
+                  </div>
                 </div>
               </div>
 
@@ -414,7 +424,9 @@ export default function ProductsPage() {
                     onChange={(e) => setFormData({ ...formData, stock: parseInt(e.target.value) || 0 })}
                     onFocus={(e) => e.target.select()}
                     min="0"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    dir="ltr"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-left"
+                    placeholder="0"
                   />
                 </div>
                 <div>
@@ -427,7 +439,9 @@ export default function ProductsPage() {
                     onChange={(e) => setFormData({ ...formData, reorder_level: parseInt(e.target.value) || 0 })}
                     onFocus={(e) => e.target.select()}
                     min="0"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    dir="ltr"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-left"
+                    placeholder="5"
                   />
                 </div>
               </div>

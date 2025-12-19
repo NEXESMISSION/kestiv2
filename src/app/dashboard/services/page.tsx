@@ -308,16 +308,23 @@ export default function ServicesPage() {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  السعر (DT) *
+                  السعر *
                 </label>
-                <input
-                  type="number"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
-                  min="0"
-                  step="0.001"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                />
+                <div className="relative">
+                  <input
+                    type="number"
+                    value={formData.price}
+                    onChange={(e) => setFormData({ ...formData, price: parseFloat(e.target.value) || 0 })}
+                    onFocus={(e) => e.target.select()}
+                    min="0"
+                    step="0.001"
+                    dir="ltr"
+                    className="w-full px-4 py-3 pr-12 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 text-left"
+                    placeholder="0.000"
+                  />
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">د.ت</span>
+                </div>
+                <p className="text-xs text-gray-400 mt-1">أدخل السعر بالدينار (مثال: 25 = خمسة وعشرون دينار)</p>
               </div>
 
               <div>

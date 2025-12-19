@@ -89,9 +89,8 @@ export default function LandingPage() {
   }
 
   const pricing: PricingPlan[] = [
-    { name: 'شهري', subtitle: 'مرونة كاملة', price: 19, period: '/شهر', total: null, totalAmount: 19, popular: false, save: null },
-    { name: '3 أشهر', subtitle: 'وفر 10%', price: 17, period: '/شهر', total: '51 د.ت إجمالي', totalAmount: 51, popular: true, save: '10%' },
-    { name: 'سنوي', subtitle: 'وفر 21%', price: 15, period: '/شهر', total: '180 د.ت إجمالي', totalAmount: 180, popular: false, save: '21%' },
+    { name: '6 أشهر', subtitle: 'وفر 15%', price: 16, period: '/شهر', total: '96 د.ت إجمالي', totalAmount: 96, popular: false, save: '15%' },
+    { name: 'سنوي', subtitle: 'وفر 21%', price: 15, period: '/شهر', total: '180 د.ت إجمالي', totalAmount: 180, popular: true, save: '21%' },
   ]
 
   const faqs = [
@@ -223,66 +222,25 @@ export default function LandingPage() {
               </div>
             </div>
 
-            {/* Hero Visual */}
+            {/* Hero Visual - Video Preview */}
             <div className={`relative ${isVisible ? 'animate-scale-in' : 'opacity-0'}`}>
-              <div className="relative">
-                {/* Main Dashboard Preview */}
-                <div className="bg-gradient-to-br from-primary-100 via-blue-50 to-purple-100 rounded-3xl p-4 sm:p-6 lg:p-8 shadow-2xl shadow-primary-500/20 animate-float-slow">
-                  <div className="bg-white rounded-2xl shadow-xl p-4 sm:p-6">
-                    <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-red-400"></div>
-                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-yellow-400"></div>
-                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-green-400"></div>
+              <div className="relative bg-gradient-to-br from-primary-100 via-blue-50 to-purple-100 rounded-3xl p-4 sm:p-6 shadow-2xl shadow-primary-500/20">
+                <div className="aspect-video bg-gradient-to-br from-primary-900 via-primary-800 to-blue-900 rounded-2xl flex items-center justify-center relative overflow-hidden">
+                  {/* Video placeholder with play button */}
+                  <div className="absolute inset-0 bg-black/20"></div>
+                  <div className="relative z-10 text-center">
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 backdrop-blur rounded-full flex items-center justify-center mb-3 mx-auto cursor-pointer hover:bg-white/30 transition-colors hover:scale-110">
+                      <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white mr-[-4px]" />
                     </div>
-                    <div className="grid grid-cols-3 gap-2 sm:gap-4 mb-3 sm:mb-4">
-                      <div className="bg-green-50 rounded-xl p-2 sm:p-4 text-center">
-                        <div className="text-lg sm:text-2xl font-bold text-green-600">2,450</div>
-                        <div className="text-[10px] sm:text-sm text-gray-500">مبيعات اليوم</div>
-                      </div>
-                      <div className="bg-blue-50 rounded-xl p-2 sm:p-4 text-center">
-                        <div className="text-lg sm:text-2xl font-bold text-blue-600">156</div>
-                        <div className="text-[10px] sm:text-sm text-gray-500">منتج</div>
-                      </div>
-                      <div className="bg-purple-50 rounded-xl p-2 sm:p-4 text-center">
-                        <div className="text-lg sm:text-2xl font-bold text-purple-600">892</div>
-                        <div className="text-[10px] sm:text-sm text-gray-500">صافي الربح</div>
-                      </div>
-                    </div>
-                    {/* Mini Chart */}
-                    <div className="bg-gray-50 rounded-xl p-3 sm:p-4">
-                      <div className="flex items-end justify-between h-16 sm:h-20 gap-1">
-                        {[40, 65, 45, 80, 55, 90, 70].map((h, i) => (
-                          <div key={i} className="flex-1 bg-gradient-to-t from-primary-500 to-primary-300 rounded-t-sm transition-all hover:from-primary-600 hover:to-primary-400" style={{ height: `${h}%` }}></div>
-                        ))}
-                      </div>
-                      <div className="text-center mt-2 text-xs text-gray-500">مبيعات الأسبوع</div>
+                    <p className="text-white/90 font-medium text-sm sm:text-base">شاهد كيف يعمل Kesti Pro</p>
+                    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-yellow-500/20 text-yellow-300 rounded-full text-xs sm:text-sm mt-2">
+                      <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
+                      قريباً - Coming Soon
                     </div>
                   </div>
-                </div>
-
-                {/* Floating Elements */}
-                <div className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4 animate-float">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-100 rounded-full flex items-center justify-center">
-                      <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
-                    </div>
-                    <div>
-                      <div className="text-xs sm:text-sm font-bold text-gray-900">بيع جديد</div>
-                      <div className="text-[10px] sm:text-xs text-green-600">+45.000 DT</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-6 bg-white rounded-2xl shadow-lg p-3 sm:p-4 animate-float-delay">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-100 rounded-full flex items-center justify-center">
-                      <Package className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
-                    </div>
-                    <div>
-                      <div className="text-xs sm:text-sm font-bold text-gray-900">تنبيه مخزون</div>
-                      <div className="text-[10px] sm:text-xs text-orange-600">3 منتجات</div>
-                    </div>
-                  </div>
+                  {/* Decorative elements */}
+                  <div className="absolute top-4 right-4 w-20 h-20 bg-primary-500/20 rounded-full blur-xl"></div>
+                  <div className="absolute bottom-4 left-4 w-24 h-24 bg-blue-500/20 rounded-full blur-xl"></div>
                 </div>
               </div>
             </div>
@@ -290,169 +248,88 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Video Section - RIGHT AFTER HERO */}
-      <section className="py-12 sm:py-16 px-4 bg-gradient-to-br from-primary-900 via-primary-800 to-blue-900 text-white">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-2xl sm:text-3xl font-bold mb-3">شاهد كيف يعمل Kesti Pro</h2>
-          <p className="text-primary-200 text-base sm:text-lg mb-6">دقيقتين فقط تكفي لتفهم كل شي</p>
-          
-          <div className="relative bg-white/10 backdrop-blur rounded-3xl p-4 sm:p-6 border border-white/20">
-            <div className="aspect-video bg-black/30 rounded-2xl flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 sm:w-20 sm:h-20 bg-white/20 rounded-full flex items-center justify-center mb-3 mx-auto cursor-pointer hover:bg-white/30 transition-colors animate-pulse-glow">
-                  <Play className="w-8 h-8 sm:w-10 sm:h-10 text-white mr-[-4px]" />
-                </div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-yellow-500/20 text-yellow-300 rounded-full text-xs sm:text-sm">
-                  <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4" />
-                  قريباً - Coming Soon
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Value Props - Problem → Solution Format */}
+      {/* Value Props - Why Kesti Pro - Clean Grid Design */}
       <section id="features" className="py-16 sm:py-20 px-4 bg-gray-50">
         <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3">علاش Kesti Pro؟</h2>
-            <p className="text-gray-600 text-lg">مشاكل حقيقية وحلول فورية</p>
+          <div className="text-center mb-10">
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2">علاش Kesti Pro؟</h2>
+            <p className="text-gray-500">حلول بسيطة لمشاكل حقيقية</p>
           </div>
 
-          <div className="space-y-6">
-            {/* Value 1: Real Profit */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
-                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-red-500 to-orange-500 rounded-xl flex items-center justify-center">
-                  <TrendingUp className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
-                    <span className="text-gray-600">مبيعات كثيرة لكن ما تعرف ربحك الحقيقي</span>
-                  </div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-2">
-                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
-                    <span className="text-gray-900 font-bold">ربحك الصافي بعد كل المصاريف — إيجار، كهرباء، ماء، بضاعة</span>
-                  </div>
-                </div>
+          {/* Clean 2x3 Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Card 1 */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
+                <TrendingUp className="w-6 h-6 text-white" />
               </div>
+              <h3 className="font-bold text-gray-900 mb-1">اعرف ربحك الحقيقي</h3>
+              <p className="text-gray-500 text-sm">بعد كل المصاريف</p>
             </div>
 
-            {/* Value 2: Credit Tracking */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
-                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center">
-                  <HandCoins className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
-                    <span className="text-gray-600">كم واحد عليه فلوسك ونسيت؟</span>
-                  </div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-2">
-                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
-                    <span className="text-gray-900 font-bold">نظام كريديات متكامل — سجل، تابع، وذكّر</span>
-                  </div>
-                </div>
+            {/* Card 2 */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-yellow-500 rounded-xl flex items-center justify-center mb-4">
+                <HandCoins className="w-6 h-6 text-white" />
               </div>
+              <h3 className="font-bold text-gray-900 mb-1">تابع الكريديات</h3>
+              <p className="text-gray-500 text-sm">ما تنسى شكون عليه فلوسك</p>
             </div>
 
-            {/* Value 3: Stock */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
-                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
-                  <Package className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
-                    <span className="text-gray-600">المخزون ينفد وما تنتبه</span>
-                  </div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-2">
-                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
-                    <span className="text-gray-900 font-bold">تنبيهات تلقائية قبل النفاد + تحديث آلي مع كل بيع</span>
-                  </div>
-                </div>
+            {/* Card 3 */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
+                <Package className="w-6 h-6 text-white" />
               </div>
+              <h3 className="font-bold text-gray-900 mb-1">تنبيهات المخزون</h3>
+              <p className="text-gray-500 text-sm">قبل ما ينفد</p>
             </div>
 
-            {/* Value 4: Remote Control */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
-                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center">
-                  <Globe className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
-                    <span className="text-gray-600">لازم تكون في المحل باش تعرف شنوة صاير</span>
-                  </div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-2">
-                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
-                    <span className="text-gray-900 font-bold">تحكم من أي مكان — من البيت، من الكافيه، من أي بلاصة</span>
-                  </div>
-                </div>
+            {/* Card 4 */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-xl flex items-center justify-center mb-4">
+                <Globe className="w-6 h-6 text-white" />
               </div>
+              <h3 className="font-bold text-gray-900 mb-1">تحكم من أي مكان</h3>
+              <p className="text-gray-500 text-sm">من تليفونك أو حاسوبك</p>
             </div>
 
-            {/* Value 5: Cost Savings */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
-                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
-                  <DollarSign className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
-                    <span className="text-gray-600">كاشير تقليدي = 3,000+ د.ت + صيانة</span>
-                  </div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-2">
-                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
-                    <span className="text-gray-900 font-bold">Kesti Pro = 15 د.ت/شهر فقط — وفّر أكثر من 2,500 د.ت</span>
-                  </div>
-                </div>
+            {/* Card 5 */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-pink-500 to-rose-500 rounded-xl flex items-center justify-center mb-4">
+                <Users className="w-6 h-6 text-white" />
               </div>
+              <h3 className="font-bold text-gray-900 mb-1">إدارة الاشتراكات</h3>
+              <p className="text-gray-500 text-sm">تنبيهات + تجميد</p>
             </div>
 
-            {/* Value 6: Subscriptions */}
-            <div className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100 hover:shadow-md transition-all">
-              <div className="flex flex-col md:flex-row md:items-center gap-4">
-                <div className="flex-shrink-0 w-14 h-14 bg-gradient-to-br from-pink-500 to-purple-500 rounded-xl flex items-center justify-center">
-                  <Users className="w-7 h-7 text-white" />
-                </div>
-                <div className="flex-1">
-                  <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
-                    <span className="text-red-500 font-medium text-sm">❌ المشكلة:</span>
-                    <span className="text-gray-600">اشتراكات الجيم تنتهي وما تذكر</span>
-                  </div>
-                  <div className="flex flex-col md:flex-row md:items-center gap-2">
-                    <span className="text-green-600 font-medium text-sm">✅ الحل:</span>
-                    <span className="text-gray-900 font-bold">تنبيهات انتهاء تلقائية + تجميد + أنواع اشتراكات متعددة</span>
-                  </div>
-                </div>
+            {/* Card 6 */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 hover:shadow-lg transition-all">
+              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-xl flex items-center justify-center mb-4">
+                <DollarSign className="w-6 h-6 text-white" />
               </div>
+              <h3 className="font-bold text-gray-900 mb-1">وفّر 2,500+ د.ت</h3>
+              <p className="text-gray-500 text-sm">بدل كاشير تقليدي</p>
             </div>
           </div>
 
-          {/* Extra Features Grid */}
-          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
-              <Zap className="w-6 h-6 text-yellow-500 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-700">بيع سريع</span>
+          {/* Extra Features - Compact */}
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100">
+              <Zap className="w-4 h-4 text-yellow-500" />
+              <span className="text-sm text-gray-600">بيع سريع</span>
             </div>
-            <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
-              <Smartphone className="w-6 h-6 text-blue-500 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-700">موبايل + تابلت</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100">
+              <Smartphone className="w-4 h-4 text-blue-500" />
+              <span className="text-sm text-gray-600">موبايل + تابلت</span>
             </div>
-            <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
-              <BarChart3 className="w-6 h-6 text-green-500 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-700">تقارير يومية</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100">
+              <BarChart3 className="w-4 h-4 text-green-500" />
+              <span className="text-sm text-gray-600">تقارير</span>
             </div>
-            <div className="bg-white rounded-xl p-4 text-center border border-gray-100">
-              <MessageCircle className="w-6 h-6 text-teal-500 mx-auto mb-2" />
-              <span className="text-sm font-medium text-gray-700">دعم واتساب</span>
+            <div className="flex items-center gap-2 px-4 py-2 bg-white rounded-full border border-gray-100">
+              <MessageCircle className="w-4 h-4 text-teal-500" />
+              <span className="text-sm text-gray-600">دعم واتساب</span>
             </div>
           </div>
 
@@ -460,7 +337,7 @@ export default function LandingPage() {
           <div className="text-center mt-10">
             <Link href="/register" className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-green-500 to-emerald-600 text-white font-bold text-lg rounded-2xl shadow-lg shadow-green-500/25 hover:shadow-xl transition-all">
               <Rocket className="w-5 h-5" />
-              جرب كل هذا مجاناً 15 يوم
+              جرب مجاناً 15 يوم
             </Link>
             <p className="text-gray-500 text-sm mt-3">بدون بطاقة بنكية • إلغاء أي وقت</p>
           </div>
@@ -472,17 +349,17 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12 sm:mb-16">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4">نظام واحد لكل أنواع الأعمال</h2>
-            <p className="text-gray-600 text-base sm:text-lg">محل تجاري؟ جيم؟ مستقل؟ Kesti Pro يناسبك</p>
+            <p className="text-gray-600 text-base sm:text-lg">محل تجاري؟ جيم؟ Kesti Pro يناسبك</p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Retail/Products */}
             <div className="bg-white rounded-2xl p-6 border-2 border-blue-100 hover:border-blue-300 hover:shadow-lg transition-all">
               <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center mb-4">
                 <Store className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">للبيع بالتجزئة</h3>
-              <p className="text-gray-500 text-sm mb-4">محلات، بقالات، كافيهات، متاجر إلكترونية...</p>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">المقاهي، الحوانيت، بيع منتوجات</h3>
+              <p className="text-gray-500 text-sm mb-4">كافيهات، بقالات، محلات، متاجر...</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-blue-500" />بيع سريع</li>
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-blue-500" />متابعة المخزون</li>
@@ -494,12 +371,11 @@ export default function LandingPage() {
             </div>
 
             {/* Subscriptions */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all relative">
-              <div className="absolute -top-3 right-4 bg-purple-500 text-white text-xs px-3 py-1 rounded-full font-bold">للاشتراكات</div>
+            <div className="bg-white rounded-2xl p-6 border-2 border-purple-100 hover:border-purple-300 hover:shadow-lg transition-all">
               <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-4">
                 <Dumbbell className="w-6 h-6 text-white" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">للاشتراكات والعضويات</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">الاشتراكات والعضويات</h3>
               <p className="text-gray-500 text-sm mb-4">جيم، co-working، نوادي، أي نشاط باشتراك زمني</p>
               <ul className="space-y-2 text-sm">
                 <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-purple-500" />إدارة الاشتراكات</li>
@@ -510,21 +386,6 @@ export default function LandingPage() {
               <Link href="/register" className="block mt-4 text-purple-600 font-medium text-sm hover:underline">جرّبها بنفسك →</Link>
             </div>
 
-            {/* Freelancers */}
-            <div className="bg-white rounded-2xl p-6 border-2 border-green-100 hover:border-green-300 hover:shadow-lg transition-all">
-              <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-emerald-500 rounded-xl flex items-center justify-center mb-4">
-                <UserCheck className="w-6 h-6 text-white" />
-              </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">للمستقلين والخدمات</h3>
-              <p className="text-gray-500 text-sm mb-4">مدرب؟ مصمم؟ محاسب؟</p>
-              <ul className="space-y-2 text-sm">
-                <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />تتبع العملاء</li>
-                <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />جلسات ومواعيد</li>
-                <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />كريديات العملاء</li>
-                <li className="flex items-center gap-2 text-gray-600"><Check className="w-4 h-4 text-green-500" />تقارير الدخل</li>
-              </ul>
-              <Link href="/register" className="block mt-4 text-green-600 font-medium text-sm hover:underline">جرّبها بنفسك →</Link>
-            </div>
           </div>
         </div>
       </section>
@@ -538,65 +399,118 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8 sm:mb-12">
-            {pricing.map((plan, i) => (
-              <div 
-                key={i} 
-                className={`relative p-6 sm:p-8 rounded-3xl border-2 transition-all hover:-translate-y-2 cursor-pointer ${
-                  plan.popular 
-                    ? 'border-primary-500 bg-gradient-to-b from-primary-50 to-white shadow-xl shadow-primary-500/20' 
-                    : 'border-gray-200 bg-white hover:border-primary-200 hover:shadow-lg'
-                }`}
-                onClick={() => setSelectedPlan(plan)}
-              >
-                {plan.popular && (
-                  <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1 bg-gradient-to-r from-primary-600 to-primary-700 text-white text-xs sm:text-sm font-bold rounded-full">
-                    الأكثر طلباً
-                  </div>
-                )}
-                {plan.name === 'سنوي' && (
-                  <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs sm:text-sm font-bold rounded-full">
-                    + شهر هدية
-                  </div>
-                )}
+            {/* 6 Months Plan */}
+            <div 
+              className="relative p-6 sm:p-8 rounded-3xl border-2 transition-all hover:-translate-y-2 cursor-pointer border-gray-200 bg-white hover:border-primary-200 hover:shadow-lg"
+              onClick={() => setSelectedPlan(pricing[0])}
+            >
+              <div className="text-center">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">6 أشهر</h3>
+                <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">وفر 15%</p>
                 
-                <div className="text-center">
-                  <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">{plan.name}</h3>
-                  <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">{plan.subtitle}</p>
-                  
-                  <div className="mb-4 sm:mb-6">
-                    <span className="text-4xl sm:text-5xl font-bold text-gray-900">{plan.price}</span>
-                    <span className="text-gray-500 text-sm sm:text-base">د.ت{plan.period}</span>
-                  </div>
-                  
-                  {plan.total && (
-                    <p className="text-xs sm:text-sm text-gray-500 mb-2">{plan.total}</p>
-                  )}
-
-                  {/* No hardware text */}
-                  <p className="text-xs text-primary-600 font-medium mb-4">بدون جهاز كاشير</p>
-                  
-                  {/* Features included */}
-                  <div className="space-y-2 mb-6 text-right">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      <span>كل المميزات</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
-                      <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                      <span>دعم فني</span>
-                    </div>
-                  </div>
-                  
-                  <button className={`w-full py-3 sm:py-4 rounded-xl font-bold transition-all ${
-                    plan.popular
-                      ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:shadow-lg hover:shadow-primary-500/30'
-                      : 'bg-gray-100 text-gray-900 hover:bg-gray-200'
-                  }`}>
-                    اشترك الآن
-                  </button>
+                <div className="mb-4 sm:mb-6">
+                  <span className="text-4xl sm:text-5xl font-bold text-gray-900">16</span>
+                  <span className="text-gray-500 text-sm sm:text-base">د.ت/شهر</span>
                 </div>
+                
+                <p className="text-xs sm:text-sm text-gray-500 mb-2">96 د.ت إجمالي</p>
+                <p className="text-xs text-primary-600 font-medium mb-4">بدون جهاز كاشير</p>
+                
+                <div className="space-y-2 mb-6 text-right">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>كل المميزات</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>دعم فني</span>
+                  </div>
+                </div>
+                
+                <button className="w-full py-3 sm:py-4 rounded-xl font-bold transition-all bg-gray-100 text-gray-900 hover:bg-gray-200">
+                  اشترك الآن
+                </button>
               </div>
-            ))}
+            </div>
+
+            {/* Yearly Plan - Popular */}
+            <div 
+              className="relative p-6 sm:p-8 rounded-3xl border-2 transition-all hover:-translate-y-2 cursor-pointer border-primary-500 bg-gradient-to-b from-primary-50 to-white shadow-xl shadow-primary-500/20"
+              onClick={() => setSelectedPlan(pricing[1])}
+            >
+              <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1 bg-gradient-to-r from-green-500 to-emerald-600 text-white text-xs sm:text-sm font-bold rounded-full whitespace-nowrap">
+                الأكثر طلباً + شهر هدية
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">سنوي</h3>
+                <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">وفر 21%</p>
+                
+                <div className="mb-4 sm:mb-6">
+                  <span className="text-4xl sm:text-5xl font-bold text-gray-900">15</span>
+                  <span className="text-gray-500 text-sm sm:text-base">د.ت/شهر</span>
+                </div>
+                
+                <p className="text-xs sm:text-sm text-gray-500 mb-2">180 د.ت إجمالي</p>
+                <p className="text-xs text-primary-600 font-medium mb-4">بدون جهاز كاشير</p>
+                
+                <div className="space-y-2 mb-6 text-right">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>كل المميزات</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>دعم فني مميز</span>
+                  </div>
+                </div>
+                
+                <button className="w-full py-3 sm:py-4 rounded-xl font-bold transition-all bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:shadow-lg hover:shadow-primary-500/30">
+                  اشترك الآن
+                </button>
+              </div>
+            </div>
+
+            {/* Custom Plan - Contact Us */}
+            <div className="relative p-6 sm:p-8 rounded-3xl border-2 transition-all hover:-translate-y-2 border-purple-200 bg-gradient-to-b from-purple-50 to-white hover:border-purple-400 hover:shadow-lg">
+              <div className="absolute -top-3 sm:-top-4 left-1/2 -translate-x-1/2 px-3 sm:px-4 py-1 bg-gradient-to-r from-purple-500 to-purple-600 text-white text-xs sm:text-sm font-bold rounded-full">
+                مخصص
+              </div>
+              
+              <div className="text-center">
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-1">باقة مخصصة</h3>
+                <p className="text-gray-500 text-xs sm:text-sm mb-4 sm:mb-6">للأعمال الكبيرة</p>
+                
+                <div className="mb-4 sm:mb-6">
+                  <span className="text-2xl sm:text-3xl font-bold text-purple-600">تواصل معنا</span>
+                </div>
+                
+                <p className="text-xs sm:text-sm text-gray-500 mb-2">سعر حسب المتطلبات</p>
+                <p className="text-xs text-purple-600 font-medium mb-4">حلول مخصصة</p>
+                
+                <div className="space-y-2 mb-6 text-right">
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                    <span>ميزات إضافية</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                    <span>دعم مخصص</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <Check className="w-4 h-4 text-purple-500 flex-shrink-0" />
+                    <span>تكاملات خاصة</span>
+                  </div>
+                </div>
+                
+                <a 
+                  href="#contact"
+                  className="block w-full py-3 sm:py-4 rounded-xl font-bold transition-all bg-gradient-to-r from-purple-500 to-purple-600 text-white hover:shadow-lg hover:shadow-purple-500/30 text-center"
+                >
+                  تواصل معنا
+                </a>
+              </div>
+            </div>
           </div>
 
           {/* Plan icons */}

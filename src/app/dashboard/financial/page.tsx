@@ -22,7 +22,7 @@ export default function FinancialPage() {
   const [expenses, setExpenses] = useState<Expense[]>([])
   const [members, setMembers] = useState<Member[]>([])
   const [loading, setLoading] = useState(true)
-  const [period, setPeriod] = useState<PeriodType>('week')
+  const [period, setPeriod] = useState<PeriodType>('month')
   const [showDebtDetails, setShowDebtDetails] = useState(false)
   const [chartView, setChartView] = useState<'week' | 'month' | 'year'>('week')
 

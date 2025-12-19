@@ -1,10 +1,8 @@
 import { z } from 'zod'
 
-// Password must be at least 8 characters with at least one number
+// Simple password - minimum 6 characters only
 const passwordSchema = z.string()
-  .min(8, 'كلمة المرور يجب أن تكون 8 أحرف على الأقل')
-  .regex(/[0-9]/, 'كلمة المرور يجب أن تحتوي على رقم واحد على الأقل')
-  .regex(/[a-zA-Z]/, 'كلمة المرور يجب أن تحتوي على حرف واحد على الأقل')
+  .min(6, 'كلمة المرور يجب أن تكون 6 أحرف على الأقل')
 
 export const registerStep1Schema = z.object({
   fullName: z.string()
@@ -20,7 +18,6 @@ export const registerStep1Schema = z.object({
     .optional()
     .or(z.literal('')),
   password: passwordSchema,
-  confirmPassword: z.string(),
   pinCode: z.string()
     .min(4, 'كود PIN يجب أن يكون 4-6 أرقام')
     .max(6, 'كود PIN يجب أن يكون 4-6 أرقام')
@@ -28,9 +25,6 @@ export const registerStep1Schema = z.object({
   acceptTerms: z.literal(true, {
     errorMap: () => ({ message: 'يجب الموافقة على شروط الاستخدام' })
   })
-}).refine(data => data.password === data.confirmPassword, {
-  message: 'كلمتا المرور غير متطابقتين',
-  path: ['confirmPassword']
 })
 
 export const loginSchema = z.object({
