@@ -258,13 +258,13 @@ export default function ForgotPasswordPage() {
                   </p>
                   <div className="space-y-2">
                     <a 
-                      href="https://wa.me/21653518337" 
+                      href="https://wa.me/21611111111" 
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 p-3 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium transition-colors"
                     >
                       <MessageCircle className="w-5 h-5" />
-                      تواصل عبر واتساب (+216 53518337)
+                      تواصل عبر واتساب (<span className="bg-yellow-200 text-yellow-800 px-1 rounded text-xs font-semibold">+216 11 111 111 - مثال</span>)
                     </a>
                     <a 
                       href="mailto:support@kestipro.com?subject=طلب إعادة تعيين كلمة المرور" 

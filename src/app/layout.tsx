@@ -242,13 +242,13 @@ export default function RootLayout({
               logo: 'https://kestipro.com/kesti.png',
               contactPoint: {
                 '@type': 'ContactPoint',
-                telephone: '+216-53-518-337',
+                telephone: '+216-11-111-111',
                 contactType: 'customer service',
                 availableLanguage: ['Arabic', 'French', 'English'],
               },
               sameAs: [
                 'https://instagram.com/kestipro',
-                'https://wa.me/21653518337',
+                'https://wa.me/21611111111',
               ],
             }),
           }}

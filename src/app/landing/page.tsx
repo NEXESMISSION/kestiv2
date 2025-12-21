@@ -692,9 +692,9 @@ export default function LandingPage() {
                 <Mail className="w-4 h-4" />
                 support@kestipro.com
               </a>
-              <a href="tel:+21653518337" className="flex items-center gap-2 hover:text-white transition-colors">
+              <a href="tel:+21611111111" className="flex items-center gap-2 hover:text-white transition-colors">
                 <Phone className="w-4 h-4" />
-                53518337
+                <span className="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded text-xs font-semibold">+216 11 111 111 (مثال)</span>
               </a>
             </div>
           </div>
@@ -806,7 +806,7 @@ export default function LandingPage() {
                 <p className="text-gray-700 font-medium mb-3 text-sm sm:text-base">بعد الدفع، أرسل صورة الوصل مع إيميل حسابك:</p>
                 <div className="flex gap-2 sm:gap-3">
                   <a 
-                    href="https://wa.me/21653518337" 
+                    href="https://wa.me/21611111111" 
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="flex-1 py-2.5 sm:py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl font-bold text-center transition-colors flex items-center justify-center gap-2 text-sm sm:text-base"
@@ -832,7 +832,7 @@ export default function LandingPage() {
 
       {/* Floating WhatsApp Button */}
       <a
-        href="https://wa.me/21653518337"
+        href="https://wa.me/21611111111"
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 left-6 z-50 w-14 h-14 sm:w-16 sm:h-16 bg-green-500 hover:bg-green-600 rounded-full shadow-lg shadow-green-500/30 flex items-center justify-center transition-all hover:scale-110 animate-bounce-subtle"

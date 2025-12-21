@@ -273,6 +273,14 @@ export default function RetailPOSPage() {
               <span className="sm:hidden">البيع</span>
             </h1>
             <div className="flex items-center gap-1 sm:gap-2">
+              {/* Alert Icon */}
+              <button 
+                onClick={() => {/* Add alert action here */}}
+                className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                title="تنبيهات"
+              >
+                <AlertTriangle className="w-5 h-5 sm:w-6 sm:h-6" />
+              </button>
               {/* Low Stock Alert */}
               {lowStockProducts.length > 0 && (
                 <button 

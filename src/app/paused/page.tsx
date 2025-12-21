@@ -114,11 +114,11 @@ export default function PausedPage() {
                 إذا كنت تعتقد أن هذا خطأ، يرجى التواصل مع الدعم الفني
               </p>
               <div className="flex flex-wrap justify-center gap-3">
-                <a href="tel:+21653518337" className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700">
+                <a href="tel:+21611111111" className="flex items-center gap-2 text-sm text-orange-600 hover:text-orange-700">
                   <Phone className="w-4 h-4" />
-                  +216 53518337
+                  <span className="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded text-xs font-semibold">+216 11 111 111 (مثال)</span>
                 </a>
-                <a href="https://wa.me/21653518337" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700">
+                <a href="https://wa.me/21611111111" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-green-600 hover:text-green-700">
                   <MessageCircle className="w-4 h-4" />
                   واتساب
                 </a>
