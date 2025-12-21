@@ -743,9 +743,12 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between bg-white rounded-xl p-3">
-                  <span className="font-mono text-base sm:text-lg font-bold" dir="ltr">58415520</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-base sm:text-lg font-bold" dir="ltr">11111111</span>
+                    <span className="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded text-xs font-semibold">(مثال)</span>
+                  </div>
                   <button 
-                    onClick={() => copyToClipboard('58415520', 'd17')}
+                    onClick={() => copyToClipboard('11111111', 'd17')}
                     className={`p-2 rounded-lg transition-all ${copied === 'd17' ? 'bg-green-100 text-green-600' : 'hover:bg-gray-100'}`}
                   >
                     {copied === 'd17' ? <Check className="w-4 h-4 sm:w-5 sm:h-5" /> : <Copy className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -767,9 +770,12 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between bg-white rounded-xl p-3">
-                  <span className="font-mono text-base sm:text-lg font-bold" dir="ltr">58415520</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-base sm:text-lg font-bold" dir="ltr">11111111</span>
+                    <span className="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded text-xs font-semibold">(مثال)</span>
+                  </div>
                   <button 
-                    onClick={() => copyToClipboard('58415520', 'flouci')}
+                    onClick={() => copyToClipboard('11111111', 'flouci')}
                     className={`p-2 rounded-lg transition-all ${copied === 'flouci' ? 'bg-green-100 text-green-600' : 'hover:bg-gray-100'}`}
                   >
                     {copied === 'flouci' ? <Check className="w-4 h-4 sm:w-5 sm:h-5" /> : <Copy className="w-4 h-4 sm:w-5 sm:h-5" />}
@@ -791,9 +797,12 @@ export default function LandingPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between bg-white rounded-xl p-3">
-                  <span className="font-mono text-xs sm:text-sm font-bold" dir="ltr">24031168005251110132</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs sm:text-sm font-bold" dir="ltr">11111111111111111111</span>
+                    <span className="bg-yellow-200 text-yellow-800 px-2 py-0.5 rounded text-xs font-semibold">(مثال)</span>
+                  </div>
                   <button 
-                    onClick={() => copyToClipboard('24031168005251110132', 'bank')}
+                    onClick={() => copyToClipboard('11111111111111111111', 'bank')}
                     className={`p-2 rounded-lg transition-all ${copied === 'bank' ? 'bg-green-100 text-green-600' : 'hover:bg-gray-100'}`}
                   >
                     {copied === 'bank' ? <Check className="w-4 h-4 sm:w-5 sm:h-5" /> : <Copy className="w-4 h-4 sm:w-5 sm:h-5" />}
